@@ -1,0 +1,93 @@
+<section class="home-page" aria-labelledby="page-title">
+  <header class="intro">
+    <div class="intro-copy">
+      <p class="greeting">Un espacio para sus primeros días</p>
+      <h1 id="page-title">Seguimiento diario</h1>
+      <p class="intro-description">
+        Consulta y registra los momentos importantes de su día.
+      </p>
+    </div>
+    <div class="day-note" aria-hidden="true">
+      <span class="day-note-orbit"></span>
+      <span class="day-note-sun"></span>
+      <span class="day-note-text">paso a<br />paso</span>
+    </div>
+  </header>
+
+  <section class="tracking-section" aria-labelledby="tracking-title">
+    <div class="section-heading">
+      <h2 id="tracking-title">¿Qué quieres consultar?</h2>
+      <p>Elige un seguimiento para continuar.</p>
+    </div>
+
+    <div class="tracking-grid">
+      <a class="tracking-link" routerLink="/detalle/pecho" aria-label="Alimentación al pecho: abrir seguimiento">
+        <mat-card class="tracking-card card-breast" appearance="outlined">
+          <div class="card-topline">
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none">
+                <path d="M9 25V14.5c0-2.5 1.8-4.5 4-4.5h.5V7.5a2.5 2.5 0 0 1 5 0V10h.5c2.2 0 4 2 4 4.5V25" />
+                <path d="M8 25h16M12.5 17.5h7" />
+              </svg>
+            </span>
+            <span class="card-type">Lactancia</span>
+          </div>
+          <h3>Alimentación al pecho</h3>
+          <p>Seguimiento general de sus tomas y duración.</p>
+          <span class="card-action">Abrir seguimiento</span>
+        </mat-card>
+      </a>
+
+      <a class="tracking-link" routerLink="/detalle/biberon" aria-label="Alimentación con biberón: abrir seguimiento">
+        <mat-card class="tracking-card card-bottle" appearance="outlined">
+          <div class="card-topline">
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none">
+                <path d="M12 6h8v4l2 2v13a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2V12l2-2V6Z" />
+                <path d="M12 10h8M12 19h8M15 6V4h2v2" />
+              </svg>
+            </span>
+            <span class="card-type">Biberón</span>
+          </div>
+          <h3>Alimentación con biberón</h3>
+          <p>Consulta el seguimiento general de cada toma.</p>
+          <span class="card-action">Abrir seguimiento</span>
+        </mat-card>
+      </a>
+
+      <a class="tracking-link" routerLink="/detalle/panal" aria-label="Cambio de pañal: abrir seguimiento">
+        <mat-card class="tracking-card card-diaper" appearance="outlined">
+          <div class="card-topline">
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none">
+                <path d="M7 10h18l-2 13a3 3 0 0 1-3 2h-8a3 3 0 0 1-3-2L7 10Z" />
+                <path d="M7 10c2 2 4 3 9 3s7-1 9-3M12 21c1.2-1.6 2.5-2.5 4-2.5s2.8.9 4 2.5" />
+              </svg>
+            </span>
+            <span class="card-type">Cuidados</span>
+          </div>
+          <h3>Cambio de pañal</h3>
+          <p>Registra los cambios y consulta su frecuencia.</p>
+          <span class="card-action">Abrir seguimiento</span>
+        </mat-card>
+      </a>
+
+      <a class="tracking-link" routerLink="/detalle/sueno" aria-label="Sueño del bebé: abrir seguimiento">
+        <mat-card class="tracking-card card-sleep" appearance="outlined">
+          <div class="card-topline">
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none">
+                <path d="M22.5 20.5A10 10 0 0 1 11 7.2 10 10 0 1 0 22.5 20.5Z" />
+                <path d="m23 8 .7 1.8 1.8.7-1.8.7L23 13l-.7-1.8-1.8-.7 1.8-.7L23 8ZM17 4l.4 1 .9.4-.9.4-.4 1-.4-1-.9-.4.9-.4.4-1Z" />
+              </svg>
+            </span>
+            <span class="card-type">Descanso</span>
+          </div>
+          <h3>Sueño</h3>
+          <p>Revisa sus periodos de descanso a lo largo del día.</p>
+          <span class="card-action">Abrir seguimiento</span>
+        </mat-card>
+      </a>
+    </div>
+  </section>
+</section>

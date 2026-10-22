@@ -57,3 +57,24 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the `providedIn: 'root'` option for singleton services
 - Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for new singleton services (Angular v22+)
 - Use the `inject()` function instead of constructor injection
+
+## Project Architecture
+
+- `src/main.ts` bootstraps the root `App` component with providers from `src/app/app.config.ts`; the app config installs browser error listeners and configures the router.
+- `src/app/app.html` is the persistent shell: it contains the Material home navigation and the `RouterOutlet`. Route-specific content lives under `src/app/pages/`.
+- `src/app/app.routes.ts` lazy-loads each page with `loadComponent`; use `RouterLink` for in-app navigation. Unknown paths redirect to the home route.
+- Page components are standalone by default and declare template dependencies in their decorator `imports`. Small page templates are inline; the root shell uses external HTML and SCSS.
+- Global styles in `src/styles.scss` define the Angular Material 3 theme and document-level colors and typography. Keep shell-specific styles in `src/app/app.scss`.
+- Existing page titles, visible copy, and detail route names are in Spanish; preserve that language when extending these pages and routes.
+
+## Build and Test
+
+Run commands from the repository root:
+
+- `npm run start` starts the Angular development server.
+- `npm run build` runs the production build.
+- Do not run tests or create new test files; this project does not maintain or run tests.
+
+`package.json` does not currently define a lint script.
+
+`npm test` is available from the Angular CLI scaffold, and `src/app/app.spec.ts` is an existing scaffolded spec. Do not add to it or create additional specs.

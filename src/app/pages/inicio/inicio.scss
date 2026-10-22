@@ -1,0 +1,251 @@
+.home-page {
+  padding-top: 1.25rem;
+}
+
+.intro {
+  align-items: center;
+  background: #e2f0f1;
+  border-radius: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  min-height: 14rem;
+  overflow: hidden;
+  padding: 2.5rem 3rem;
+  position: relative;
+}
+
+.intro-copy {
+  max-width: 38rem;
+  position: relative;
+  z-index: 1;
+}
+
+.greeting {
+  color: #326a70;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.8rem;
+}
+
+h1 {
+  color: #173744;
+  font-size: clamp(2.25rem, 5vw, 3.4rem);
+  letter-spacing: -0.055em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.intro-description {
+  color: #3e5d66;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 1rem 0 0;
+  max-width: 29rem;
+}
+
+.day-note {
+  align-items: center;
+  background: #f7fbfa;
+  border: 1px solid #cee2e2;
+  border-radius: 50%;
+  display: flex;
+  height: 10rem;
+  justify-content: center;
+  margin-right: 1.5rem;
+  position: relative;
+  transform: rotate(-8deg);
+  width: 10rem;
+}
+
+.day-note-orbit {
+  border: 1px dashed #aacaca;
+  border-radius: 50%;
+  height: 7.8rem;
+  position: absolute;
+  width: 7.8rem;
+}
+
+.day-note-sun {
+  background: #e6b45f;
+  border-radius: 50%;
+  height: 1rem;
+  position: absolute;
+  right: 1.4rem;
+  top: 1.8rem;
+  width: 1rem;
+}
+
+.day-note-text {
+  color: #28616b;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.tracking-section {
+  margin-top: 3rem;
+}
+
+.section-heading {
+  align-items: end;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.section-heading h2 {
+  color: #183746;
+  font-size: 1.45rem;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+
+.section-heading p {
+  color: #536d75;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.tracking-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tracking-link {
+  border-radius: 1.1rem;
+  color: inherit;
+  display: block;
+  text-decoration: none;
+}
+
+.tracking-card {
+  --card-accent: #367a80;
+  --card-tint: #e0f1ef;
+  background: #fff;
+  border-color: #d9e5e7;
+  border-radius: 1.1rem;
+  box-sizing: border-box;
+  min-height: 13.75rem;
+  padding: 1.4rem 1.5rem;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.card-bottle {
+  --card-accent: #5274a2;
+  --card-tint: #e9eff9;
+}
+
+.card-diaper {
+  --card-accent: #9b7138;
+  --card-tint: #f7f0e3;
+}
+
+.card-sleep {
+  --card-accent: #666b9c;
+  --card-tint: #eeedf8;
+}
+
+.card-topline {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.card-icon {
+  align-items: center;
+  background: var(--card-tint);
+  border-radius: 0.85rem;
+  color: var(--card-accent);
+  display: inline-flex;
+  height: 2.75rem;
+  justify-content: center;
+  width: 2.75rem;
+}
+
+.card-icon svg {
+  height: 1.65rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+  width: 1.65rem;
+}
+
+.card-type {
+  color: #526970;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.tracking-card h3 {
+  color: #183746;
+  font-size: 1.2rem;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+.tracking-card p {
+  color: #536d75;
+  font-size: 0.93rem;
+  line-height: 1.5;
+  margin: 0.45rem 0 1.2rem;
+}
+
+.card-action {
+  color: var(--card-accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.tracking-link:hover .tracking-card {
+  border-color: var(--card-accent);
+  transform: translateY(-2px);
+}
+
+.tracking-link:focus-visible {
+  outline: 3px solid #276878;
+  outline-offset: 4px;
+}
+
+@media (max-width: 680px) {
+  .home-page {
+    padding-top: 0.5rem;
+  }
+
+  .intro {
+    min-height: 12rem;
+    padding: 2rem 1.5rem;
+  }
+
+  .day-note {
+    display: none;
+  }
+
+  .intro-copy {
+    max-width: 22rem;
+  }
+
+  .intro-description {
+    font-size: 0.95rem;
+    max-width: 15rem;
+  }
+
+  .section-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .tracking-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tracking-card {
+    transition: none;
+  }
+}
