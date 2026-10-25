@@ -11,8 +11,8 @@ import {
     <app-tracking-card
       link="/detalle/sueno"
       title="Descanso"
-      accent="#5e559f"
-      headerColor="#5e559f"
+      accent="var(--app-card-sleep)"
+      headerColor="var(--app-card-sleep)"
     >
       <svg
         cardIcon

@@ -4,7 +4,7 @@
 
 .intro {
   align-items: center;
-  background: #e2f0f1;
+  background: var(--app-green);
   border-radius: 1.5rem;
   display: flex;
   justify-content: space-between;
@@ -21,14 +21,14 @@
 }
 
 .greeting {
-  color: #326a70;
+  color: var(--app-highlight);
   font-size: 0.9rem;
   font-weight: 600;
   margin: 0 0 0.8rem;
 }
 
 h1 {
-  color: #173744;
+  color: var(--app-surface);
   font-size: clamp(2.25rem, 5vw, 3.4rem);
   letter-spacing: -0.055em;
   line-height: 1.05;
@@ -36,7 +36,7 @@ h1 {
 }
 
 .intro-description {
-  color: #3e5d66;
+  color: var(--app-on-green);
   font-size: 1.05rem;
   line-height: 1.6;
   margin: 1rem 0 0;
@@ -45,8 +45,8 @@ h1 {
 
 .day-note {
   align-items: center;
-  background: #f7fbfa;
-  border: 1px solid #cee2e2;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
   border-radius: 50%;
   display: flex;
   height: 10rem;
@@ -58,7 +58,7 @@ h1 {
 }
 
 .day-note-orbit {
-  border: 1px dashed #aacaca;
+  border: 1px dashed var(--app-orbit);
   border-radius: 50%;
   height: 7.8rem;
   position: absolute;
@@ -66,7 +66,7 @@ h1 {
 }
 
 .day-note-sun {
-  background: #e6b45f;
+  background: var(--app-ochre);
   border-radius: 50%;
   height: 1rem;
   position: absolute;
@@ -76,7 +76,7 @@ h1 {
 }
 
 .day-note-text {
-  color: #28616b;
+  color: var(--app-green);
   font-size: 1.15rem;
   font-weight: 700;
   line-height: 1.15;
@@ -95,14 +95,14 @@ h1 {
 }
 
 .section-heading h2 {
-  color: #183746;
+  color: var(--app-ink);
   font-size: 1.45rem;
   letter-spacing: -0.035em;
   margin: 0;
 }
 
 .section-heading p {
-  color: #536d75;
+  color: var(--app-muted);
   font-size: 0.95rem;
   margin: 0;
 }

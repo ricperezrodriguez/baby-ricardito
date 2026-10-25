@@ -35,8 +35,8 @@ function formatDuration(totalSeconds: number): string {
     <app-tracking-card
       link="/detalle/pecho"
       title="Lactancias"
-      accent="#14766c"
-      headerColor="#14766c"
+      accent="var(--app-card-breastfeeding)"
+      headerColor="var(--app-card-breastfeeding)"
     >
       <svg
         cardIcon

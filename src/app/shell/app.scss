@@ -1,13 +1,13 @@
 :host {
   display: block;
   min-height: 100%;
-  background: #f2f7f8;
-  color: #183746;
+  background: var(--app-background);
+  color: var(--app-ink);
 }
 
 .app-header {
   align-items: center;
-  background: #f2f7f8;
+  background: var(--app-background);
   display: flex;
   justify-content: space-between;
   margin: 0 auto;
@@ -28,9 +28,9 @@
 
 .brand-mark {
   align-items: center;
-  background: #d9edf0;
+  background: var(--app-green);
   border-radius: 50% 50% 45% 45%;
-  color: #286677;
+  color: var(--app-surface);
   display: inline-flex;
   font-size: 1.25rem;
   height: 2.25rem;
@@ -42,7 +42,7 @@
 .brand:focus-visible,
 .app-header a:focus-visible {
   border-radius: 0.25rem;
-  outline: 3px solid #276878;
+  outline: 3px solid var(--app-focus);
   outline-offset: 3px;
 }
 

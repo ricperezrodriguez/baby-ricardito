@@ -18,6 +18,6 @@ export class TrackingCard {
   readonly link = input.required<string>();
   readonly title = input.required<string>();
   readonly ariaLabel = input<string>();
-  readonly accent = input('#14766c');
-  readonly headerColor = input('#14766c');
+  readonly accent = input('var(--app-green)');
+  readonly headerColor = input('var(--app-green)');
 }

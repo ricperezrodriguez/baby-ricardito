@@ -11,8 +11,8 @@ import {
     <app-tracking-card
       link="/detalle/panal"
       title="Cuidados"
-      accent="#95601a"
-      headerColor="#95601a"
+      accent="var(--app-card-diaper)"
+      headerColor="var(--app-card-diaper)"
     >
       <svg
         cardIcon

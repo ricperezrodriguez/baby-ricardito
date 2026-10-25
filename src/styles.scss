@@ -10,13 +10,42 @@ html {
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
+        primary: mat.$green-palette,
         tertiary: mat.$blue-palette,
       ),
       typography: Roboto,
       density: 0,
     )
   );
+
+  --app-background: #f2f3ee;
+  --app-surface: #fff;
+  --app-ink: #19343b;
+  --app-muted: #4d6267;
+  --app-border: #c7d0cc;
+  --app-green: #155f56;
+  --app-blue: #285c8c;
+  --app-coral: #a33c32;
+  --app-ochre: #99620d;
+  --app-purple: #51468d;
+  --app-highlight: #f5d486;
+  --app-on-green: #e5efec;
+  --app-orbit: #9eada8;
+  --app-focus: #155f56;
+  --app-card-breastfeeding: var(--app-ochre);
+  --app-card-bottle: var(--app-blue);
+  --app-card-diaper: var(--app-coral);
+  --app-card-sleep: var(--app-purple);
+
+  --mat-sys-primary: var(--app-green);
+  --mat-sys-on-primary: var(--app-surface);
+  --mat-sys-primary-container: var(--app-green);
+  --mat-sys-on-primary-container: var(--app-surface);
+  --mat-sys-tertiary: var(--app-blue);
+  --mat-sys-on-tertiary: var(--app-surface);
+  --mat-sys-surface: var(--app-background);
+  --mat-sys-on-surface: var(--app-ink);
+  --mat-sys-outline: var(--app-border);
 }
 
 body {
@@ -28,8 +57,8 @@ body {
   // Set a default background, font and text colors for the application using
   // Angular Material's system-level CSS variables. Learn more about these
   // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
+  background-color: var(--app-background);
+  color: var(--app-ink);
   font: var(--mat-sys-body-medium);
 
   // Reset the user agent margin.

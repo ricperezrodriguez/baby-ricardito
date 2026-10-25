@@ -11,8 +11,8 @@ import {
     <app-tracking-card
       link="/detalle/biberon"
       title="Biberón"
-      accent="#386a9f"
-      headerColor="#386a9f"
+      accent="var(--app-card-bottle)"
+      headerColor="var(--app-card-bottle)"
     >
       <svg
         cardIcon
