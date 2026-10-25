@@ -23,7 +23,7 @@ const LONG_NOTES =
   'Burped twice during the feed and fell asleep at the end, so I kept her upright for ten more minutes.';
 
 const SEED_SESSION_SPECS: SeedSessionSpec[] = [
-  { startedMinutesAgo: 6, inProgress: true, segments: [{ breast: 'left', minutes: 4 }, { breast: 'right', minutes: 2 }] },
+  { startedMinutesAgo: 30, segments: [{ breast: 'left', minutes: 4 }, { breast: 'right', minutes: 2 }] },
   { startedMinutesAgo: 190, segments: [{ breast: 'right', minutes: 12 }, { breast: 'left', minutes: 8 }] },
   { startedMinutesAgo: 410, segments: [{ breast: 'left', minutes: 15 }] },
   { startedMinutesAgo: 640, segments: [{ breast: 'left', minutes: 10 }, { breast: 'right', minutes: 10 }], notes: LONG_NOTES },
