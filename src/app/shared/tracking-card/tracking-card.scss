@@ -81,14 +81,10 @@
 }
 
 .card-content {
-  padding: 1.15rem 1.5rem 1.4rem;
-}
-
-.card-content p {
   color: var(--app-muted);
   font-size: 0.93rem;
   line-height: 1.5;
-  margin: 0;
+  padding: 1.15rem 1.5rem 1.4rem;
 }
 
 .tracking-card-actions {

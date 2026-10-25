@@ -1,7 +1,12 @@
 // breastfeeding.models.ts
 
+export const BREAST_SIDE = {
+  LEFT: 'left',
+  RIGHT: 'right',
+} as const;
+
 /** Breast used */
-export type Breast = 'left' | 'right';
+export type Breast = (typeof BREAST_SIDE)[keyof typeof BREAST_SIDE];
 
 /** Session status (useful when a timer is running) */
 export type SessionStatus = 'in_progress' | 'paused' | 'finished';

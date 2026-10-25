@@ -1,5 +1,5 @@
-import { Breast, BreastfeedingSession } from '../../features/breastfeeding/breastfeeding.models';
-import { buildSession, SegmentInput } from './mock-backend.calculations';
+import { Breast, BreastfeedingSession } from '@app/features/breastfeeding/breastfeeding.models';
+import { buildSession, SegmentInput } from '@app/core/mocks/mock-backend.calculations';
 
 export const SEED_BABY_ID = 'baby-1';
 

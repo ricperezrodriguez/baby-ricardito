@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { BottleCard } from './cards/bottle-card';
-import { BreastfeedingCard } from './cards/breastfeeding-card';
-import { DiaperCard } from './cards/diaper-card';
-import { SleepCard } from './cards/sleep-card';
+import { BottleCard } from '@app/pages/inicio/cards/bottle-card';
+import { BreastfeedingCard } from '@app/pages/inicio/cards/breastfeeding-card';
+import { DiaperCard } from '@app/pages/inicio/cards/diaper-card';
+import { SleepCard } from '@app/pages/inicio/cards/sleep-card';
 
 @Component({
   imports: [BreastfeedingCard, BottleCard, DiaperCard, SleepCard],

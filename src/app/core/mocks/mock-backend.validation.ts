@@ -1,6 +1,10 @@
-import { Breast, UpdateBreastfeedingSessionDto } from '../../features/breastfeeding/breastfeeding.models';
-import { closeOpenSegments, SegmentInput, SessionInput } from './mock-backend.calculations';
-import { badRequest, unprocessableEntity } from './mock-backend.errors';
+import {
+  BREAST_SIDE,
+  Breast,
+  UpdateBreastfeedingSessionDto,
+} from '@app/features/breastfeeding/breastfeeding.models';
+import { closeOpenSegments, SegmentInput, SessionInput } from '@app/core/mocks/mock-backend.calculations';
+import { badRequest, unprocessableEntity } from '@app/core/mocks/mock-backend.errors';
 
 const ISO_DATE_PATTERN =
   /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})$/;
@@ -33,7 +37,7 @@ function parseNullableIsoDate(value: unknown, field: string): string | null {
 }
 
 function parseBreast(value: unknown, field: string): Breast {
-  if (value !== 'left' && value !== 'right') {
+  if (value !== BREAST_SIDE.LEFT && value !== BREAST_SIDE.RIGHT) {
     throw badRequest('INVALID_BREAST', `"${field}" must be 'left' or 'right'.`);
   }
   return value;

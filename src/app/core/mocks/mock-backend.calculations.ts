@@ -1,10 +1,11 @@
 import {
+  BREAST_SIDE,
   Breast,
   BreastSegment,
   BreastfeedingSession,
   SessionStatus,
   UpdateBreastfeedingSessionDto,
-} from '../../features/breastfeeding/breastfeeding.models';
+} from '@app/features/breastfeeding/breastfeeding.models';
 
 export type SegmentInput = Pick<BreastSegment, 'breast' | 'startTime' | 'endTime'>;
 
@@ -79,8 +80,8 @@ export function calculateSessionMetrics(input: SessionInput, now: Date): Session
   const segmentDurationsSeconds = segments.map((segment) =>
     calculateDurationSeconds(segment.startTime, segment.endTime, now),
   );
-  const leftBreastDurationSeconds = sumDurationsByBreast(segments, segmentDurationsSeconds, 'left');
-  const rightBreastDurationSeconds = sumDurationsByBreast(segments, segmentDurationsSeconds, 'right');
+  const leftBreastDurationSeconds = sumDurationsByBreast(segments, segmentDurationsSeconds, BREAST_SIDE.LEFT);
+  const rightBreastDurationSeconds = sumDurationsByBreast(segments, segmentDurationsSeconds, BREAST_SIDE.RIGHT);
   const totalDurationSeconds =
     segments.length > 0
       ? leftBreastDurationSeconds + rightBreastDurationSeconds

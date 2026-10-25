@@ -1,0 +1,78 @@
+.breastfeeding-summary {
+  align-items: center;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 3.25rem;
+}
+
+.feed-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.feed-status {
+  color: var(--app-ink);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.feed-elapsed {
+  color: var(--app-muted);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.last-breast {
+  align-items: center;
+  color: var(--app-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.last-breast-caption {
+  color: var(--app-muted);
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.breast-icon {
+  flex: 0 0 auto;
+  height: 4.5rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+  width: 4.5rem;
+}
+
+.breast-lobe {
+  fill: transparent;
+}
+
+.breast-lobe.highlighted {
+  fill: var(--app-highlight);
+}
+
+.breast-nipple {
+  fill: currentColor;
+  stroke: none;
+}
+
+.last-breast-label {
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.25;
+  max-width: 6rem;
+  text-align: center;
+}
+
+.state-message {
+  margin: 0;
+}

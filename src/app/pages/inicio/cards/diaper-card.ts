@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import {
   TRACKING_CARD_ICON_SIZE,
   TrackingCard,
-} from '../../../shared/tracking-card/tracking-card';
+} from '@shared';
 
 @Component({
   selector: 'app-diaper-card',

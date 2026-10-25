@@ -1,4 +1,4 @@
-import { AppEnvironment } from './environment.model';
+import { AppEnvironment } from '@environments/environment.model';
 
 export const environment: AppEnvironment = {
   useMock: false,

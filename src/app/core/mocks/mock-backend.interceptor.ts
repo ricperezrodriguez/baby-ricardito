@@ -1,9 +1,9 @@
 import { HttpErrorResponse, HttpEvent, HttpInterceptorFn, HttpRequest, HttpResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Observable, defer, delay, mergeMap, of, throwError } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { MockApiError, badRequest, notFound } from './mock-backend.errors';
-import { MockBackendStore } from './mock-backend.store';
+import { environment } from '@environments/environment';
+import { MockApiError, badRequest, notFound } from '@app/core/mocks/mock-backend.errors';
+import { MockBackendStore } from '@app/core/mocks/mock-backend.store';
 
 interface MockReply {
   status: number;

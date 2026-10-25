@@ -1,14 +1,14 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '@environments/environment';
 import {
   BreastfeedingSession,
   BreastfeedingSessionsPage,
   BreastfeedingSessionsPageRequest,
   CreateBreastfeedingSessionDto,
   UpdateBreastfeedingSessionDto,
-} from './breastfeeding.models';
+} from '@app/features/breastfeeding/breastfeeding.models';
 
 @Injectable({ providedIn: 'root' })
 export class BreastfeedingService {

@@ -2,11 +2,11 @@ import { Injectable } from '@angular/core';
 import {
   BreastfeedingSession,
   BreastfeedingSessionsPage,
-} from '../../features/breastfeeding/breastfeeding.models';
-import { applyUpdate, buildSession } from './mock-backend.calculations';
-import { conflict, notFound } from './mock-backend.errors';
-import { createSeedSessions, SEED_BABY_ID } from './mock-backend.seed';
-import { assertChronology, parseCreateBody, parseUpdateBody } from './mock-backend.validation';
+} from '@app/features/breastfeeding/breastfeeding.models';
+import { applyUpdate, buildSession } from '@app/core/mocks/mock-backend.calculations';
+import { conflict, notFound } from '@app/core/mocks/mock-backend.errors';
+import { createSeedSessions, SEED_BABY_ID } from '@app/core/mocks/mock-backend.seed';
+import { assertChronology, parseCreateBody, parseUpdateBody } from '@app/core/mocks/mock-backend.validation';
 
 type BabySessions = Map<string, BreastfeedingSession>;
 

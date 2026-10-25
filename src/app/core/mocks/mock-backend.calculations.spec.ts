@@ -1,4 +1,4 @@
-import { calculateSessionMetrics, SessionInput } from './mock-backend.calculations';
+import { calculateSessionMetrics, SessionInput } from '@app/core/mocks/mock-backend.calculations';
 
 describe('calculateSessionMetrics', () => {
   const now = new Date('2026-01-10T12:00:00.000Z');

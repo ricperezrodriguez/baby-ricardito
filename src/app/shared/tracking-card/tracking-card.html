@@ -15,9 +15,7 @@
       <span aria-hidden="true">+</span>
     </button>
   </div>
-  <div class="card-content">
-    <p><ng-content /></p>
-  </div>
+  <div class="card-content"><ng-content /></div>
   <mat-divider />
   <mat-card-actions class="tracking-card-actions" align="end">
     <a matButton [routerLink]="link()" [attr.aria-label]="ariaLabel() ?? 'Ver historial de ' + title()">
