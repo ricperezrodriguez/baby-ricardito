@@ -1,0 +1,77 @@
+:host {
+  display: block;
+}
+
+.tracking-link {
+  border-radius: 1.1rem;
+  color: inherit;
+  display: block;
+  height: 100%;
+  text-decoration: none;
+}
+
+.tracking-card {
+  background: #fff;
+  border-color: #d9e5e7;
+  border-radius: 1.1rem;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 13.75rem;
+  overflow: hidden;
+  padding: 0;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.card-header {
+  align-items: center;
+  background: var(--card-header-color);
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+}
+
+.card-icon {
+  align-items: center;
+  border-radius: 0.75rem;
+  color: #fff;
+  display: inline-flex;
+  height: 2.75rem;
+  justify-content: center;
+  width: 2.75rem;
+}
+
+.card-title {
+  color: #fff;
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.card-content {
+  padding: 1.15rem 1.5rem 1.4rem;
+}
+
+.card-content p {
+  color: #536d75;
+  font-size: 0.93rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.tracking-link:hover .tracking-card {
+  border-color: var(--card-accent);
+  transform: translateY(-2px);
+}
+
+.tracking-link:focus-visible {
+  outline: 3px solid #276878;
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tracking-card {
+    transition: none;
+  }
+}

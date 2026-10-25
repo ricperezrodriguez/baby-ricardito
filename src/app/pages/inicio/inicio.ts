@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
+import { BottleCard } from './cards/bottle-card';
+import { BreastfeedingCard } from './cards/breastfeeding-card';
+import { DiaperCard } from './cards/diaper-card';
+import { SleepCard } from './cards/sleep-card';
 
 @Component({
-  imports: [RouterLink, MatCardModule],
+  imports: [BreastfeedingCard, BottleCard, DiaperCard, SleepCard],
   styleUrl: './inicio.scss',
   templateUrl: './inicio.html',
 })

@@ -1,0 +1,13 @@
+<a class="tracking-link" [routerLink]="link()" [attr.aria-label]="ariaLabel() ?? title()">
+  <mat-card class="tracking-card" appearance="outlined">
+    <div class="card-header">
+      <span class="card-icon" aria-hidden="true">
+        <ng-content select="[cardIcon]" />
+      </span>
+      <h3 class="card-title">{{ title() }}</h3>
+    </div>
+    <div class="card-content">
+      <p><ng-content /></p>
+    </div>
+  </mat-card>
+</a>
