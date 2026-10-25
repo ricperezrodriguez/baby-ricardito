@@ -11,6 +11,8 @@ import {
     <app-tracking-card
       link="/detalle/sueno"
       title="Descanso"
+      dialogTitle="Añadir descanso"
+      dialogMessage="Aquí podrás registrar un nuevo periodo de descanso."
       accent="var(--app-card-sleep)"
       headerColor="var(--app-card-sleep)"
     >

@@ -1,13 +1,23 @@
-<a class="tracking-link" [routerLink]="link()" [attr.aria-label]="ariaLabel() ?? title()">
-  <mat-card class="tracking-card" appearance="outlined">
-    <div class="card-header">
+<mat-card class="tracking-card" appearance="outlined">
+  <div class="card-header">
+    <a class="card-heading-link" [routerLink]="link()" [attr.aria-label]="ariaLabel() ?? title()">
       <span class="card-icon" aria-hidden="true">
         <ng-content select="[cardIcon]" />
       </span>
       <h3 class="card-title">{{ title() }}</h3>
-    </div>
+    </a>
+    <button
+      class="add-button"
+      type="button"
+      [attr.aria-label]="'Añadir ' + title()"
+      (click)="openDialog()"
+    >
+      <span aria-hidden="true">+</span>
+    </button>
+  </div>
+  <a class="tracking-link" [routerLink]="link()">
     <div class="card-content">
       <p><ng-content /></p>
     </div>
-  </mat-card>
-</a>
+  </a>
+</mat-card>

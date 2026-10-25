@@ -11,6 +11,8 @@ import {
     <app-tracking-card
       link="/detalle/biberon"
       title="Biberón"
+      dialogTitle="Añadir toma de biberón"
+      dialogMessage="Aquí podrás registrar una nueva toma de biberón."
       accent="var(--app-card-bottle)"
       headerColor="var(--app-card-bottle)"
     >

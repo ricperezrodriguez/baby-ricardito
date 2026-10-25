@@ -11,6 +11,8 @@ import {
     <app-tracking-card
       link="/detalle/panal"
       title="Cuidados"
+      dialogTitle="Añadir cuidado"
+      dialogMessage="Aquí podrás registrar un cambio de pañal y otros cuidados."
       accent="var(--app-card-diaper)"
       headerColor="var(--app-card-diaper)"
     >

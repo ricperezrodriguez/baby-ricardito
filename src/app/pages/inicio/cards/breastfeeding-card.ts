@@ -35,6 +35,8 @@ function formatDuration(totalSeconds: number): string {
     <app-tracking-card
       link="/detalle/pecho"
       title="Lactancias"
+      dialogTitle="Añadir lactancia"
+      dialogMessage="Aquí podrás registrar una nueva sesión de lactancia."
       accent="var(--app-card-breastfeeding)"
       headerColor="var(--app-card-breastfeeding)"
     >
