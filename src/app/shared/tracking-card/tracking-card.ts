@@ -1,6 +1,8 @@
 import { Component, inject, input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
 import { RouterLink } from '@angular/router';
 import { TrackingDialog, TrackingDialogData } from '../tracking-dialog/tracking-dialog';
 
@@ -8,7 +10,7 @@ export const TRACKING_CARD_ICON_SIZE = 50;
 
 @Component({
   selector: 'app-tracking-card',
-  imports: [RouterLink, MatCardModule],
+  imports: [MatButtonModule, MatCardModule, MatDividerModule, RouterLink],
   styleUrl: './tracking-card.scss',
   templateUrl: './tracking-card.html',
   host: {

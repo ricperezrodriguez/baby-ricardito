@@ -1,11 +1,11 @@
 <mat-card class="tracking-card" appearance="outlined">
   <div class="card-header">
-    <a class="card-heading-link" [routerLink]="link()" [attr.aria-label]="ariaLabel() ?? title()">
+    <div class="card-heading">
       <span class="card-icon" aria-hidden="true">
         <ng-content select="[cardIcon]" />
       </span>
       <h3 class="card-title">{{ title() }}</h3>
-    </a>
+    </div>
     <button
       class="add-button"
       type="button"
@@ -15,9 +15,13 @@
       <span aria-hidden="true">+</span>
     </button>
   </div>
-  <a class="tracking-link" [routerLink]="link()">
-    <div class="card-content">
-      <p><ng-content /></p>
-    </div>
-  </a>
+  <div class="card-content">
+    <p><ng-content /></p>
+  </div>
+  <mat-divider />
+  <mat-card-actions class="tracking-card-actions" align="end">
+    <a matButton [routerLink]="link()" [attr.aria-label]="ariaLabel() ?? 'Ver historial de ' + title()">
+      Ver historial
+    </a>
+  </mat-card-actions>
 </mat-card>
