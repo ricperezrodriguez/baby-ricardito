@@ -1,0 +1,79 @@
+:host {
+  display: block;
+}
+
+.side-controls {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.side-control {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.side-button {
+  height: auto;
+  min-height: 3rem;
+  padding-block: 0.5rem;
+  white-space: normal;
+  width: 100%;
+}
+
+.side-button[aria-pressed='true'] {
+  background-color: var(--app-green);
+  color: var(--app-on-green);
+}
+
+.side-icon {
+  font-size: 2rem;
+  height: 2rem;
+  line-height: 2rem;
+  width: 2rem;
+}
+
+.side-time {
+  color: var(--app-ink);
+  font-size: 1.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.summary {
+  margin-top: 1.5rem;
+}
+
+.summary-title {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.summary-list {
+  margin: 0 0 1rem;
+}
+
+.summary-row {
+  border-bottom: 1px solid var(--app-border);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+
+  dt {
+    color: var(--app-muted);
+  }
+
+  dd {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    margin: 0;
+    text-align: right;
+  }
+}
+
+.notes-field {
+  width: 100%;
+}

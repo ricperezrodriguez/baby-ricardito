@@ -1,8 +1,8 @@
 <app-tracking-card
   link="/detalle/pecho"
   title="Lactancias"
-  dialogTitle="Añadir lactancia"
-  dialogMessage="Aquí podrás registrar una nueva sesión de lactancia."
+  [dialogComponent]="dialogComponent"
+  (saved)="reload()"
   accent="var(--app-card-breastfeeding)"
   headerColor="var(--app-card-breastfeeding)"
 >

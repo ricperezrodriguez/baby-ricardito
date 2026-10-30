@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, Type, inject, input, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -23,11 +23,15 @@ export class TrackingCard {
 
   readonly link = input.required<string>();
   readonly title = input.required<string>();
-  readonly dialogTitle = input.required<string>();
-  readonly dialogMessage = input.required<string>();
+  /** Modal propio de la tarjeta; si no se indica se muestra el modal genérico provisional. */
+  readonly dialogComponent = input<Type<unknown>>(TrackingDialog);
+  readonly dialogTitle = input('');
+  readonly dialogMessage = input('');
   readonly ariaLabel = input<string>();
   readonly accent = input('var(--app-green)');
   readonly headerColor = input('var(--app-green)');
+  /** Se emite cuando el modal se cierra con un resultado (es decir, tras guardar). */
+  readonly saved = output<void>();
 
   openDialog(): void {
     const data: TrackingDialogData = {
@@ -35,6 +39,13 @@ export class TrackingCard {
       message: this.dialogMessage(),
     };
 
-    this.dialog.open(TrackingDialog, { data });
+    this.dialog
+      .open(this.dialogComponent(), { data, width: '34rem' })
+      .afterClosed()
+      .subscribe((result: unknown) => {
+        if (result !== undefined) {
+          this.saved.emit();
+        }
+      });
   }
 }

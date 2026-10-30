@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, interval, map, of } from 'rxjs';
+import { BehaviorSubject, catchError, interval, map, of, switchMap } from 'rxjs';
+import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
   BREAST_SIDE,
   Breast,
@@ -9,8 +10,7 @@ import {
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { BreastfeedingService } from '@app/features/breastfeeding/breastfeeding.service';
 import { formatElapsedSince, TRACKING_CARD_ICON_SIZE, TrackingCard } from '@shared';
-
-const BABY_ID = 'baby-1';
+import { BreastfeedingDialog } from './breastfeeding-dialog/breastfeeding-dialog';
 
 type LatestBreastfeedingState =
   | { status: 'loading' }
@@ -39,21 +39,31 @@ function getLastBreast(session: BreastfeedingSession): Breast | null {
 export class BreastfeedingCard {
   readonly breastSide = BREAST_SIDE;
   readonly iconSize = TRACKING_CARD_ICON_SIZE;
+  readonly dialogComponent = BreastfeedingDialog;
 
   private readonly breastfeedingService = inject(BreastfeedingService);
   private readonly clockTick = toSignal(interval(60_000), { initialValue: 0 });
+  private readonly reload$ = new BehaviorSubject<void>(undefined);
   private readonly latestState = toSignal(
-    this.breastfeedingService.getLatest(BABY_ID).pipe(
-      map((session): LatestBreastfeedingState =>
-        session === null ? { status: 'empty' } : { status: 'loaded', session },
+    this.reload$.pipe(
+      switchMap(() =>
+        this.breastfeedingService.getLatest(CURRENT_BABY_ID).pipe(
+          map((session): LatestBreastfeedingState =>
+            session === null ? { status: 'empty' } : { status: 'loaded', session },
+          ),
+          catchError((error: unknown) => {
+            console.error('No se pudo cargar la última sesión de lactancia.', error);
+            return of<LatestBreastfeedingState>({ status: 'error' });
+          }),
+        ),
       ),
-      catchError((error: unknown) => {
-        console.error('No se pudo cargar la última sesión de lactancia.', error);
-        return of<LatestBreastfeedingState>({ status: 'error' });
-      }),
     ),
     { initialValue: { status: 'loading' } as LatestBreastfeedingState },
   );
+
+  reload(): void {
+    this.reload$.next();
+  }
 
   readonly timeSinceLastFeed = computed(() => {
     this.clockTick();
