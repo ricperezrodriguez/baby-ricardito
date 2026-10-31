@@ -6,9 +6,16 @@ import {
 import { applyUpdate, buildSession } from '@app/core/mocks/mock-backend.calculations';
 import { conflict, notFound } from '@app/core/mocks/mock-backend.errors';
 import { createSeedSessions, SEED_BABY_ID } from '@app/core/mocks/mock-backend.seed';
-import { assertChronology, parseCreateBody, parseUpdateBody } from '@app/core/mocks/mock-backend.validation';
+import { assertChronology, parseCreateBody, parsePhotoBody, parseUpdateBody } from '@app/core/mocks/mock-backend.validation';
 
 type BabySessions = Map<string, BreastfeedingSession>;
+
+/** Only photos uploaded in this run are blob URLs; seed photos are inline data URLs. */
+function revokePhotoUrl(photoUrl: string | null | undefined): void {
+  if (photoUrl?.startsWith('blob:')) {
+    URL.revokeObjectURL(photoUrl);
+  }
+}
 
 function toSessionMap(sessions: BreastfeedingSession[]): BabySessions {
   return new Map(sessions.map((session) => [session.id, session]));
@@ -74,8 +81,33 @@ export class MockBackendStore {
   }
 
   remove(babyId: string, sessionId: string): void {
-    this.requireSession(babyId, sessionId);
+    const session = this.requireSession(babyId, sessionId);
     this.requireBabySessions(babyId).delete(sessionId);
+    revokePhotoUrl(session.photoUrl);
+  }
+
+  setPhoto(babyId: string, sessionId: string, body: unknown): BreastfeedingSession {
+    const current = this.requireSession(babyId, sessionId);
+    const photo = parsePhotoBody(body);
+    return this.replacePhoto(current, URL.createObjectURL(photo));
+  }
+
+  removePhoto(babyId: string, sessionId: string): BreastfeedingSession {
+    return this.replacePhoto(this.requireSession(babyId, sessionId), null);
+  }
+
+  private replacePhoto(current: BreastfeedingSession, photoUrl: string | null): BreastfeedingSession {
+    const updated = buildSession({
+      id: current.id,
+      babyId: current.babyId,
+      input: { ...current, photoUrl },
+      createdAt: current.createdAt,
+      updatedAt: new Date().toISOString(),
+      now: new Date(),
+    });
+    this.requireBabySessions(current.babyId).set(updated.id, updated);
+    revokePhotoUrl(current.photoUrl);
+    return updated;
   }
 
   private requireBabySessions(babyId: string): BabySessions {

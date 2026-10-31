@@ -12,10 +12,24 @@ interface SeedSessionSpec {
   startedMinutesAgo: number;
   segments: SeedSegmentSpec[];
   notes?: string;
+  photoUrl?: string;
   inProgress?: boolean;
 }
 
 const MS_PER_MINUTE = 60_000;
+
+function buildSeedPhoto(background: string, emoji: string): string {
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360">` +
+    `<rect width="480" height="360" fill="${background}"/>` +
+    `<text x="240" y="220" font-size="140" text-anchor="middle">${emoji}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+const SEED_PHOTOS = {
+  sleepy: buildSeedPhoto('#cfe8ff', '😴'),
+  smiling: buildSeedPhoto('#ffe9b8', '😊'),
+};
 
 const LONG_NOTES =
   'The baby was very sleepy at the beginning and needed some gentle stimulation to latch properly. ' +
@@ -23,13 +37,13 @@ const LONG_NOTES =
   'Burped twice during the feed and fell asleep at the end, so I kept her upright for ten more minutes.';
 
 const SEED_SESSION_SPECS: SeedSessionSpec[] = [
-  { startedMinutesAgo: 30, segments: [{ breast: 'left', minutes: 4 }, { breast: 'right', minutes: 2 }] },
+  { startedMinutesAgo: 30, segments: [{ breast: 'left', minutes: 4 }, { breast: 'right', minutes: 2 }], photoUrl: SEED_PHOTOS.smiling },
   { startedMinutesAgo: 190, segments: [{ breast: 'right', minutes: 12 }, { breast: 'left', minutes: 8 }] },
   { startedMinutesAgo: 410, segments: [{ breast: 'left', minutes: 15 }] },
   { startedMinutesAgo: 640, segments: [{ breast: 'left', minutes: 10 }, { breast: 'right', minutes: 10 }], notes: LONG_NOTES },
   { startedMinutesAgo: 1030, segments: [{ breast: 'right', minutes: 18 }] },
   { startedMinutesAgo: 1290, segments: [{ breast: 'left', minutes: 9 }, { breast: 'right', minutes: 11 }] },
-  { startedMinutesAgo: 1520, segments: [{ breast: 'left', minutes: 14 }], notes: 'Left only, calm feed.' },
+  { startedMinutesAgo: 1520, segments: [{ breast: 'left', minutes: 14 }], notes: 'Left only, calm feed.', photoUrl: SEED_PHOTOS.sleepy },
   { startedMinutesAgo: 1750, segments: [{ breast: 'right', minutes: 7 }, { breast: 'left', minutes: 13 }] },
   { startedMinutesAgo: 2450, segments: [{ breast: 'right', minutes: 16 }] },
   { startedMinutesAgo: 2700, segments: [{ breast: 'left', minutes: 11 }, { breast: 'right', minutes: 6 }] },
@@ -72,6 +86,7 @@ function buildSeedSession(spec: SeedSessionSpec, now: Date): BreastfeedingSessio
       endTime,
       segments,
       ...(spec.notes === undefined ? {} : { notes: spec.notes }),
+      ...(spec.photoUrl === undefined ? {} : { photoUrl: spec.photoUrl }),
     },
     createdAt: timestamp,
     updatedAt: timestamp,

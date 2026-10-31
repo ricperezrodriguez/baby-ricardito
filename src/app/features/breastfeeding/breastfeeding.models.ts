@@ -5,6 +5,12 @@ export const BREAST_SIDE = {
   RIGHT: 'right',
 } as const;
 
+/** Name of the multipart field that carries the photo file */
+export const BREASTFEEDING_PHOTO_FIELD = 'photo';
+
+/** Photo limits shared by the form and the mock backend */
+export const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+
 /** Breast used */
 export type Breast = (typeof BREAST_SIDE)[keyof typeof BREAST_SIDE];
 
@@ -36,6 +42,8 @@ export interface BreastfeedingSession {
   firstBreast: Breast | null; // useful to suggest which breast to start with next time
 
   notes?: string;
+  /** URL of the photo of the feed; absent or null when it has none */
+  photoUrl?: string | null;
 
   createdAt: string;
   updatedAt: string;

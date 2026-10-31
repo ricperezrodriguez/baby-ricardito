@@ -14,6 +14,7 @@ export interface SessionInput {
   endTime: string | null;
   segments: SegmentInput[];
   notes?: string;
+  photoUrl?: string | null;
 }
 
 export interface SessionMetrics {
@@ -106,7 +107,8 @@ export function applyUpdate(current: SessionInput, update: UpdateBreastfeedingSe
     endTime: update.endTime !== undefined ? update.endTime : current.endTime,
     segments: update.segments ?? current.segments,
   };
-  return notes === undefined ? merged : { ...merged, notes };
+  const withNotes = notes === undefined ? merged : { ...merged, notes };
+  return current.photoUrl === undefined ? withNotes : { ...withNotes, photoUrl: current.photoUrl };
 }
 
 export function buildSession(params: BuildSessionParams): BreastfeedingSession {
@@ -128,5 +130,6 @@ export function buildSession(params: BuildSessionParams): BreastfeedingSession {
     updatedAt,
   };
 
-  return input.notes === undefined ? session : { ...session, notes: input.notes };
+  const withNotes = input.notes === undefined ? session : { ...session, notes: input.notes };
+  return input.photoUrl === undefined ? withNotes : { ...withNotes, photoUrl: input.photoUrl };
 }

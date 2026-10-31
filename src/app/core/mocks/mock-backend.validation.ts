@@ -1,6 +1,8 @@
 import {
   BREAST_SIDE,
+  BREASTFEEDING_PHOTO_FIELD,
   Breast,
+  PHOTO_MAX_BYTES,
   UpdateBreastfeedingSessionDto,
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { closeOpenSegments, SegmentInput, SessionInput } from '@app/core/mocks/mock-backend.calculations';
@@ -104,6 +106,21 @@ export function parseUpdateBody(body: unknown): UpdateBreastfeedingSessionDto {
     update.notes = parseNotes(record['notes']);
   }
   return update;
+}
+
+/** Parses the multipart body of the photo upload and returns the file. */
+export function parsePhotoBody(body: unknown): File {
+  const photo = body instanceof FormData ? body.get(BREASTFEEDING_PHOTO_FIELD) : null;
+  if (!(photo instanceof File)) {
+    throw badRequest('INVALID_PHOTO', `The multipart field "${BREASTFEEDING_PHOTO_FIELD}" must be a file.`);
+  }
+  if (!photo.type.startsWith('image/')) {
+    throw badRequest('INVALID_PHOTO_TYPE', 'The photo must be an image.');
+  }
+  if (photo.size > PHOTO_MAX_BYTES) {
+    throw unprocessableEntity('PHOTO_TOO_LARGE', 'The photo must not be larger than 5 MB.');
+  }
+  return photo;
 }
 
 function isBefore(a: string, b: string): boolean {

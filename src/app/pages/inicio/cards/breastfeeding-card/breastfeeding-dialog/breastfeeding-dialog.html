@@ -48,6 +48,39 @@
         }
       </dl>
 
+      <div class="photo">
+        <h4 class="photo-title">Foto</h4>
+        @if (photoPreviewUrl(); as previewUrl) {
+          <img class="photo-preview" alt="Foto de la toma" [src]="previewUrl" />
+        }
+        <input
+          #photoInput
+          class="photo-input"
+          type="file"
+          accept="image/*"
+          (change)="selectPhoto(photoInput)"
+        />
+        <div class="photo-actions">
+          <button
+            matButton="tonal"
+            type="button"
+            [disabled]="busy() || saving()"
+            (click)="photoInput.click()"
+          >
+            <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">
+              {{ photoPreviewUrl() ? 'edit' : 'add_a_photo' }}
+            </mat-icon>
+            {{ photoPreviewUrl() ? 'Cambiar foto' : 'Añadir foto' }}
+          </button>
+          @if (photoPreviewUrl()) {
+            <button matButton type="button" [disabled]="busy() || saving()" (click)="removePhoto()">
+              <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
+              Quitar foto
+            </button>
+          }
+        </div>
+      </div>
+
       <mat-form-field class="notes-field" appearance="outline">
         <mat-label>Notas</mat-label>
         <textarea matInput rows="3" [formField]="form.notes"></textarea>

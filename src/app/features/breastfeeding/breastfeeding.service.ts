@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '@environments/environment';
 import {
+  BREASTFEEDING_PHOTO_FIELD,
   BreastfeedingSession,
   BreastfeedingSessionsPage,
   BreastfeedingSessionsPageRequest,
@@ -37,6 +38,21 @@ export class BreastfeedingService {
 
   delete(babyId: string, sessionId: string): Observable<void> {
     return this.http.delete<void>(this.sessionUrl(babyId, sessionId));
+  }
+
+  /** Uploads (or replaces) the photo of a session as multipart/form-data. */
+  uploadPhoto(babyId: string, sessionId: string, photo: File): Observable<BreastfeedingSession> {
+    const body = new FormData();
+    body.append(BREASTFEEDING_PHOTO_FIELD, photo, photo.name);
+    return this.http.put<BreastfeedingSession>(this.photoUrl(babyId, sessionId), body);
+  }
+
+  deletePhoto(babyId: string, sessionId: string): Observable<BreastfeedingSession> {
+    return this.http.delete<BreastfeedingSession>(this.photoUrl(babyId, sessionId));
+  }
+
+  private photoUrl(babyId: string, sessionId: string): string {
+    return `${this.sessionUrl(babyId, sessionId)}/photo`;
   }
 
   private sessionsUrl(babyId: string): string {

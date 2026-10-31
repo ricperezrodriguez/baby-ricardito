@@ -1,18 +1,19 @@
 import { formatDate } from '@angular/common';
-import { Component, computed, inject, LOCALE_ID, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, LOCALE_ID, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { firstValueFrom, Observable, of, tap } from 'rxjs';
+import { firstValueFrom, Observable, of, switchMap, tap } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import { NotificationService } from '@app/core/notification.service';
 import {
   Breast,
   BREAST_SIDE,
   BreastfeedingSession,
+  PHOTO_MAX_BYTES,
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { BreastfeedingService } from '@app/features/breastfeeding/breastfeeding.service';
 import {
@@ -63,6 +64,11 @@ export class BreastfeedingDialog {
   private readonly clock = createClock();
   private readonly segments = signal<TimedSegment[]>([]);
   private readonly notesModel = signal({ notes: '' });
+  /** Photo already stored in the backend. */
+  private readonly storedPhotoUrl = signal<string | null>(null);
+  /** Photo chosen by the user that is not uploaded yet (it needs the session to exist). */
+  private readonly pendingPhoto = signal<{ file: File; previewUrl: string } | null>(null);
+  private readonly photoRemoved = signal(false);
   private readonly activeBreast = computed(() => activeBreastOf(this.segments()));
   private readonly durationsMs = computed(() =>
     durationsByBreast(this.segments(), this.clock.now()),
@@ -79,8 +85,12 @@ export class BreastfeedingDialog {
   protected readonly leaving = signal(false);
   protected readonly busy = computed(() => this.loading() || this.leaving());
   protected readonly hasSegments = computed(() => this.segments().length > 0);
+  protected readonly photoPreviewUrl = computed(
+    () => this.pendingPhoto()?.previewUrl ?? (this.photoRemoved() ? null : this.storedPhotoUrl()),
+  );
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => this.releasePendingPhoto());
     this.restoreActiveSession();
   }
 
@@ -109,6 +119,31 @@ export class BreastfeedingDialog {
       },
     ];
   });
+
+  protected selectPhoto(input: HTMLInputElement): void {
+    const file = input.files?.item(0) ?? null;
+    input.value = '';
+    if (file === null) {
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      this.notifications.error('El archivo seleccionado no es una imagen');
+      return;
+    }
+    if (file.size > PHOTO_MAX_BYTES) {
+      this.notifications.error('La foto no puede superar los 5 MB');
+      return;
+    }
+
+    this.releasePendingPhoto();
+    this.pendingPhoto.set({ file, previewUrl: URL.createObjectURL(file) });
+    this.photoRemoved.set(false);
+  }
+
+  protected removePhoto(): void {
+    this.releasePendingPhoto();
+    this.photoRemoved.set(this.storedPhotoUrl() !== null);
+  }
 
   protected toggle(breast: Breast): void {
     const timestamp = this.clock.refresh();
@@ -183,6 +218,7 @@ export class BreastfeedingDialog {
           this.sessionId = session.id;
           this.segments.set(toTimedSegments(session.segments));
           this.notesModel.set({ notes: session.notes ?? '' });
+          this.storedPhotoUrl.set(session.photoUrl ?? null);
         }
         this.loading.set(false);
       },
@@ -216,15 +252,55 @@ export class BreastfeedingDialog {
             segments: dtoSegments,
             notes: notes || undefined,
           })
-          .pipe(tap((session) => (this.sessionId = session.id)));
+          .pipe(
+            tap((session) => (this.sessionId = session.id)),
+            switchMap((session) => this.syncPhoto(session)),
+          );
       }
 
-      return this.breastfeedingService.update(CURRENT_BABY_ID, this.sessionId, {
-        endTime,
-        segments: dtoSegments,
-        notes,
-      });
+      return this.breastfeedingService
+        .update(CURRENT_BABY_ID, this.sessionId, {
+          endTime,
+          segments: dtoSegments,
+          notes,
+        })
+        .pipe(switchMap((session) => this.syncPhoto(session)));
     });
+  }
+
+  /** Uploads or deletes the photo when it differs from the one stored in the backend. */
+  private syncPhoto(session: BreastfeedingSession): Observable<BreastfeedingSession> {
+    const pending = this.pendingPhoto();
+    if (pending !== null) {
+      return this.breastfeedingService.uploadPhoto(CURRENT_BABY_ID, session.id, pending.file).pipe(
+        tap((updated) => {
+          this.storedPhotoUrl.set(updated.photoUrl ?? null);
+          // A newer choice made while uploading stays pending.
+          if (this.pendingPhoto() === pending) {
+            this.releasePendingPhoto();
+          }
+        }),
+      );
+    }
+
+    if (this.photoRemoved()) {
+      return this.breastfeedingService.deletePhoto(CURRENT_BABY_ID, session.id).pipe(
+        tap(() => {
+          this.storedPhotoUrl.set(null);
+          this.photoRemoved.set(false);
+        }),
+      );
+    }
+
+    return of(session);
+  }
+
+  private releasePendingPhoto(): void {
+    const pending = this.pendingPhoto();
+    if (pending !== null) {
+      URL.revokeObjectURL(pending.previewUrl);
+      this.pendingPhoto.set(null);
+    }
   }
 
   private formatDateTime(timestamp: number | null | undefined): string {

@@ -13,9 +13,10 @@ interface MockReply {
 interface SessionsRoute {
   babyId: string;
   sessionId: string | null;
+  photo: boolean;
 }
 
-const SESSIONS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/sessions(?:\/([^/]+))?\/?$/;
+const SESSIONS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/sessions(?:\/([^/]+)(\/photo)?)?\/?$/;
 
 const STATUS_TEXTS: Record<number, string> = {
   200: 'OK',
@@ -41,7 +42,11 @@ function parseSessionsRoute(url: string): SessionsRoute | null {
   if (match === null) {
     return null;
   }
-  return { babyId: decodeURIComponent(match[1]), sessionId: match[2] === undefined ? null : decodeURIComponent(match[2]) };
+  return {
+    babyId: decodeURIComponent(match[1]),
+    sessionId: match[2] === undefined ? null : decodeURIComponent(match[2]),
+    photo: match[3] !== undefined,
+  };
 }
 
 function parsePageParameter(value: string | null, name: string, defaultValue: number, minimum: number): number {
@@ -63,9 +68,16 @@ function computeReply(req: HttpRequest<unknown>, store: MockBackendStore): MockR
   if (route === null) {
     throw notFound('ROUTE_NOT_FOUND', `No mocked route for ${req.method} ${req.url}.`);
   }
-  const { babyId, sessionId } = route;
+  const { babyId, sessionId, photo } = route;
 
-  if (sessionId === null) {
+  if (sessionId !== null && photo) {
+    if (req.method === 'PUT') {
+      return { status: 200, body: store.setPhoto(babyId, sessionId, req.body) };
+    }
+    if (req.method === 'DELETE') {
+      return { status: 200, body: store.removePhoto(babyId, sessionId) };
+    }
+  } else if (sessionId === null) {
     if (req.method === 'POST') {
       return { status: 201, body: store.create(babyId, req.body) };
     }

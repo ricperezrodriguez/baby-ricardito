@@ -77,3 +77,31 @@
 .notes-field {
   width: 100%;
 }
+
+.photo {
+  margin-bottom: 1rem;
+}
+
+.photo-title {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.photo-preview {
+  border-radius: 0.5rem;
+  display: block;
+  margin-bottom: 0.75rem;
+  max-height: 16rem;
+  object-fit: cover;
+  width: 100%;
+}
+
+.photo-input {
+  display: none;
+}
+
+.photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
