@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, catchError, interval, map, of, switchMap } from 'rxjs';
+import { BehaviorSubject, catchError, map, of, switchMap } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
   BREAST_SIDE,
@@ -9,7 +9,20 @@ import {
   BreastfeedingSession,
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { BreastfeedingService } from '@app/features/breastfeeding/breastfeeding.service';
-import { formatElapsedSince, TRACKING_CARD_ICON_SIZE, TrackingCard } from '@shared';
+import {
+  activeBreastOf,
+  durationsByBreast,
+  toTimedSegments,
+  totalDuration,
+} from '@app/features/breastfeeding/breastfeeding-timer';
+import {
+  createClock,
+  formatDuration,
+  formatElapsedSince,
+  LoadingSpinner,
+  TRACKING_CARD_ICON_SIZE,
+  TrackingCard,
+} from '@shared';
 import { BreastfeedingDialog } from './breastfeeding-dialog/breastfeeding-dialog';
 
 type LatestBreastfeedingState =
@@ -32,7 +45,7 @@ function getLastBreast(session: BreastfeedingSession): Breast | null {
 
 @Component({
   selector: 'app-breastfeeding-card',
-  imports: [TrackingCard],
+  imports: [LoadingSpinner, TrackingCard],
   styleUrl: './breastfeeding-card.scss',
   templateUrl: './breastfeeding-card.html',
 })
@@ -42,7 +55,7 @@ export class BreastfeedingCard {
   readonly dialogComponent = BreastfeedingDialog;
 
   private readonly breastfeedingService = inject(BreastfeedingService);
-  private readonly clockTick = toSignal(interval(60_000), { initialValue: 0 });
+  private readonly clock = createClock();
   private readonly reload$ = new BehaviorSubject<void>(undefined);
   private readonly latestState = toSignal(
     this.reload$.pipe(
@@ -51,8 +64,7 @@ export class BreastfeedingCard {
           map((session): LatestBreastfeedingState =>
             session === null ? { status: 'empty' } : { status: 'loaded', session },
           ),
-          catchError((error: unknown) => {
-            console.error('No se pudo cargar la última sesión de lactancia.', error);
+          catchError(() => {
             return of<LatestBreastfeedingState>({ status: 'error' });
           }),
         ),
@@ -65,14 +77,49 @@ export class BreastfeedingCard {
     this.reload$.next();
   }
 
-  readonly timeSinceLastFeed = computed(() => {
-    this.clockTick();
+  /** Segments of the feed that is still open (running or paused), or `null` when there is none. */
+  private readonly openFeedSegments = computed(() => {
+    const state = this.latestState();
+    return state.status === 'loaded' && state.session.status !== 'finished'
+      ? toTimedSegments(state.session.segments)
+      : null;
+  });
+
+  readonly isFeedOpen = computed(() => this.openFeedSegments() !== null);
+
+  readonly feedStatus = computed(() => {
+    const segments = this.openFeedSegments();
+    if (segments === null) {
+      return 'Última toma';
+    }
+
+    return activeBreastOf(segments) === null ? 'Toma en pausa' : 'Toma en curso';
+  });
+
+  readonly feedElapsed = computed(() => {
+    const now = this.clock.now();
+    const segments = this.openFeedSegments();
+    if (segments !== null) {
+      return `Duración ${formatDuration(totalDuration(segments, now))}`;
+    }
+
     const state = this.latestState();
     if (state.status !== 'loaded' || state.session.status !== 'finished' || !state.session.endTime) {
       return null;
     }
 
-    return formatElapsedSince(state.session.endTime, Date.now());
+    return formatElapsedSince(state.session.endTime, now);
+  });
+
+  /** Time spent on each breast while a feed is in progress; `null` otherwise. */
+  readonly breastDurations = computed(() => {
+    const segments = this.openFeedSegments();
+    if (segments === null) {
+      return null;
+    }
+
+    const { left, right } = durationsByBreast(segments, this.clock.now());
+    return { left: formatDuration(left), right: formatDuration(right) };
   });
 
   readonly lastBreast = computed(() => {
@@ -80,22 +127,13 @@ export class BreastfeedingCard {
     return state.status === 'loaded' ? getLastBreast(state.session) : null;
   });
 
+  readonly lastBreastCaption = computed(() => {
+    const segments = this.openFeedSegments();
+    return segments !== null && activeBreastOf(segments) !== null ? 'Lado actual' : 'Último lado';
+  });
+
   readonly lastBreastLabel = computed(() => {
     const breast = this.lastBreast();
     return breast === BREAST_SIDE.LEFT ? 'Izquierdo' : breast === BREAST_SIDE.RIGHT ? 'Derecho' : 'Sin dato';
-  });
-
-  readonly fallbackMessage = computed(() => {
-    const state = this.latestState();
-    switch (state.status) {
-      case 'loading':
-        return 'Cargando la última toma...';
-      case 'empty':
-        return 'Todavía no hay sesiones de lactancia registradas.';
-      case 'error':
-        return 'No se pudo cargar la última sesión de lactancia.';
-      case 'loaded':
-        return '';
-    }
   });
 }

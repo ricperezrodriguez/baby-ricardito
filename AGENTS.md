@@ -31,6 +31,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use `linkedSignal()` for state derived from multiple reactive sources that must stay synchronized
 - Prefer inline templates for small components
 - Prefer Signal Forms (`@angular/forms/signals`) for new forms. They are stable in Angular v22+ and provide signal-based state, type-safe field access, and schema-based validation
+- With Signal Forms, keep the form data in a `signal` model, create the form with `form(model)`, and bind native or Material controls with `[formField]="form.field"` (`FormField` directive). Do NOT sync form values manually with `[value]` plus `(input)` handlers or `event.target` casts
+- Declare validation in the `form()` schema function (for example `maxLength(path.notes, 500)`) instead of ad-hoc checks
 - When not using Signal Forms, prefer Reactive forms instead of Template-driven ones
 - Do NOT use `ngClass`, use `class` bindings instead
 - Do NOT use `ngStyle`, use `style` bindings instead
@@ -66,7 +68,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Page components are standalone by default and declare template dependencies in their decorator `imports`. Small page templates are inline; the root shell uses external HTML and SCSS.
 - Global styles in `src/styles.scss` define the Angular Material 3 theme and document-level colors and typography. Keep shell-specific styles in `src/app/app.scss`.
 - Existing page titles, visible copy, and detail route names are in Spanish; preserve that language when extending these pages and routes.
-
+- Time operations (start/end times, durations, gaps, countdown timers, elapsed-time formatting, ticking clocks) must use the helpers in `src/app/shared/utils/` (`time.utils.ts`, `clock.ts`), imported from `@shared`. Do not re-implement them or use ad-hoc `interval`/`Date.now()` logic in components.
+- If a new time calculation could be reused by other features, add it to `src/app/shared/utils/` and export it from `src/app/shared/index.ts` instead of keeping it local to a component.
 ## Build and Test
 
 Run commands from the repository root:

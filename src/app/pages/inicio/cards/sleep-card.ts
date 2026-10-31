@@ -19,7 +19,7 @@ import {
       <svg
         cardIcon
         viewBox="0 0 32 32"
-        fill="none"
+        fill="currentColor"
         width="${TRACKING_CARD_ICON_SIZE}"
         height="${TRACKING_CARD_ICON_SIZE}"
         stroke="currentColor"

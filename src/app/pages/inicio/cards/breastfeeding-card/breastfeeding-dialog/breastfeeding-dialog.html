@@ -2,72 +2,56 @@
   title="Añadir lactancia"
   [saveDisabled]="!hasSegments()"
   [saving]="saving()"
+  [busy]="busy()"
   (save)="save()"
+  (dismiss)="dismiss()"
+  (discard)="discard()"
 >
-  <div class="side-controls">
-    @for (side of sideControls(); track side.breast) {
-      <div class="side-control">
-        <button
-          matButton="tonal"
-          type="button"
-          class="side-button"
-          [attr.aria-pressed]="side.active"
-          (click)="toggle(side.breast)"
-        >
-          <mat-icon fontSet="material-symbols-outlined" class="side-icon" aria-hidden="true">
-            {{ side.active ? 'stop' : 'play_arrow' }}
-          </mat-icon>
-          <span>{{ side.label }}</span>
-        </button>
-        <span
-          class="side-time"
-          role="timer"
-          [attr.aria-label]="'Tiempo de ' + side.label.toLowerCase()"
-        >
-          {{ side.duration }}
-        </span>
-      </div>
-    }
-  </div>
+  @if (loading()) {
+    <app-loading-spinner label="Cargando la toma en curso" />
+  } @else {
+    <div class="side-controls">
+      @for (side of sideControls(); track side.breast) {
+        <div class="side-control">
+          <button
+            matButton="tonal"
+            type="button"
+            class="side-button"
+            [disabled]="busy() || saving()"
+            [attr.aria-pressed]="side.active"
+            (click)="toggle(side.breast)"
+          >
+            <mat-icon fontSet="material-symbols-outlined" class="side-icon" aria-hidden="true">
+              {{ side.active ? 'stop' : 'play_arrow' }}
+            </mat-icon>
+            <span>{{ side.label }}</span>
+          </button>
+          <span
+            class="side-time"
+            role="timer"
+            [attr.aria-label]="'Tiempo de ' + side.label.toLowerCase()"
+          >
+            {{ side.duration }}
+          </span>
+        </div>
+      }
+    </div>
 
-  <section class="summary" aria-labelledby="summary-title">
-    <h3 id="summary-title" class="summary-title">Datos de la toma</h3>
-    <dl class="summary-list">
-      <div class="summary-row">
-        <dt>Duración total</dt>
-        <dd>{{ summary().total }}</dd>
-      </div>
-      <div class="summary-row">
-        <dt>Pausa</dt>
-        <dd>{{ summary().pause }}</dd>
-      </div>
-      <div class="summary-row">
-        <dt>Inicio</dt>
-        <dd>
-          @if (summary().start; as start) {
-            {{ start | date: 'dd/MM/yyyy HH:mm:ss' }}
-          } @else {
-            —
-          }
-        </dd>
-      </div>
-      <div class="summary-row">
-        <dt>Final</dt>
-        <dd>
-          @if (summary().end; as end) {
-            {{ end | date: 'dd/MM/yyyy HH:mm:ss' }}
-          } @else if (summary().inProgress) {
-            En curso
-          } @else {
-            —
-          }
-        </dd>
-      </div>
-    </dl>
+    <section class="summary" aria-labelledby="summary-title">
+      <h3 id="summary-title" class="summary-title">Datos de la toma</h3>
+      <dl class="summary-list">
+        @for (row of summaryRows(); track row.label) {
+          <div class="summary-row">
+            <dt>{{ row.label }}</dt>
+            <dd>{{ row.value }}</dd>
+          </div>
+        }
+      </dl>
 
-    <mat-form-field class="notes-field" appearance="outline">
-      <mat-label>Notas</mat-label>
-      <textarea matInput rows="3" [value]="notes()" (input)="onNotesInput($event)"></textarea>
-    </mat-form-field>
-  </section>
+      <mat-form-field class="notes-field" appearance="outline">
+        <mat-label>Notas</mat-label>
+        <textarea matInput rows="3" [formField]="form.notes"></textarea>
+      </mat-form-field>
+    </section>
+  }
 </app-tracking-dialog-layout>

@@ -49,7 +49,32 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.6;
-  width: 4.5rem;
+  width: 6.75rem;
+}
+
+.breast-durations {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 6.75rem;
+}
+
+.breast-duration {
+  align-items: center;
+  color: var(--app-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.breast-duration.active {
+  color: var(--app-ink);
+}
+
+.breast-duration-time {
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .breast-lobe {

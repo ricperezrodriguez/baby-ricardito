@@ -30,8 +30,10 @@ export class TrackingCard {
   readonly ariaLabel = input<string>();
   readonly accent = input('var(--app-green)');
   readonly headerColor = input('var(--app-green)');
-  /** Se emite cuando el modal se cierra con un resultado (es decir, tras guardar). */
-  readonly saved = output<void>();
+  /** Cuando es true, pulsar el contenido de la tarjeta abre el mismo modal que el botón «+». */
+  readonly contentOpensDialog = input(false);
+  /** Se emite siempre que el modal se cierra, para que la tarjeta refresque sus datos. */
+  readonly closed = output<void>();
 
   openDialog(): void {
     const data: TrackingDialogData = {
@@ -42,10 +44,6 @@ export class TrackingCard {
     this.dialog
       .open(this.dialogComponent(), { data, width: '34rem' })
       .afterClosed()
-      .subscribe((result: unknown) => {
-        if (result !== undefined) {
-          this.saved.emit();
-        }
-      });
+      .subscribe(() => this.closed.emit());
   }
 }

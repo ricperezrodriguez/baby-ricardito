@@ -2,9 +2,10 @@
   link="/detalle/pecho"
   title="Lactancias"
   [dialogComponent]="dialogComponent"
-  (saved)="reload()"
+  (closed)="reload()"
   accent="var(--app-card-breastfeeding)"
   headerColor="var(--app-card-breastfeeding)"
+  [contentOpensDialog]="isFeedOpen()"
 >
   <svg
     cardIcon
@@ -29,24 +30,18 @@
     @if (state.status === 'loaded') {
       <div class="breastfeeding-summary">
         <div class="feed-details">
-          <span class="feed-status">
-            {{
-              state.session.status === 'in_progress'
-                ? 'Toma en curso'
-                : state.session.status === 'paused'
-                  ? 'Toma pausada'
-                  : 'Última toma'
-            }}
-          </span>
-          @if (timeSinceLastFeed(); as elapsed) {
+          <span class="feed-status">{{ feedStatus() }}</span>
+          @if (feedElapsed(); as elapsed) {
             <span class="feed-elapsed">{{ elapsed }}</span>
           }
         </div>
         <div class="last-breast">
-          <span class="last-breast-caption">Último lado</span>
+          @if (breastDurations() === null) {
+            <span class="last-breast-caption">{{ lastBreastCaption() }}</span>
+          }
           <svg
             class="breast-icon"
-            viewBox="0 0 40 40"
+            viewBox="2 10 36 24"
             fill="none"
             aria-hidden="true"
           >
@@ -63,11 +58,24 @@
             <circle class="breast-nipple" cx="10.5" cy="22" r="1.2" />
             <circle class="breast-nipple" cx="29.5" cy="22" r="1.2" />
           </svg>
-          <span class="last-breast-label">{{ lastBreastLabel() }}</span>
+          @if (breastDurations(); as durations) {
+            <div class="breast-durations">
+              <div class="breast-duration" role="group" aria-label="Izquierdo" [class.active]="lastBreast() === breastSide.LEFT">
+                <span class="breast-duration-time">{{ durations.left }}</span>
+              </div>
+              <div class="breast-duration" role="group" aria-label="Derecho" [class.active]="lastBreast() === breastSide.RIGHT">
+                <span class="breast-duration-time">{{ durations.right }}</span>
+              </div>
+            </div>
+          } @else {
+            <span class="last-breast-label">{{ lastBreastLabel() }}</span>
+          }
         </div>
       </div>
-    } @else {
-      <p class="state-message">{{ fallbackMessage() }}</p>
+    } @else if (state.status === 'loading') {
+      <app-loading-spinner label="Cargando la última toma" />
+    } @else if (state.status === 'empty') {
+      <p class="state-message">Todavía no hay sesiones de lactancia registradas.</p>
     }
   }
 </app-tracking-card>

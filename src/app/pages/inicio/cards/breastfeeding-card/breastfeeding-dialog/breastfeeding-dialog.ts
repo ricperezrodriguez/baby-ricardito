@@ -1,37 +1,49 @@
-import { DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { formatDate } from '@angular/common';
+import { Component, computed, inject, LOCALE_ID, signal } from '@angular/core';
+import { form, FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { firstValueFrom, Observable, of, tap } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import { NotificationService } from '@app/core/notification.service';
 import {
   Breast,
   BREAST_SIDE,
   BreastfeedingSession,
-  CreateBreastfeedingSessionDto,
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { BreastfeedingService } from '@app/features/breastfeeding/breastfeeding.service';
-import { formatDuration, TrackingDialogLayout } from '@shared';
-import { interval } from 'rxjs';
-
-interface TimedSegment {
-  breast: Breast;
-  start: number;
-  end: number | null;
-}
+import {
+  activeBreastOf,
+  durationsByBreast,
+  TimedSegment,
+  toSegmentDtos,
+  toggleSegment,
+  toTimedSegments,
+} from '@app/features/breastfeeding/breastfeeding-timer';
+import {
+  createClock,
+  formatDuration,
+  LoadingSpinner,
+  toIsoString,
+  totalGaps,
+  TrackingDialogLayout,
+} from '@shared';
 
 const SIDES: readonly { breast: Breast; label: string }[] = [
   { breast: BREAST_SIDE.LEFT, label: 'Teta izquierda' },
   { breast: BREAST_SIDE.RIGHT, label: 'Teta derecha' },
 ];
 
+const DATE_FORMAT = 'dd/MM/yyyy HH:mm:ss';
+const EMPTY_VALUE = '—';
+
 @Component({
   imports: [
-    DatePipe,
+    FormField,
+    LoadingSpinner,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -46,28 +58,33 @@ export class BreastfeedingDialog {
     inject<MatDialogRef<BreastfeedingDialog, BreastfeedingSession>>(MatDialogRef);
   private readonly breastfeedingService = inject(BreastfeedingService);
   private readonly notifications = inject(NotificationService);
+  private readonly locale = inject(LOCALE_ID);
 
-  private readonly now = signal(Date.now());
+  private readonly clock = createClock();
   private readonly segments = signal<TimedSegment[]>([]);
-
-  readonly notes = signal('');
-  readonly saving = signal(false);
-
-  readonly hasSegments = computed(() => this.segments().length > 0);
-  private readonly activeBreast = computed(
-    () => this.segments().find(({ end }) => end === null)?.breast ?? null,
+  private readonly notesModel = signal({ notes: '' });
+  private readonly activeBreast = computed(() => activeBreastOf(this.segments()));
+  private readonly durationsMs = computed(() =>
+    durationsByBreast(this.segments(), this.clock.now()),
   );
 
-  private readonly durationsMs = computed(() => {
-    const now = this.now();
-    const totals: Record<Breast, number> = { left: 0, right: 0 };
-    for (const { breast, start, end } of this.segments()) {
-      totals[breast] += Math.max(0, (end ?? now) - start);
-    }
-    return totals;
-  });
+  /** Backend session that stores this feed; it is created when the first side starts. */
+  private sessionId: string | null = null;
+  /** Backend writes run one after another so rapid taps never race each other. */
+  private queue: Promise<unknown> = Promise.resolve();
 
-  readonly sideControls = computed(() =>
+  protected readonly form = form(this.notesModel);
+  protected readonly loading = signal(true);
+  protected readonly saving = signal(false);
+  protected readonly leaving = signal(false);
+  protected readonly busy = computed(() => this.loading() || this.leaving());
+  protected readonly hasSegments = computed(() => this.segments().length > 0);
+
+  constructor() {
+    this.restoreActiveSession();
+  }
+
+  protected readonly sideControls = computed(() =>
     SIDES.map(({ breast, label }) => ({
       breast,
       label,
@@ -76,84 +93,141 @@ export class BreastfeedingDialog {
     })),
   );
 
-  readonly summary = computed(() => {
+  protected readonly summaryRows = computed(() => {
     const segments = this.segments();
-    const durations = this.durationsMs();
     const last = segments.at(-1);
+    const total = Object.values(this.durationsMs()).reduce((sum, ms) => sum + ms, 0);
 
-    // The pause is the idle time between consecutive segments (switching breasts or stopping and resuming).
-    let pauseMs = 0;
-    for (let index = 1; index < segments.length; index++) {
-      const previousEnd = segments[index - 1].end;
-      if (previousEnd !== null) {
-        pauseMs += Math.max(0, segments[index].start - previousEnd);
-      }
-    }
-
-    return {
-      total: formatDuration(durations.left + durations.right),
-      pause: formatDuration(pauseMs),
-      start: segments[0]?.start ?? null,
-      end: last?.end ?? null,
-      inProgress: last !== undefined && last.end === null,
-    };
+    return [
+      { label: 'Duración total', value: formatDuration(total) },
+      // The pause is the idle time between consecutive segments (switching breasts or stopping and resuming).
+      { label: 'Pausa', value: formatDuration(totalGaps(segments)) },
+      { label: 'Inicio', value: this.formatDateTime(segments[0]?.start) },
+      {
+        label: 'Final',
+        value: last?.end === null ? 'En curso' : this.formatDateTime(last?.end),
+      },
+    ];
   });
 
-  constructor() {
-    interval(1_000)
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => this.now.set(Date.now()));
+  protected toggle(breast: Breast): void {
+    const timestamp = this.clock.refresh();
+    const segments = toggleSegment(this.segments(), breast, timestamp);
+    this.segments.set(segments);
+    // Failures are reported by the HTTP error interceptor; the next change re-sends the full state.
+    this.persist(segments).catch(() => undefined);
   }
 
-  toggle(breast: Breast): void {
-    const timestamp = Date.now();
-    this.now.set(timestamp);
-    const wasActive = this.activeBreast() === breast;
-
-    this.segments.update((segments) => {
-      const closed = segments.map((segment) =>
-        segment.end === null ? { ...segment, end: timestamp } : segment,
-      );
-      return wasActive ? closed : [...closed, { breast, start: timestamp, end: null }];
-    });
-  }
-
-  onNotesInput(event: Event): void {
-    this.notes.set((event.target as HTMLTextAreaElement).value);
-  }
-
-  save(): void {
-    const timestamp = Date.now();
-    const segments = this.segments().map((segment) => ({
-      breast: segment.breast,
-      startTime: new Date(segment.start).toISOString(),
-      endTime: new Date(segment.end ?? timestamp).toISOString(),
-    }));
-    const first = segments.at(0);
-    const last = segments.at(-1);
-    if (!first || !last) {
+  protected async save(): Promise<void> {
+    if (this.saving() || this.leaving() || !this.hasSegments()) {
       return;
     }
 
-    const notes = this.notes().trim();
-    const dto: CreateBreastfeedingSessionDto = {
-      babyId: CURRENT_BABY_ID,
-      startTime: first.startTime,
-      endTime: last.endTime,
-      segments,
-      ...(notes ? { notes } : {}),
-    };
+    const timestamp = this.clock.refresh();
+    const segments = this.segments().map((segment) =>
+      segment.end === null ? { ...segment, end: timestamp } : segment,
+    );
 
     this.saving.set(true);
-    this.breastfeedingService.create(dto).subscribe({
+    try {
+      const session = await this.persist(segments, toIsoString(timestamp));
+      this.notifications.success('Toma guardada');
+      this.dialogRef.close(session);
+    } catch {
+      this.saving.set(false);
+    }
+  }
+
+  /** Closes the dialog keeping the feed running in the backend. */
+  protected async dismiss(): Promise<void> {
+    if (this.saving() || this.leaving()) {
+      return;
+    }
+    if (!this.hasSegments()) {
+      this.dialogRef.close();
+      return;
+    }
+
+    this.leaving.set(true);
+    try {
+      // Waits for pending writes and stores the notes, so the card reads up-to-date data.
+      this.dialogRef.close(await this.persist(this.segments()));
+    } catch {
+      this.leaving.set(false);
+    }
+  }
+
+  /** Cancels the feed: the session stored in the backend is deleted. */
+  protected async discard(): Promise<void> {
+    if (this.saving() || this.leaving()) {
+      return;
+    }
+
+    this.leaving.set(true);
+    try {
+      await this.enqueue(() =>
+        this.sessionId === null
+          ? of(undefined)
+          : this.breastfeedingService.delete(CURRENT_BABY_ID, this.sessionId),
+      );
+      this.dialogRef.close();
+    } catch {
+      this.leaving.set(false);
+    }
+  }
+
+  private restoreActiveSession(): void {
+    this.breastfeedingService.getLatest(CURRENT_BABY_ID).subscribe({
       next: (session) => {
-        this.notifications.success('Toma guardada');
-        this.dialogRef.close(session);
+        if (session !== null && session.status !== 'finished') {
+          this.sessionId = session.id;
+          this.segments.set(toTimedSegments(session.segments));
+          this.notesModel.set({ notes: session.notes ?? '' });
+        }
+        this.loading.set(false);
       },
-      error: (error: unknown) => {
-        console.error('No se pudo guardar la sesión de lactancia.', error);
-        this.saving.set(false);
+      error: () => {
+        this.loading.set(false);
       },
     });
+  }
+
+  private enqueue<T>(job: () => Observable<T>): Promise<T> {
+    const result = this.queue.then(() => firstValueFrom(job()));
+    this.queue = result.catch(() => undefined);
+    return result;
+  }
+
+  /** Stores the full state: creates the session on the first call and updates it afterwards. */
+  private persist(
+    segments: readonly TimedSegment[],
+    endTime: string | null = null,
+  ): Promise<BreastfeedingSession> {
+    return this.enqueue(() => {
+      const dtoSegments = toSegmentDtos(segments);
+      const notes = this.notesModel().notes.trim();
+
+      if (this.sessionId === null) {
+        return this.breastfeedingService
+          .create({
+            babyId: CURRENT_BABY_ID,
+            startTime: dtoSegments[0].startTime,
+            endTime,
+            segments: dtoSegments,
+            notes: notes || undefined,
+          })
+          .pipe(tap((session) => (this.sessionId = session.id)));
+      }
+
+      return this.breastfeedingService.update(CURRENT_BABY_ID, this.sessionId, {
+        endTime,
+        segments: dtoSegments,
+        notes,
+      });
+    });
+  }
+
+  private formatDateTime(timestamp: number | null | undefined): string {
+    return timestamp == null ? EMPTY_VALUE : formatDate(timestamp, DATE_FORMAT, this.locale);
   }
 }
