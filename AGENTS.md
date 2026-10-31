@@ -1,83 +1,37 @@
 You are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.
 
-## TypeScript Best Practices
+## TypeScript
 
-- Use strict type checking
-- Prefer type inference when the type is obvious
-- Avoid the `any` type; use `unknown` when type is uncertain
+- Strict typing; prefer inference when obvious; no `any` (use `unknown`).
 
-## Angular Best Practices
+## Angular
 
-- Always use standalone components over NgModules
-- Must NOT set `standalone: true` inside Angular decorators. It's the default in Angular v20+.
-- Do NOT set `changeDetection: ChangeDetectionStrategy.OnPush` explicitly. `OnPush` is the default in Angular v22+.
-- Use signals for state management
-- Implement lazy loading for feature routes
-- Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead
-- Use `NgOptimizedImage` for all static images.
-  - `NgOptimizedImage` does not work for inline base64 images.
+- Standalone components only. Do NOT set `standalone: true` (default in v20+) or `changeDetection: OnPush` (default in v22+).
+- Signals for state; `linkedSignal()` for state derived from several sources; never `mutate` (use `update`/`set`); `model()` for two-way bindings.
+- No `@HostBinding`/`@HostListener`: use the `host` object of the decorator.
+- Do NOT use `ngClass`, `ngStyle` (use `class`/`style` bindings) or `CommonModule` (import only the needed pipes/directives).
+- Use `NgOptimizedImage` for static images (not for inline base64).
+- Prefer Signal Forms (`@angular/forms/signals`): data in a `signal` model, `form(model)`, `[formField]="form.field"`, validation in the `form()` schema (e.g. `maxLength(path.notes, 500)`). Do NOT sync values manually with `[value]` + `(input)` or `event.target` casts. Otherwise use Reactive forms.
+- Prefer inline templates for small components; external templates/styles use paths relative to the component file.
+- Prefer `@Service` over `@Injectable({providedIn: 'root'})` for new singleton services (v22+).
 
-## Accessibility Requirements
+## Accessibility
 
-- It MUST pass all AXE checks.
-- It MUST follow all WCAG AA minimums, including focus management, color contrast, and ARIA attributes.
-
-## Components
-
-- Keep components small and focused on a single responsibility
-- Use `input()` and `output()` functions instead of decorators
-- Use `model()` for two-way bound properties with `[(prop)]` syntax instead of pairing `input()` with `output()`
-- Use `computed()` for derived state
-- Use `linkedSignal()` for state derived from multiple reactive sources that must stay synchronized
-- Prefer inline templates for small components
-- Prefer Signal Forms (`@angular/forms/signals`) for new forms. They are stable in Angular v22+ and provide signal-based state, type-safe field access, and schema-based validation
-- With Signal Forms, keep the form data in a `signal` model, create the form with `form(model)`, and bind native or Material controls with `[formField]="form.field"` (`FormField` directive). Do NOT sync form values manually with `[value]` plus `(input)` handlers or `event.target` casts
-- Declare validation in the `form()` schema function (for example `maxLength(path.notes, 500)`) instead of ad-hoc checks
-- When not using Signal Forms, prefer Reactive forms instead of Template-driven ones
-- Do NOT use `ngClass`, use `class` bindings instead
-- Do NOT use `ngStyle`, use `style` bindings instead
-- Do NOT import `CommonModule`, import only the directives and pipes the template uses, such as `AsyncPipe` or `DatePipe`
-- When using external templates/styles, use paths relative to the component TS file.
-
-## State Management
-
-- Use signals for local component state
-- Use `computed()` for derived state
-- Keep state transformations pure and predictable
-- Do NOT use `mutate` on signals, use `update` or `set` instead
-
-## Templates
-
-- Keep templates simple and avoid complex logic
-- Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`
-- Use the async pipe to handle observables
-- Do not assume globals like (`new Date()`) are available.
-
-## Services
-
-- Design services around a single responsibility
-- Use the `providedIn: 'root'` option for singleton services
-- Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for new singleton services (Angular v22+)
-- Use the `inject()` function instead of constructor injection
+- MUST pass all AXE checks and WCAG AA (focus management, color contrast, ARIA).
 
 ## Project Architecture
 
-- `src/main.ts` bootstraps the root `App` component with providers from `src/app/app.config.ts`; the app config installs browser error listeners and configures the router.
-- `src/app/app.html` is the persistent shell: it contains the Material home navigation and the `RouterOutlet`. Route-specific content lives under `src/app/pages/`.
-- `src/app/app.routes.ts` lazy-loads each page with `loadComponent`; use `RouterLink` for in-app navigation. Unknown paths redirect to the home route.
-- Page components are standalone by default and declare template dependencies in their decorator `imports`. Small page templates are inline; the root shell uses external HTML and SCSS.
-- Global styles in `src/styles.scss` define the Angular Material 3 theme and document-level colors and typography. Keep shell-specific styles in `src/app/app.scss`.
-- Existing page titles, visible copy, and detail route names are in Spanish; preserve that language when extending these pages and routes.
-- Time operations (start/end times, durations, gaps, countdown timers, elapsed-time formatting, ticking clocks) must use the helpers in `src/app/shared/utils/` (`time.utils.ts`, `clock.ts`), imported from `@shared`. Do not re-implement them or use ad-hoc `interval`/`Date.now()` logic in components.
-- If a new time calculation could be reused by other features, add it to `src/app/shared/utils/` and export it from `src/app/shared/index.ts` instead of keeping it local to a component.
+- Pages live in `src/app/pages/` and are lazy-loaded in `src/app/app.routes.ts` with `loadComponent`; use `RouterLink` for navigation.
+- The persistent shell (Material nav + `RouterOutlet`) is in `src/app/shell/`; shell-specific styles go in `shell/app.scss`. Global Material 3 theme is in `src/styles.scss`.
+- Page titles, visible copy and detail route names are in Spanish; keep that language.
+- Time operations (start/end times, durations, gaps, countdown timers, elapsed-time formatting, ticking clocks) must use the helpers in `src/app/shared/utils/`, imported from `@shared`; never re-implement them or use ad-hoc `interval`/`Date.now()` in components. Before writing any time logic, load the `time-utils` skill (`.agents/skills/time-utils/SKILL.md`) for the helper catalog and rules.
+
+## Modal UX and feedback
+
+- Closing a modal without losing data (X, outside click, Escape) asks no confirmation; only destructive actions (Cancel record) do.
+- Any action with a non-obvious result is reported with a snackbar via `NotificationService`. Details: `.github/instructions/dialogs-feedback.instructions.md`.
+
 ## Build and Test
 
-Run commands from the repository root:
-
-- `npm run start` starts the Angular development server.
-- `npm run build` runs the production build.
-- Do not run tests or create new test files; this project does not maintain or run tests.
-
-`package.json` does not currently define a lint script.
-
-`npm test` is available from the Angular CLI scaffold, and `src/app/app.spec.ts` is an existing scaffolded spec. Do not add to it or create additional specs.
+From the repo root: `npm run start` (dev server), `npm run build` (production build). There is no lint script.
+Do NOT run tests or create/extend specs (including the scaffolded `src/app/app.spec.ts`); this project does not maintain them.

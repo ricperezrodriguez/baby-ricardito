@@ -186,7 +186,9 @@ export class BreastfeedingDialog {
     this.leaving.set(true);
     try {
       // Waits for pending writes and stores the notes, so the card reads up-to-date data.
-      this.dialogRef.close(await this.persist(this.segments()));
+      const session = await this.persist(this.segments());
+      this.notifications.success('Toma en curso. Puedes continuarla desde la tarjeta.');
+      this.dialogRef.close(session);
     } catch {
       this.leaving.set(false);
     }
