@@ -1,5 +1,7 @@
 export { ConfirmationDialog } from '@app/shared/confirmation-dialog/confirmation-dialog';
 export type { ConfirmationDialogData } from '@app/shared/confirmation-dialog/confirmation-dialog';
+export { DialogRouteEvents, DialogRouteHost } from '@app/shared/dialog-route/dialog-route';
+export type { DialogRouteData } from '@app/shared/dialog-route/dialog-route';
 export { LoadingSpinner } from '@app/shared/loading-spinner/loading-spinner';
 export { TRACKING_CARD_ICON_SIZE, TrackingCard } from '@app/shared/tracking-card/tracking-card';
 export { TrackingDialog } from '@app/shared/tracking-dialog/tracking-dialog';

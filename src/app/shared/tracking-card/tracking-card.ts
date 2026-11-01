@@ -3,7 +3,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
-import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, RouterLink } from '@angular/router';
+import { filter } from 'rxjs';
+import { DialogRouteEvents } from '@app/shared/dialog-route/dialog-route';
 import { TrackingDialog, TrackingDialogData } from '@app/shared/tracking-dialog/tracking-dialog';
 
 export const TRACKING_CARD_ICON_SIZE = 50;
@@ -20,11 +23,14 @@ export const TRACKING_CARD_ICON_SIZE = 50;
 })
 export class TrackingCard {
   private readonly dialog = inject(MatDialog);
+  private readonly router = inject(Router);
 
   readonly link = input.required<string>();
   readonly title = input.required<string>();
   /** Modal propio de la tarjeta; si no se indica se muestra el modal genérico provisional. */
   readonly dialogComponent = input<Type<unknown>>(TrackingDialog);
+  /** Ruta hija de Inicio (p. ej. `lactancia`) cuyo modal sustituye a `dialogComponent`; la URL pasa a ser enlazable. */
+  readonly dialogRoute = input<string>();
   readonly dialogTitle = input('');
   readonly dialogMessage = input('');
   readonly ariaLabel = input<string>();
@@ -35,7 +41,22 @@ export class TrackingCard {
   /** Se emite siempre que el modal se cierra, para que la tarjeta refresque sus datos. */
   readonly closed = output<void>();
 
+  constructor() {
+    inject(DialogRouteEvents)
+      .closed$.pipe(
+        filter((path) => path === this.dialogRoute()),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.closed.emit());
+  }
+
   openDialog(): void {
+    const route = this.dialogRoute();
+    if (route) {
+      void this.router.navigate(['/', route]);
+      return;
+    }
+
     const data: TrackingDialogData = {
       title: this.dialogTitle(),
       message: this.dialogMessage(),

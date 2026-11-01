@@ -29,6 +29,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 ## Modal UX and feedback
 
 - Closing a modal without losing data (X, outside click, Escape) asks no confirmation; only destructive actions (Cancel record) do.
+- Record modals are route-driven: each opens from a child route of Inicio via `DialogRouteHost`, so its URL (e.g. `/lactancia`) is shareable; cards opt in with `dialogRoute`.
 - Any action with a non-obvious result is reported with a snackbar via `NotificationService`. Details: `.github/instructions/dialogs-feedback.instructions.md`.
 
 ## Build and Test

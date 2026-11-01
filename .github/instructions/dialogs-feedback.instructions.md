@@ -1,8 +1,20 @@
 ---
-applyTo: "src/app/**/*dialog*/**,src/app/shared/confirmation-dialog/**,src/app/core/notification.service.ts"
+applyTo: "src/app/**/*dialog*/**,src/app/shared/confirmation-dialog/**,src/app/shared/tracking-card/**,src/app/app.routes.ts,src/app/core/notification.service.ts"
 ---
 
 # Modales, confirmaciones y feedback al usuario
+
+## Modales con ruta (enlazables)
+
+Los modales de registro se abren desde una ruta hija de Inicio, de modo que la URL es la fuente de verdad: el modal está abierto si y solo si la URL lo indica. Así un enlace directo (p. ej. `/lactancia`) abre la app con Inicio detrás y el modal encima.
+
+- **Ruta:** en `src/app/app.routes.ts`, `''` (Inicio) tiene una ruta hija por modal con `component: DialogRouteHost` y `data: { dialog: () => import(...).then(m => m.XDialog) } satisfies DialogRouteData`. El diálogo se carga de forma diferida. `dialogData` (opcional) aporta `title`/`message` al modal genérico `TrackingDialog`.
+- **Host:** `DialogRouteHost` (`src/app/shared/dialog-route/dialog-route.ts`) no tiene vista. Al activarse abre el modal con `MatDialog` (`closeOnNavigation: false`, porque el cierre lo gobierna la ruta); al cerrarse navega a `/`; si la ruta se abandona (botón «atrás») cierra el modal.
+- **Tarjeta:** `TrackingCard` recibe `dialogRoute="lactancia"`. Con ese input, el botón «+» y el contenido accionable navegan a `/lactancia` en lugar de abrir el diálogo directamente. Sin él, abre `dialogComponent` como antes (comportamiento de las tarjetas aún sin ruta).
+- **Refresco de la tarjeta:** `DialogRouteHost` avisa con `DialogRouteEvents.notifyClosed(path)` y la `TrackingCard` cuyo `dialogRoute` coincide emite `closed`, que dispara su recarga. No refresques la tarjeta de otra forma.
+- **Inicio** debe contener `<router-outlet />` para que las rutas hijas se activen. `Inicio` no se recrea al abrir o cerrar el modal.
+- **Alta de un modal nuevo:** (1) crear el componente de diálogo con `TrackingDialogLayout`; (2) añadir su ruta hija; (3) poner `dialogRoute` en su tarjeta. Las rutas son en español y sin tildes (`lactancia`, `biberon`, `panal`, `sueno`). Una URL desconocida cae en `**` y redirige a Inicio.
+- **Excepciones:** `ConfirmationDialog` no tiene ruta (es efímero y depende del estado del modal que lo abre). Un modal de edición de un registro concreto (`/lactancia/:id`) requeriría que `DialogRouteHost` pasara el `id` al diálogo; hoy no existe ninguno.
 
 ## Cierre y cancelación de modales de registro
 

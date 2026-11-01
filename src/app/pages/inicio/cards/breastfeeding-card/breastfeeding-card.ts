@@ -23,7 +23,6 @@ import {
   TRACKING_CARD_ICON_SIZE,
   TrackingCard,
 } from '@shared';
-import { BreastfeedingDialog } from './breastfeeding-dialog/breastfeeding-dialog';
 
 type LatestBreastfeedingState =
   | { status: 'loading' }
@@ -52,7 +51,6 @@ function getLastBreast(session: BreastfeedingSession): Breast | null {
 export class BreastfeedingCard {
   readonly breastSide = BREAST_SIDE;
   readonly iconSize = TRACKING_CARD_ICON_SIZE;
-  readonly dialogComponent = BreastfeedingDialog;
 
   private readonly breastfeedingService = inject(BreastfeedingService);
   private readonly clock = createClock();
