@@ -1,59 +1,52 @@
-# BabyRicardito
+# Baby Ricardito
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.3.
+Aplicación web para el seguimiento de los cuidados diarios de un bebé. Reúne en un mismo lugar el registro de lactancia y el acceso a otras categorías de cuidado.
 
-## Development server
+## Funcionalidades
 
-To start a local development server, run:
+- **Lactancia:** registro de tomas por lado, con cronómetro, pausas, notas y fotografía opcional.
+- **Continuar una toma:** una sesión en curso puede cerrarse y retomarse desde su tarjeta. El diálogo también es accesible mediante la ruta `/lactancia`.
+- **Otros cuidados:** biberón, pañal y sueño aparecen en el panel; sus secciones de detalle están pendientes de desarrollo.
 
-```bash
-ng serve
-```
+## Tecnología
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Angular 22, TypeScript, Angular Material, RxJS y SCSS. La aplicación utiliza componentes independientes, señales y carga diferida de páginas y diálogos.
 
-## Code scaffolding
+## Puesta en marcha
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Requisitos: Node.js compatible con Angular 22 y npm.
 
 ```bash
-ng generate --help
+npm install
+npm run start
 ```
 
-## Building
+Abre [http://localhost:4200/](http://localhost:4200/). El servidor recarga la aplicación al detectar cambios.
 
-To build the project run:
+Para generar la compilación de producción:
 
 ```bash
-ng build
+npm run build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Los archivos generados se encuentran en `dist/`.
 
-## Running unit tests
+## Configuración
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+| Entorno    | Backend                             | Configuración                                 |
+| ---------- | ----------------------------------- | --------------------------------------------- |
+| Desarrollo | Simulado, con latencia configurable | `src/environments/environment.development.ts` |
+| Producción | API HTTP en `/api`                  | `src/environments/environment.ts`             |
 
-```bash
-ng test
+El backend de lactancia utiliza el recurso `/api/babies/{babyId}/breastfeeding/sessions` y permite gestionar las fotografías de cada sesión.
+
+## Estructura
+
+```text
+src/app/
+├── core/       Configuración compartida, notificaciones y backend simulado
+├── features/   Modelos, servicios y lógica de lactancia
+├── pages/      Pantallas y componentes de seguimiento
+├── shared/     Componentes y utilidades reutilizables
+└── shell/      Navegación y estructura principal
 ```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

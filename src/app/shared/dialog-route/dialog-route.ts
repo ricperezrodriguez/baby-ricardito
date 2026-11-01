@@ -1,8 +1,8 @@
 import { Component, DestroyRef, inject, Injectable, Type } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subject } from 'rxjs';
 import { TrackingDialogData } from '@app/shared/tracking-dialog/tracking-dialog';
+import { Observable, Subject } from 'rxjs';
 
 /** Datos que una ruta hija declara en `data` para abrir su modal. */
 export interface DialogRouteData {
@@ -60,6 +60,7 @@ export class DialogRouteHost {
     this.dialogRef = this.dialog.open(component, {
       data: dialogData ?? { title: '', message: '' },
       width: DIALOG_WIDTH,
+      autoFocus: 'dialog',
       // El cierre lo gobierna la ruta, no el historial del navegador.
       closeOnNavigation: false,
     });

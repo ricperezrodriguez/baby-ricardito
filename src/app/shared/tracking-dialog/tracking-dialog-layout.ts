@@ -4,7 +4,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ConfirmationDialog, ConfirmationDialogData } from '@app/shared/confirmation-dialog/confirmation-dialog';
+import {
+  ConfirmationDialog,
+  ConfirmationDialogData,
+} from '@app/shared/confirmation-dialog/confirmation-dialog';
 
 /**
  * Estructura común de los modales de registro: título con botón de cerrar, contenido propio y acciones Cancelar/Guardar.
@@ -90,7 +93,13 @@ export class TrackingDialogLayout {
       .keydownEvents()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((event) => {
-        if (event.key === 'Escape' && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+        if (
+          event.key === 'Escape' &&
+          !event.altKey &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.shiftKey
+        ) {
           event.preventDefault();
           this.requestDismiss();
         }
