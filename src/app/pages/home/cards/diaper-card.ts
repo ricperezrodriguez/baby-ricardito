@@ -1,8 +1,5 @@
 import { Component } from '@angular/core';
-import {
-  TRACKING_CARD_ICON_SIZE,
-  TrackingCard,
-} from '@shared';
+import { TRACKING_CARD_ICON_SIZE, TrackingCard } from '@shared';
 
 @Component({
   selector: 'app-diaper-card',
@@ -10,9 +7,9 @@ import {
   template: `
     <app-tracking-card
       link="/detalle/panal"
-      title="Cuidados"
-      dialogTitle="Añadir cuidado"
-      dialogMessage="Aquí podrás registrar un cambio de pañal y otros cuidados."
+      title="Pañal"
+      dialogTitle="Añadir cambio de pañal"
+      dialogMessage="Aquí podrás registrar un cambio de pañal."
       accent="var(--app-card-diaper)"
       headerColor="var(--app-card-diaper)"
     >
@@ -27,9 +24,11 @@ import {
         stroke-linejoin="round"
         stroke-width="1.6"
       >
-        <path d="M7 10h18l-2 13a3 3 0 0 1-3 2h-8a3 3 0 0 1-3-2L7 10Z" />
         <path
-          d="M7 10c2 2 4 3 9 3s7-1 9-3M12 21c1.2-1.6 2.5-2.5 4-2.5s2.8.9 4 2.5"
+          d="M3 9h26l-2 11h-3c-2.2 0-3 1.3-3.8 3l-.9 2h-6.6l-.9-2C11 21.3 10.2 20 8 20H5L3 9Z"
+        />
+        <path
+          d="M4 13h6m12 0h6M10 10v5m12-5v5M12 20c1.2-1 2.5-1.5 4-1.5s2.8.5 4 1.5"
           fill="none"
           stroke="var(--card-header-color)"
           stroke-width="1.2"
