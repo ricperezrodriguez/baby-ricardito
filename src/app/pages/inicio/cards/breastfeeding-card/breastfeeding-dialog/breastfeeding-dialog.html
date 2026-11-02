@@ -40,12 +40,52 @@
     <section class="summary" aria-labelledby="summary-title">
       <h3 id="summary-title" class="summary-title">Datos de la toma</h3>
       <dl class="summary-list">
-        @for (row of summaryRows(); track row.label) {
-          <div class="summary-row">
-            <dt>{{ row.label }}</dt>
-            <dd>{{ row.value }}</dd>
-          </div>
-        }
+        <div class="summary-row">
+          <dt>Duración total</dt>
+          <dd>{{ totalText() }}</dd>
+        </div>
+        <div class="summary-row">
+          <dt>Pausa</dt>
+          <dd>
+            <app-editable-time
+              label="Pausa"
+              kind="duration"
+              [value]="pause()"
+              [min]="0"
+              [max]="maxPause()"
+              [disabled]="editsDisabled() || !canEditPause()"
+              (committed)="changePause($event)"
+            />
+          </dd>
+        </div>
+        <div class="summary-row">
+          <dt>Inicio</dt>
+          <dd>
+            <app-editable-time
+              label="Inicio"
+              kind="datetime"
+              [value]="startTime()"
+              [max]="maxStart()"
+              [disabled]="editsDisabled()"
+              (committed)="changeStart($event)"
+            />
+          </dd>
+        </div>
+        <div class="summary-row">
+          <dt>Final</dt>
+          <dd>
+            <app-editable-time
+              label="Final"
+              kind="datetime"
+              emptyText="En curso"
+              [value]="endTime()"
+              [min]="minEnd()"
+              [max]="maxEnd()"
+              [disabled]="editsDisabled()"
+              (committed)="changeEnd($event)"
+            />
+          </dd>
+        </div>
       </dl>
 
       <div class="photo">

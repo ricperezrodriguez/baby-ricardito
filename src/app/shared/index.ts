@@ -2,6 +2,7 @@ export { ConfirmationDialog } from '@app/shared/confirmation-dialog/confirmation
 export type { ConfirmationDialogData } from '@app/shared/confirmation-dialog/confirmation-dialog';
 export { DialogRouteEvents, DialogRouteHost } from '@app/shared/dialog-route/dialog-route';
 export type { DialogRouteData } from '@app/shared/dialog-route/dialog-route';
+export { EditableTime } from '@app/shared/editable-time/editable-time';
 export { LoadingSpinner } from '@app/shared/loading-spinner/loading-spinner';
 export { TRACKING_CARD_ICON_SIZE, TrackingCard } from '@app/shared/tracking-card/tracking-card';
 export { TrackingDialog } from '@app/shared/tracking-dialog/tracking-dialog';
@@ -13,9 +14,12 @@ export {
   formatDuration,
   formatElapsedSince,
   isTimerFinished,
+  parseDateTimeLocal,
+  parseDuration,
   parseTimestamp,
   remainingTime,
   spanDuration,
+  toDateTimeLocal,
   toIsoString,
   totalGaps,
 } from '@app/shared/utils/time.utils';

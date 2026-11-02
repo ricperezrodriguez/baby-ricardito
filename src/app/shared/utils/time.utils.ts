@@ -10,6 +10,36 @@ export function formatDuration(milliseconds: number): string {
   return hours > 0 ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
+/** Parses `m:ss` or `h:mm:ss` (the inverse of `formatDuration`) into milliseconds, or `null` when it is invalid. */
+export function parseDuration(text: string): number | null {
+  const match = /^(?:(\d+):([0-5]\d)|(\d+):([0-5]\d):([0-5]\d))$/.exec(text.trim());
+  if (match === null) {
+    return null;
+  }
+
+  const [hours, minutes, seconds] =
+    match[1] === undefined
+      ? [Number(match[3]), Number(match[4]), Number(match[5])]
+      : [0, Number(match[1]), Number(match[2])];
+  return ((hours * 60 + minutes) * 60 + seconds) * 1_000;
+}
+
+/** Formats epoch milliseconds as the local `yyyy-MM-ddTHH:mm:ss` value used by `datetime-local` inputs. */
+export function toDateTimeLocal(epochMilliseconds: number): string {
+  const date = new Date(epochMilliseconds);
+  const pad = (value: number): string => String(value).padStart(2, '0');
+
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+  );
+}
+
+/** Parses a local `datetime-local` value into epoch milliseconds, or `null` when it is empty or invalid. */
+export function parseDateTimeLocal(text: string): number | null {
+  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(text) ? parseTimestamp(text) : null;
+}
+
 /** A time span in epoch milliseconds; `end: null` means it is still running. */
 export interface TimeSpan {
   start: number;

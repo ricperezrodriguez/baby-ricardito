@@ -1,5 +1,4 @@
-import { formatDate } from '@angular/common';
-import { Component, computed, DestroyRef, inject, LOCALE_ID, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -23,9 +22,13 @@ import {
   toSegmentDtos,
   toggleSegment,
   toTimedSegments,
+  withEnd,
+  withStart,
+  withTotalPause,
 } from '@app/features/breastfeeding/breastfeeding-timer';
 import {
   createClock,
+  EditableTime,
   formatDuration,
   LoadingSpinner,
   toIsoString,
@@ -38,11 +41,9 @@ const SIDES: readonly { breast: Breast; label: string }[] = [
   { breast: BREAST_SIDE.RIGHT, label: 'Teta derecha' },
 ];
 
-const DATE_FORMAT = 'dd/MM/yyyy HH:mm:ss';
-const EMPTY_VALUE = '—';
-
 @Component({
   imports: [
+    EditableTime,
     FormField,
     LoadingSpinner,
     MatButtonModule,
@@ -59,7 +60,6 @@ export class BreastfeedingDialog {
     inject<MatDialogRef<BreastfeedingDialog, BreastfeedingSession>>(MatDialogRef);
   private readonly breastfeedingService = inject(BreastfeedingService);
   private readonly notifications = inject(NotificationService);
-  private readonly locale = inject(LOCALE_ID);
 
   private readonly clock = createClock();
   private readonly segments = signal<TimedSegment[]>([]);
@@ -103,22 +103,45 @@ export class BreastfeedingDialog {
     })),
   );
 
-  protected readonly summaryRows = computed(() => {
-    const segments = this.segments();
-    const last = segments.at(-1);
-    const total = Object.values(this.durationsMs()).reduce((sum, ms) => sum + ms, 0);
+  protected readonly totalText = computed(() =>
+    formatDuration(Object.values(this.durationsMs()).reduce((sum, ms) => sum + ms, 0)),
+  );
 
-    return [
-      { label: 'Duración total', value: formatDuration(total) },
-      // The pause is the idle time between consecutive segments (switching breasts or stopping and resuming).
-      { label: 'Pausa', value: formatDuration(totalGaps(segments)) },
-      { label: 'Inicio', value: this.formatDateTime(segments[0]?.start) },
-      {
-        label: 'Final',
-        value: last?.end === null ? 'En curso' : this.formatDateTime(last?.end),
-      },
-    ];
+  // The pause is the idle time between consecutive segments (switching breasts or stopping and resuming).
+  protected readonly pause = computed(() => totalGaps(this.segments()));
+  protected readonly canEditPause = computed(() => this.segments().length > 1);
+  /** More pause delays the last segment, which cannot end up later than now. */
+  protected readonly maxPause = computed(() => {
+    const last = this.segments().at(-1);
+    return last === undefined
+      ? 0
+      : this.pause() + Math.max(0, this.clock.now() - (last.end ?? last.start));
   });
+
+  protected readonly startTime = computed(() => this.segments()[0]?.start ?? null);
+  protected readonly maxStart = computed(() => {
+    const first = this.segments()[0];
+    return first === undefined ? null : (first.end ?? this.clock.now());
+  });
+
+  /** `null` while the last segment is still running. */
+  protected readonly endTime = computed(() => this.segments().at(-1)?.end ?? null);
+  protected readonly minEnd = computed(() => this.segments().at(-1)?.start ?? null);
+  protected readonly maxEnd = computed(() => this.clock.now());
+
+  protected readonly editsDisabled = computed(() => this.busy() || this.saving());
+
+  protected changeStart(start: number): void {
+    this.applyEdit(withStart(this.segments(), start));
+  }
+
+  protected changePause(pause: number): void {
+    this.applyEdit(withTotalPause(this.segments(), pause));
+  }
+
+  protected changeEnd(end: number): void {
+    this.applyEdit(withEnd(this.segments(), end));
+  }
 
   protected selectPhoto(input: HTMLInputElement): void {
     const file = input.files?.item(0) ?? null;
@@ -213,6 +236,12 @@ export class BreastfeedingDialog {
     }
   }
 
+  private applyEdit(segments: TimedSegment[]): void {
+    this.segments.set(segments);
+    // Failures are reported by the HTTP error interceptor; the next change re-sends the full state.
+    this.persist(segments).catch(() => undefined);
+  }
+
   private restoreActiveSession(): void {
     this.breastfeedingService.getLatest(CURRENT_BABY_ID).subscribe({
       next: (session) => {
@@ -303,9 +332,5 @@ export class BreastfeedingDialog {
       URL.revokeObjectURL(pending.previewUrl);
       this.pendingPhoto.set(null);
     }
-  }
-
-  private formatDateTime(timestamp: number | null | undefined): string {
-    return timestamp == null ? EMPTY_VALUE : formatDate(timestamp, DATE_FORMAT, this.locale);
   }
 }

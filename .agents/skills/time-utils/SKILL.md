@@ -27,6 +27,9 @@ Todo cálculo de tiempo vive en `src/app/shared/utils/` y se importa desde `@sha
 | `isTimerFinished(start, durationMs, now)` | Si la cuenta atrás ya terminó. |
 | `parseTimestamp(iso)` | ISO a ms epoch, o `null` si es inválido. |
 | `toIsoString(ms)` | Ms epoch a ISO. |
+| `parseDuration(text)` | `m:ss` o `h:mm:ss` a ms (inverso de `formatDuration`), o `null` si es inválido. |
+| `toDateTimeLocal(ms)` | Ms epoch a `yyyy-MM-ddTHH:mm:ss` local, el valor de un `<input type="datetime-local">`. |
+| `parseDateTimeLocal(text)` | Valor local de `datetime-local` a ms epoch, o `null` si está vacío o es inválido. |
 | `formatElapsedSince(iso, now)` | Texto en español: "Hace 5 min", "Hace 2 h 10 min", "Hace menos de 1 min". |
 
 Tipo: `TimeSpan { start: number; end: number | null }` (`end: null` = sigue en curso).
