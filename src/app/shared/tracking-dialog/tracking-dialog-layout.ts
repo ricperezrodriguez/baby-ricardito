@@ -10,10 +10,10 @@ import {
 } from '@app/shared/confirmation-dialog/confirmation-dialog';
 
 /**
- * Estructura común de los modales de registro: título con botón de cerrar, contenido propio y acciones Cancelar/Guardar.
+ * Common structure of the record modals: title with a close button, own content and Cancel/Save actions.
  *
- * El layout no cierra el modal: emite `dismiss` (X, clic fuera o Escape: cerrar conservando el registro)
- * y `discard` (Cancelar confirmado: descartar el registro) y el modal que lo usa decide qué hacer y lo cierra.
+ * The layout does not close the modal: it emits `dismiss` (X, outside click or Escape: close keeping the record)
+ * and `discard` (confirmed Cancel: discard the record), and the modal that uses it decides what to do and closes it.
  */
 @Component({
   selector: 'app-tracking-dialog-layout',
@@ -78,11 +78,11 @@ export class TrackingDialogLayout {
   readonly title = input.required<string>();
   readonly saveDisabled = input(false);
   readonly saving = input(false);
-  /** Texto del botón principal. */
+  /** Text of the primary button. */
   readonly saveLabel = input('Guardar');
-  /** Si es false, Cancelar emite `discard` sin pedir confirmación (la gestiona el modal). */
+  /** If false, Cancel emits `discard` without asking for confirmation (the modal handles it). */
   readonly confirmBeforeDiscard = input(true);
-  /** Bloquea cerrar, cancelar y guardar mientras el modal está cargando o cerrándose. */
+  /** Blocks close, cancel and save while the modal is loading or closing. */
   readonly busy = input(false);
   readonly save = output<void>();
   readonly dismiss = output<void>();

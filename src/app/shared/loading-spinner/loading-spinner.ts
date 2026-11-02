@@ -15,7 +15,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   `,
 })
 export class LoadingSpinner {
-  /** Texto accesible que describe qué se está cargando. */
+  /** Accessible text describing what is being loaded. */
   readonly label = input('Cargando');
   readonly diameter = input(32);
 }

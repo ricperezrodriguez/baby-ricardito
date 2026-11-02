@@ -4,22 +4,22 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TrackingDialogData } from '@app/shared/tracking-dialog/tracking-dialog';
 import { Observable, Subject } from 'rxjs';
 
-/** Datos que una ruta hija declara en `data` para abrir su modal. */
+/** Data a child route declares in `data` to open its modal. */
 export interface DialogRouteData {
   dialog: () => Promise<Type<unknown>>;
   dialogData?: TrackingDialogData;
-  /** Ruta a la que se vuelve al cerrar el modal; por defecto Inicio. */
+  /** Route to navigate to when the modal closes; Home by default. */
   returnTo?: string;
 }
 
-/** Datos que recibe el modal: los de `dialogData` más los parámetros de su ruta (p. ej. `sessionId`). */
+/** Data the modal receives: the `dialogData` ones plus its route params (e.g. `sessionId`). */
 export interface DialogRouteContext extends TrackingDialogData {
   params: Record<string, string>;
 }
 
 const DIALOG_WIDTH = '34rem';
 
-/** Avisa de qué modal asociado a una ruta se ha cerrado, para que su tarjeta refresque los datos. */
+/** Reports which route-driven modal has closed, so its card refreshes its data. */
 @Injectable({ providedIn: 'root' })
 export class DialogRouteEvents {
   private readonly closedSubject = new Subject<string>();
@@ -32,9 +32,9 @@ export class DialogRouteEvents {
 }
 
 /**
- * Componente sin vista para rutas hijas de Inicio: al activarse abre el modal indicado en
- * `data.dialog`, y al cerrarlo vuelve a Inicio. Si la ruta se abandona (p. ej. con el
- * botón «atrás»), el modal se cierra solo.
+ * View-less component for child routes of Home: when activated it opens the modal given in
+ * `data.dialog`, and when it closes it navigates back to Home. If the route is left (e.g. with the
+ * browser back button), the modal closes by itself.
  */
 @Component({ template: '' })
 export class DialogRouteHost {
@@ -72,7 +72,7 @@ export class DialogRouteHost {
       data: context,
       width: DIALOG_WIDTH,
       autoFocus: 'dialog',
-      // El cierre lo gobierna la ruta, no el historial del navegador.
+      // Closing is driven by the route, not by the browser history.
       closeOnNavigation: false,
     });
 

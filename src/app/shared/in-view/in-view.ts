@@ -1,9 +1,9 @@
 import { afterNextRender, DestroyRef, Directive, ElementRef, inject, output } from '@angular/core';
 
 /**
- * Emite `inView` cada vez que el elemento entra en pantalla (con un margen previo), p. ej. el
- * centinela al final de una lista para cargar la siguiente página. Si tras cargar sigue visible,
- * hay que volver a crear el elemento para recibir un nuevo aviso.
+ * Emits `inView` every time the element enters the viewport (with a lead margin), e.g. the
+ * sentinel at the end of a list used to load the next page. If it is still visible after loading,
+ * the element must be recreated to receive a new notification.
  */
 @Directive({ selector: '[appInView]' })
 export class InView {

@@ -27,20 +27,20 @@ export class TrackingCard {
 
   readonly link = input.required<string>();
   readonly title = input.required<string>();
-  /** Modal propio de la tarjeta; si no se indica se muestra el modal genérico provisional. */
+  /** The card's own modal; if omitted, the provisional generic modal is shown. */
   readonly dialogComponent = input<Type<unknown>>(TrackingDialog);
-  /** Ruta hija de Inicio (p. ej. `lactancia`) cuyo modal sustituye a `dialogComponent`; la URL pasa a ser enlazable. */
+  /** Child route of Home (e.g. `lactancia`) whose modal replaces `dialogComponent`; the URL becomes shareable. */
   readonly dialogRoute = input<string>();
   readonly dialogTitle = input('');
   readonly dialogMessage = input('');
   readonly ariaLabel = input<string>();
   readonly accent = input('var(--app-green)');
   readonly headerColor = input('var(--app-green)');
-  /** Cuando es true, pulsar el contenido de la tarjeta abre el mismo modal que el botón «+». */
+  /** When true, clicking the card content opens the same modal as the "+" button. */
   readonly contentOpensDialog = input(false);
-  /** Resalta la tarjeta mientras hay un registro en curso. */
+  /** Highlights the card while a record is in progress. */
   readonly active = input(false);
-  /** Se emite siempre que el modal se cierra, para que la tarjeta refresque sus datos. */
+  /** Emitted whenever the modal closes, so the card refreshes its data. */
   readonly closed = output<void>();
 
   constructor() {

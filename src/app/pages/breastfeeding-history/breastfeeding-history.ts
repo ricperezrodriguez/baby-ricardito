@@ -14,16 +14,16 @@ import {
   HistoryChartId,
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { BreastfeedingService } from '@app/features/breastfeeding/breastfeeding.service';
-import { FeedHeatmap } from '@app/pages/detalle-pecho/feed-heatmap/feed-heatmap';
-import { FeedHistoryList } from '@app/pages/detalle-pecho/feed-history-list/feed-history-list';
+import { FeedHeatmap } from '@app/pages/breastfeeding-history/feed-heatmap/feed-heatmap';
+import { FeedHistoryList } from '@app/pages/breastfeeding-history/feed-history-list/feed-history-list';
 import {
   averageDurationConfig,
   averageIntervalConfig,
   breastSplitConfig,
   feedsPerDayConfig,
   minutesPerDayConfig,
-} from '@app/pages/detalle-pecho/history-charts';
-import { HistoryChart } from '@app/pages/detalle-pecho/history-chart/history-chart';
+} from '@app/pages/breastfeeding-history/history-charts';
+import { HistoryChart } from '@app/pages/breastfeeding-history/history-chart/history-chart';
 import {
   createClock,
   DialogRouteEvents,
@@ -63,10 +63,10 @@ interface SummaryItem {
     RouterLink,
     RouterOutlet,
   ],
-  styleUrl: './detalle-pecho.scss',
-  templateUrl: './detalle-pecho.html',
+  styleUrl: './breastfeeding-history.scss',
+  templateUrl: './breastfeeding-history.html',
 })
-export class DetallePecho {
+export class BreastfeedingHistory {
   private readonly service = inject(BreastfeedingService);
   private readonly clock = createClock(60_000);
   private readonly reloadCount = signal(0);

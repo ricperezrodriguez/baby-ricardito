@@ -19,11 +19,20 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 - MUST pass all AXE checks and WCAG AA (focus management, color contrast, ARIA).
 
+## Language
+
+- **Code is in English:** file and folder names, components, classes, services, variables, route params (`:sessionId`, `:category`), CSS classes, selectors, comments and docs under `.github/` (e.g. `Home`, `BreastfeedingHistory`, `pages/home/`).
+- **The application is in Spanish** (the audience is Spanish): visible copy, page titles, `aria-label`s, snackbar and dialog texts, and **URL paths** (`/lactancia`, `/detalle/pecho`, `/detalle/panal`; lowercase, no accents or `ñ`).
+- Keep the two apart: a Spanish URL segment or UI string never leaks into identifiers, and English never leaks into visible copy or URLs.
+- `README.md` stays in Spanish.
+- If unsure which language to use for something new, ask the user instead of guessing.
+- The assistant always replies to the user in Spanish.
+
 ## Project Architecture
 
-- Pages live in `src/app/pages/` and are lazy-loaded in `src/app/app.routes.ts` with `loadComponent`; use `RouterLink` for navigation.
+- Pages live in `src/app/pages/` (English folder names, e.g. `home`, `breastfeeding-history`) and are lazy-loaded in `src/app/app.routes.ts` with `loadComponent`; use `RouterLink` for navigation.
 - The persistent shell (Material nav + `RouterOutlet`) is in `src/app/shell/`; shell-specific styles go in `shell/app.scss`. Global Material 3 theme is in `src/styles.scss`.
-- Page titles, visible copy and detail route names are in Spanish; keep that language.
+- Page titles and visible copy are in Spanish, as are the URL paths (see Language); component and file names are English.
 - Time logic (start/end, durations, gaps, countdowns, elapsed text, clocks, day grouping) must use the helpers in `src/app/shared/utils/` imported from `@shared`; never re-implement them or use ad-hoc `interval`/`Date.now()` in components. Load the `time-utils` skill (`.agents/skills/time-utils/SKILL.md`) first.
 
 ## Modals and history pages
@@ -32,7 +41,7 @@ Details live in `.github/instructions/` (they load automatically for matching fi
 
 - `record-modals.instructions.md`: creation modals (route-driven, `DialogRouteHost`), closing/cancel rules, snackbars (`NotificationService`).
 - `dialogs-feedback.instructions.md`: view/edit record modal opened from a history row (same for every tracker).
-- `history-page.instructions.md`: "Ver historial" pages (`detalle/<category>`), charts, stats and infinite-scroll list. Reference: `/detalle/pecho`.
+- `history-page.instructions.md`: "Ver historial" pages (`detalle/<category>` URLs, code in `pages/<tracker>-history/`), charts, stats and infinite-scroll list. Reference: `/detalle/pecho`.
 
 Always: confirm only irreversible or data-losing actions; report non-obvious results with `NotificationService`, never `MatSnackBar` directly.
 

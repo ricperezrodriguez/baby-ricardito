@@ -4,14 +4,15 @@ import { DialogRouteData, DialogRouteHost } from '@app/shared/dialog-route/dialo
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('@app/pages/inicio/inicio').then((m) => m.Inicio),
+    loadComponent: () =>
+      import('@app/pages/home/home').then((m) => m.Home),
     children: [
       {
         path: 'lactancia',
         component: DialogRouteHost,
         data: {
           dialog: () =>
-            import('@app/pages/inicio/cards/breastfeeding-card/breastfeeding-dialog/breastfeeding-dialog').then(
+            import('@app/pages/home/cards/breastfeeding-card/breastfeeding-dialog/breastfeeding-dialog').then(
               (m) => m.BreastfeedingDialog,
             ),
         } satisfies DialogRouteData,
@@ -20,14 +21,15 @@ export const routes: Routes = [
   },
   {
     path: 'detalle/pecho',
-    loadComponent: () => import('@app/pages/detalle-pecho/detalle-pecho').then((m) => m.DetallePecho),
+    loadComponent: () =>
+      import('@app/pages/breastfeeding-history/breastfeeding-history').then((m) => m.BreastfeedingHistory),
     children: [
       {
         path: ':sessionId',
         component: DialogRouteHost,
         data: {
           dialog: () =>
-            import('@app/pages/inicio/cards/breastfeeding-card/breastfeeding-dialog/breastfeeding-dialog').then(
+            import('@app/pages/home/cards/breastfeeding-card/breastfeeding-dialog/breastfeeding-dialog').then(
               (m) => m.BreastfeedingDialog,
             ),
           returnTo: '/detalle/pecho',
@@ -35,6 +37,9 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: 'detalle/:categoria', loadComponent: () => import('@app/pages/detalle-pendiente/detalle-pendiente').then((m) => m.DetallePendiente) },
+  {
+    path: 'detalle/:category',
+    loadComponent: () => import('@app/pages/pending-history/pending-history').then((m) => m.PendingHistory),
+  },
   { path: '**', redirectTo: '' },
 ];

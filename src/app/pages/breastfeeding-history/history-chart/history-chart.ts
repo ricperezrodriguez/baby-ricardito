@@ -32,8 +32,8 @@ Chart.defaults.font.family = 'Roboto, sans-serif';
 Chart.defaults.color = '#4d6267';
 
 /**
- * Gráfica de Chart.js. El canvas no es accesible, así que los mismos datos se ofrecen como una
- * tabla oculta visualmente para los lectores de pantalla.
+ * Chart.js chart. The canvas is not accessible, so the same data is offered as a
+ * visually hidden table for screen readers.
  */
 @Component({
   selector: 'app-history-chart',

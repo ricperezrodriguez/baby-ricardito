@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 
 @Component({
   imports: [RouterLink],
-  styleUrl: './detalle-dos.scss',
-  templateUrl: './detalle-dos.html',
+  styleUrl: './detail-one.scss',
+  templateUrl: './detail-one.html',
 })
-export class DetalleDos {}
+export class DetailOne {}

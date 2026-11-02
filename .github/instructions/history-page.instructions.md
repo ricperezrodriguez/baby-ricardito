@@ -1,16 +1,16 @@
 ---
-applyTo: "src/app/pages/detalle-*/**,src/app/shared/in-view/**,src/app/features/**,src/app/core/mocks/**,src/app/app.routes.ts"
+applyTo: "src/app/pages/*-history/**,src/app/shared/in-view/**,src/app/features/**,src/app/core/mocks/**,src/app/app.routes.ts"
 ---
 
 # History page ("Ver historial")
 
-Every tracking card has a "Ver historial" link that opens a detail page with the whole history of that tracker. The reference implementation is the breastfeeding one: route `/detalle/pecho`, code in `src/app/pages/detalle-pecho/`. Other trackers (bottle, diaper, sleep, and any future card) must reproduce the same behavior in their own `detalle/<category>` page, replacing the `DetallePendiente` placeholder (`detalle/:categoria`). Keep the specific `detalle/<category>` route declared **before** the `detalle/:categoria` fallback in `src/app/app.routes.ts`.
+Every tracking card has a "Ver historial" link that opens a detail page with the whole history of that tracker. The reference implementation is the breastfeeding one: route `/detalle/pecho`, code in `src/app/pages/breastfeeding-history/` (`BreastfeedingHistory`). Other trackers (bottle, diaper, sleep, and any future card) must reproduce the same behavior in their own `detalle/<category>` page (`src/app/pages/<tracker>-history/`), replacing the `PendingHistory` placeholder (`detalle/:category`). Keep the specific `detalle/<category>` route declared **before** the `detalle/:category` fallback in `src/app/app.routes.ts`.
 
 The modal that opens from a row is described in `.github/instructions/dialogs-feedback.instructions.md`.
 
 ## Page structure (top to bottom)
 
-1. **Header:** back link to Inicio, `h1` ("Historial de lactancia") and a period selector (`mat-button-toggle-group`: 7 / 30 / 90 days, **7 by default**).
+1. **Header:** back link to Home ("Inicio"), `h1` ("Historial de lactancia") and a period selector (`mat-button-toggle-group`: 7 / 30 / 90 days, **7 by default**).
 2. **Summary** (`dl`): number of feeds, total time, average duration, average interval for the selected period. `—` when there is no data.
 3. **Charts** section: title, a `mat-chip-listbox` (multiple) with one chip per chart (selected = visible), and the grid of chart cards.
 4. **Feeds** section: the list grouped by day with infinite scroll.
@@ -69,7 +69,7 @@ The charts cannot depend on the paginated list, so the backend aggregates the da
 
 ## Refresh
 
-`DialogRouteHost` emits `DialogRouteEvents.notifyClosed(':sessionId')` when the record modal closes (saved, deleted or just closed). Both the page (stats) and the list subscribe to that path with `takeUntilDestroyed`. Do not refresh by other means. The card on Inicio refreshes by itself when Inicio is shown again.
+`DialogRouteHost` emits `DialogRouteEvents.notifyClosed(':sessionId')` when the record modal closes (saved, deleted or just closed). Both the page (stats) and the list subscribe to that path with `takeUntilDestroyed`. Do not refresh by other means. The card on Home refreshes by itself when Home is shown again.
 
 ## Rules for the code
 
@@ -81,6 +81,6 @@ The charts cannot depend on the paginated list, so the backend aggregates the da
 ## Adding the history page for another tracker
 
 1. Add the models and service calls for its stats and preferences (same contract, different path segment and charts) and the mock implementation.
-2. Create `src/app/pages/detalle-<category>/` reusing `InView`, `app-history-chart`-style wrapper and the heatmap where it applies; extract them to a shared lazy location when a second tracker needs them (never through the `@shared` barrel if they import Chart.js).
-3. Declare `detalle/<category>` with its `:sessionId` child route (see the modal file) before `detalle/:categoria`.
+2. Create `src/app/pages/<tracker>-history/` (English name, e.g. `bottle-history`) reusing `InView`, `app-history-chart`-style wrapper and the heatmap where it applies; extract them to a shared lazy location when a second tracker needs them (never through the `@shared` barrel if they import Chart.js).
+3. Declare `detalle/<category>` with its `:sessionId` child route (see the modal file) before `detalle/:category`.
 4. Point the card's `link` to that route.

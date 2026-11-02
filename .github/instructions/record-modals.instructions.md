@@ -4,18 +4,18 @@ applyTo: "src/app/**/*dialog*/**,src/app/shared/dialog-route/**,src/app/shared/t
 
 # Creation modals, closing rules and snackbars
 
-General rules for the modals opened from the tracking cards on Inicio (`+` button or card content) and for user feedback. The modal that views/edits an existing record from a history page is in `.github/instructions/dialogs-feedback.instructions.md`.
+General rules for the modals opened from the tracking cards on Home (`+` button or card content) and for user feedback. The modal that views/edits an existing record from a history page is in `.github/instructions/dialogs-feedback.instructions.md`.
 
 ## Route-driven modals (linkable)
 
-Record modals open from a child route of Inicio, so the URL is the source of truth: the modal is open if and only if the URL says so. A direct link such as `/lactancia` opens the app with Inicio behind and the modal on top.
+Record modals open from a child route of Home, so the URL is the source of truth: the modal is open if and only if the URL says so. A direct link such as `/lactancia` opens the app with Home behind and the modal on top.
 
-- **Route:** in `src/app/app.routes.ts`, `''` (Inicio) has one child route per modal with `component: DialogRouteHost` and `data: { dialog: () => import(...).then(m => m.XDialog) } satisfies DialogRouteData`. The dialog is lazy-loaded. Optional `dialogData` provides `title`/`message` to the generic placeholder `TrackingDialog`. Optional `returnTo` is the route to navigate to on close (default `/`).
+- **Route:** in `src/app/app.routes.ts`, `''` (`Home`) has one child route per modal with `component: DialogRouteHost` and `data: { dialog: () => import(...).then(m => m.XDialog) } satisfies DialogRouteData`. The dialog is lazy-loaded. Optional `dialogData` provides `title`/`message` to the generic placeholder `TrackingDialog`. Optional `returnTo` is the route to navigate to on close (default `/`).
 - **Host:** `DialogRouteHost` (`src/app/shared/dialog-route/dialog-route.ts`) has no view. When activated it opens the modal with `MatDialog` (`closeOnNavigation: false`, because the route governs closing); when the modal closes it navigates to `returnTo` (or `/`); if the route is left (browser back) it closes the modal. It passes `DialogRouteContext` (`dialogData` fields plus route `params`) as `MAT_DIALOG_DATA`.
 - **Card:** `TrackingCard` takes `dialogRoute="lactancia"`. With it, the `+` button and the actionable content navigate to `/lactancia` instead of opening the dialog directly. Without it, it opens `dialogComponent` (behavior of cards without a route yet).
 - **Card refresh:** `DialogRouteHost` calls `DialogRouteEvents.notifyClosed(path)` and the `TrackingCard` whose `dialogRoute` matches emits `closed`, which reloads it. Do not refresh the card any other way.
-- **Inicio** must contain `<router-outlet />` for the child routes to activate. `Inicio` is not recreated when a modal opens or closes.
-- **Adding a new modal:** (1) create the dialog component with `TrackingDialogLayout`; (2) add its child route; (3) set `dialogRoute` on its card. Routes are Spanish and without accents (`lactancia`, `biberon`, `panal`, `sueno`). An unknown URL falls into `**` and redirects to Inicio.
+- **Home** must contain `<router-outlet />` for the child routes to activate. `Home` is not recreated when a modal opens or closes.
+- **Adding a new modal:** (1) create the dialog component with `TrackingDialogLayout`; (2) add its child route; (3) set `dialogRoute` on its card. Routes are Spanish and without accents (`lactancia`, `biberon`, `panal`, `sueno`). An unknown URL falls into `**` and redirects to Home.
 - **Exception:** `ConfirmationDialog` has no route (it is ephemeral and depends on the state of the modal that opens it).
 
 ## Closing and cancelling creation modals

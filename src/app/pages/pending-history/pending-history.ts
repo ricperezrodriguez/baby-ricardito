@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   imports: [RouterLink, MatButtonModule],
-  styleUrl: './detalle-pendiente.scss',
-  templateUrl: './detalle-pendiente.html',
+  styleUrl: './pending-history.scss',
+  templateUrl: './pending-history.html',
 })
-export class DetallePendiente {}
+export class PendingHistory {}

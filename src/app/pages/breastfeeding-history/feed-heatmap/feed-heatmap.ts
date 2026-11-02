@@ -3,7 +3,7 @@ import { Component, computed, input } from '@angular/core';
 const WEEKDAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
-/** Tomas empezadas por día de la semana y hora, con la intensidad del color proporcional al número de tomas. */
+/** Feeds started per weekday and hour, with color intensity proportional to the number of feeds. */
 @Component({
   selector: 'app-feed-heatmap',
   styles: `
@@ -108,7 +108,7 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
   `,
 })
 export class FeedHeatmap {
-  /** Tomas por día de la semana (0 = lunes) y hora (0-23). */
+  /** Feeds per weekday (0 = Monday) and hour (0-23). */
   readonly hourMap = input.required<number[][]>();
 
   protected readonly hours = HOURS;

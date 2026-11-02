@@ -27,14 +27,14 @@ import {
 const DATE_TIME_FORMAT = 'dd/MM/yyyy HH:mm:ss';
 
 /**
- * Hora o duración que el usuario puede modificar al pincharla.
+ * Time or duration the user can edit by clicking it.
  *
- * Muestra el valor como un botón; al activarlo se convierte en un campo editable que se confirma
- * con Enter o con el botón de aceptar y se descarta con Escape o con el botón de cancelar.
- * Escape no se propaga, para que no cierre el modal que lo contiene.
+ * Shows the value as a button; activating it turns it into an editable field that is confirmed
+ * with Enter or the accept button and discarded with Escape or the cancel button.
+ * Escape is not propagated, so it does not close the modal that contains it.
  *
- * `datetime` trabaja con ms epoch (fecha y hora locales) y `duration` con ms (`mm:ss` o `h:mm:ss`).
- * Emite `committed` solo cuando el valor editado es válido y distinto del mostrado.
+ * `datetime` works with epoch ms (local date and time) and `duration` with ms (`mm:ss` or `h:mm:ss`).
+ * Emits `committed` only when the edited value is valid and different from the displayed one.
  */
 @Component({
   selector: 'app-editable-time',
@@ -133,16 +133,16 @@ export class EditableTime {
   private readonly injector = inject(Injector);
   private readonly locale = inject(LOCALE_ID);
 
-  /** Nombre del valor, usado como etiqueta del campo y en los textos accesibles. */
+  /** Name of the value, used as the field label and in accessible texts. */
   readonly label = input.required<string>();
   readonly kind = input.required<'datetime' | 'duration'>();
-  /** Ms epoch (`datetime`) o ms (`duration`); `null` si aún no hay valor. */
+  /** Epoch ms (`datetime`) or ms (`duration`); `null` while there is no value yet. */
   readonly value = input.required<number | null>();
-  /** Límites inclusivos en las mismas unidades que `value`. */
+  /** Inclusive bounds in the same units as `value`. */
   readonly min = input<number | null>(null);
   readonly max = input<number | null>(null);
   readonly disabled = input(false);
-  /** Texto mostrado cuando no hay valor (`value` es `null`). */
+  /** Text shown when there is no value (`value` is `null`). */
   readonly emptyText = input('—');
   readonly committed = output<number>();
 
