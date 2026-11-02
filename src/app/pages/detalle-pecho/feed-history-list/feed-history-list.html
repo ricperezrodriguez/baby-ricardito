@@ -1,0 +1,79 @@
+@switch (status()) {
+  @case ('loading') {
+    <app-loading-spinner label="Cargando el historial" />
+  }
+  @case ('error') {
+    <div class="state">
+      <p>No se ha podido cargar el historial.</p>
+      <button matButton="outlined" type="button" (click)="reload()">Reintentar</button>
+    </div>
+  }
+  @default {
+    @if (groups().length === 0) {
+      <p class="state">Todavía no hay tomas registradas.</p>
+    }
+    @for (group of groups(); track group.key) {
+      <section class="day" [attr.aria-labelledby]="'day-' + group.key">
+        <h3 class="day-heading" [id]="'day-' + group.key">
+          <span>{{ group.heading }}</span>
+          @if (group.summary) {
+            <span class="day-summary">{{ group.summary }}</span>
+          }
+        </h3>
+        <ul class="feeds">
+          @for (row of group.rows; track row.id) {
+            <li>
+              <a class="feed-row" [class.in-progress]="row.inProgress" [routerLink]="row.link">
+                <span class="time">
+                  {{ row.startMs | date: 'HH:mm' }}
+                  @if (row.endMs !== null) {
+                    – {{ row.endMs | date: 'HH:mm' }}
+                  } @else {
+                    · En curso
+                  }
+                </span>
+                <span class="duration">{{ row.duration }}</span>
+                <span class="details">
+                  @if (row.left !== null) {
+                    <span class="side">
+                      <span aria-hidden="true">I</span>
+                      <span class="visually-hidden">Izquierdo</span>
+                      {{ row.left }}
+                    </span>
+                  }
+                  @if (row.right !== null) {
+                    <span class="side">
+                      <span aria-hidden="true">D</span>
+                      <span class="visually-hidden">Derecho</span>
+                      {{ row.right }}
+                    </span>
+                  }
+                  @if (row.hasNotes) {
+                    <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">notes</mat-icon>
+                    <span class="visually-hidden">Con notas</span>
+                  }
+                  @if (row.hasPhoto) {
+                    <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">photo</mat-icon>
+                    <span class="visually-hidden">Con foto</span>
+                  }
+                </span>
+                <mat-icon class="chevron" fontSet="material-symbols-outlined" aria-hidden="true">
+                  chevron_right
+                </mat-icon>
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+    @if (loadingMore()) {
+      <app-loading-spinner label="Cargando más tomas" />
+    } @else if (moreFailed()) {
+      <div class="state">
+        <button matButton="outlined" type="button" (click)="loadMore()">Reintentar</button>
+      </div>
+    } @else if (hasMore()) {
+      <div class="sentinel" appInView (inView)="loadMore()"></div>
+    }
+  }
+}

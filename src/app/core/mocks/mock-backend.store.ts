@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
 import {
+  BreastfeedingHistoryPreferences,
   BreastfeedingSession,
   BreastfeedingSessionsPage,
+  BreastfeedingStats,
+  BreastfeedingStatsRequest,
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { applyUpdate, buildSession } from '@app/core/mocks/mock-backend.calculations';
 import { conflict, notFound } from '@app/core/mocks/mock-backend.errors';
 import { createSeedSessions, SEED_BABY_ID } from '@app/core/mocks/mock-backend.seed';
+import { calculateStats, parseHistoryPreferencesBody } from '@app/core/mocks/mock-backend.stats';
 import { assertChronology, parseCreateBody, parsePhotoBody, parseUpdateBody } from '@app/core/mocks/mock-backend.validation';
 
 type BabySessions = Map<string, BreastfeedingSession>;
@@ -31,6 +35,7 @@ export class MockBackendStore {
   private readonly sessionsByBaby = new Map<string, BabySessions>([
     [SEED_BABY_ID, toSessionMap(createSeedSessions(new Date()))],
   ]);
+  private readonly historyPreferencesByBaby = new Map<string, BreastfeedingHistoryPreferences>();
 
   list(babyId: string, limit: number, offset: number): BreastfeedingSessionsPage {
     const sessions = [...this.requireBabySessions(babyId).values()].map((session) => this.refresh(session));
@@ -40,6 +45,23 @@ export class MockBackendStore {
 
   getById(babyId: string, sessionId: string): BreastfeedingSession {
     return this.refresh(this.requireSession(babyId, sessionId));
+  }
+
+  stats(babyId: string, request: BreastfeedingStatsRequest): BreastfeedingStats {
+    const sessions = [...this.requireBabySessions(babyId).values()];
+    return calculateStats(sessions, request);
+  }
+
+  getHistoryPreferences(babyId: string): BreastfeedingHistoryPreferences {
+    this.requireBabySessions(babyId);
+    return this.historyPreferencesByBaby.get(babyId) ?? { hiddenCharts: [] };
+  }
+
+  saveHistoryPreferences(babyId: string, body: unknown): BreastfeedingHistoryPreferences {
+    this.requireBabySessions(babyId);
+    const preferences = parseHistoryPreferencesBody(body);
+    this.historyPreferencesByBaby.set(babyId, preferences);
+    return preferences;
   }
 
   create(babyId: string, body: unknown): BreastfeedingSession {

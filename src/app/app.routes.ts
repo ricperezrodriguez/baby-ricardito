@@ -18,6 +18,23 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'detalle/pecho',
+    loadComponent: () => import('@app/pages/detalle-pecho/detalle-pecho').then((m) => m.DetallePecho),
+    children: [
+      {
+        path: ':sessionId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/inicio/cards/breastfeeding-card/breastfeeding-dialog/breastfeeding-dialog').then(
+              (m) => m.BreastfeedingDialog,
+            ),
+          returnTo: '/detalle/pecho',
+        } satisfies DialogRouteData,
+      },
+    ],
+  },
   { path: 'detalle/:categoria', loadComponent: () => import('@app/pages/detalle-pendiente/detalle-pendiente').then((m) => m.DetallePendiente) },
   { path: '**', redirectTo: '' },
 ];

@@ -83,6 +83,67 @@ export function toIsoString(epochMilliseconds: number): string {
   return new Date(epochMilliseconds).toISOString();
 }
 
+/** Formats milliseconds as short Spanish text such as `45 s`, `8 min` or `1 h 05 min`. Never negative. */
+export function formatDurationText(milliseconds: number): string {
+  const totalSeconds = Math.max(0, Math.round(milliseconds / 1_000));
+  if (totalSeconds < 60) {
+    return `${totalSeconds} s`;
+  }
+
+  const totalMinutes = Math.round(totalSeconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return hours > 0 ? `${hours} h ${String(minutes).padStart(2, '0')} min` : `${minutes} min`;
+}
+
+/** Local calendar day of an instant as `yyyy-MM-dd`. */
+export function localDateKey(epochMilliseconds: number): string {
+  return toDateTimeLocal(epochMilliseconds).slice(0, 10);
+}
+
+/** Inclusive local-day range of `days` days that ends on the day of `now`. */
+export function localDateRange(now: number, days: number): { from: string; to: string } {
+  const start = new Date(now);
+  start.setDate(start.getDate() - (days - 1));
+  return { from: localDateKey(start.getTime()), to: localDateKey(now) };
+}
+
+/** IANA time zone of the device, such as `Europe/Madrid`. */
+export function localTimeZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
+const DAY_HEADING_FORMAT = new Intl.DateTimeFormat('es', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+});
+
+/** Day heading in Spanish: `Hoy`, `Ayer` or a date such as `Lunes, 2 de noviembre`. */
+export function formatDayHeading(dayKey: string, now: number): string {
+  const today = localDateKey(now);
+  if (dayKey === today) {
+    return 'Hoy';
+  }
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (dayKey === localDateKey(yesterday.getTime())) {
+    return 'Ayer';
+  }
+
+  const [year, month, day] = dayKey.split('-').map(Number);
+  const text = DAY_HEADING_FORMAT.format(new Date(year, month - 1, day));
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+const DAY_LABEL_FORMAT = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' });
+
+/** Short day label for chart axes, such as `2 nov`. */
+export function formatDayLabel(dayKey: string): string {
+  const [year, month, day] = dayKey.split('-').map(Number);
+  return DAY_LABEL_FORMAT.format(new Date(year, month - 1, day)).replace('.', '');
+}
+
 export function formatElapsedSince(timestamp: string, now: number): string {
   const elapsedMilliseconds = now - Date.parse(timestamp);
   if (!Number.isFinite(elapsedMilliseconds)) {

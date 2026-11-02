@@ -4,6 +4,7 @@ import { Observable, defer, delay, mergeMap, of, throwError } from 'rxjs';
 import { environment } from '@environments/environment';
 import { MockApiError, badRequest, notFound } from '@app/core/mocks/mock-backend.errors';
 import { MockBackendStore } from '@app/core/mocks/mock-backend.store';
+import { parseStatsRequest } from '@app/core/mocks/mock-backend.stats';
 
 interface MockReply {
   status: number;
@@ -17,6 +18,8 @@ interface SessionsRoute {
 }
 
 const SESSIONS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/sessions(?:\/([^/]+)(\/photo)?)?\/?$/;
+const STATS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/stats\/?$/;
+const HISTORY_PREFERENCES_ROUTE_PATTERN = /^\/babies\/([^/]+)\/preferences\/breastfeeding-history\/?$/;
 
 const STATUS_TEXTS: Record<number, string> = {
   200: 'OK',
@@ -63,7 +66,32 @@ function parsePageParameter(value: string | null, name: string, defaultValue: nu
   return parsed;
 }
 
+function matchBabyRoute(url: string, pattern: RegExp): string | null {
+  const match = pattern.exec(url.slice(environment.apiUrl.length).split('?')[0]);
+  return match === null ? null : decodeURIComponent(match[1]);
+}
+
 function computeReply(req: HttpRequest<unknown>, store: MockBackendStore): MockReply {
+  const statsBabyId = matchBabyRoute(req.url, STATS_ROUTE_PATTERN);
+  if (statsBabyId !== null && req.method === 'GET') {
+    const request = parseStatsRequest({
+      from: req.params.get('from'),
+      to: req.params.get('to'),
+      timeZone: req.params.get('tz'),
+    });
+    return { status: 200, body: store.stats(statsBabyId, request) };
+  }
+
+  const preferencesBabyId = matchBabyRoute(req.url, HISTORY_PREFERENCES_ROUTE_PATTERN);
+  if (preferencesBabyId !== null) {
+    if (req.method === 'GET') {
+      return { status: 200, body: store.getHistoryPreferences(preferencesBabyId) };
+    }
+    if (req.method === 'PUT') {
+      return { status: 200, body: store.saveHistoryPreferences(preferencesBabyId, req.body) };
+    }
+  }
+
   const route = parseSessionsRoute(req.url);
   if (route === null) {
     throw notFound('ROUTE_NOT_FOUND', `No mocked route for ${req.method} ${req.url}.`);

@@ -1,31 +1,50 @@
 <app-tracking-dialog-layout
-  title="Añadir lactancia"
-  [saveDisabled]="!hasSegments()"
+  [title]="dialogTitle()"
+  [saveLabel]="saveLabel()"
+  [saveDisabled]="saveDisabled()"
   [saving]="saving()"
   [busy]="busy()"
-  (save)="save()"
+  [confirmBeforeDiscard]="!historyMode()"
+  (save)="onSave()"
   (dismiss)="dismiss()"
   (discard)="discard()"
 >
+  @if (historyMode()) {
+    <button
+      dialogActionsStart
+      matIconButton
+      type="button"
+      class="delete-button"
+      aria-label="Eliminar toma"
+      [disabled]="busy() || saving()"
+      (click)="deleteSession()"
+    >
+      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
+    </button>
+  }
   @if (loading()) {
-    <app-loading-spinner label="Cargando la toma en curso" />
+    <app-loading-spinner [label]="historyMode() ? 'Cargando la toma' : 'Cargando la toma en curso'" />
   } @else {
     <div class="side-controls">
       @for (side of sideControls(); track side.breast) {
         <div class="side-control">
-          <button
-            matButton="tonal"
-            type="button"
-            class="side-button"
-            [disabled]="busy() || saving()"
-            [attr.aria-pressed]="side.active"
-            (click)="toggle(side.breast)"
-          >
-            <mat-icon fontSet="material-symbols-outlined" class="side-icon" aria-hidden="true">
-              {{ side.active ? 'stop' : 'play_arrow' }}
-            </mat-icon>
-            <span>{{ side.label }}</span>
-          </button>
+          @if (historyMode()) {
+            <span class="side-label">{{ side.label }}</span>
+          } @else {
+            <button
+              matButton="tonal"
+              type="button"
+              class="side-button"
+              [disabled]="busy() || saving()"
+              [attr.aria-pressed]="side.active"
+              (click)="toggle(side.breast)"
+            >
+              <mat-icon fontSet="material-symbols-outlined" class="side-icon" aria-hidden="true">
+                {{ side.active ? 'stop' : 'play_arrow' }}
+              </mat-icon>
+              <span>{{ side.label }}</span>
+            </button>
+          }
           <span
             class="side-time"
             role="timer"
@@ -53,7 +72,7 @@
               [value]="pause()"
               [min]="0"
               [max]="maxPause()"
-              [disabled]="editsDisabled() || !canEditPause()"
+              [disabled]="timesDisabled() || !canEditPause()"
               (committed)="changePause($event)"
             />
           </dd>
@@ -66,7 +85,7 @@
               kind="datetime"
               [value]="startTime()"
               [max]="maxStart()"
-              [disabled]="editsDisabled()"
+              [disabled]="timesDisabled()"
               (committed)="changeStart($event)"
             />
           </dd>
@@ -81,50 +100,61 @@
               [value]="endTime()"
               [min]="minEnd()"
               [max]="maxEnd()"
-              [disabled]="editsDisabled()"
+              [disabled]="timesDisabled()"
               (committed)="changeEnd($event)"
             />
           </dd>
         </div>
       </dl>
 
-      <div class="photo">
-        <h4 class="photo-title">Foto</h4>
-        @if (photoPreviewUrl(); as previewUrl) {
-          <img class="photo-preview" alt="Foto de la toma" [src]="previewUrl" />
-        }
-        <input
-          #photoInput
-          class="photo-input"
-          type="file"
-          accept="image/*"
-          (change)="selectPhoto(photoInput)"
-        />
-        <div class="photo-actions">
-          <button
-            matButton="tonal"
-            type="button"
-            [disabled]="busy() || saving()"
-            (click)="photoInput.click()"
-          >
-            <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">
-              {{ photoPreviewUrl() ? 'edit' : 'add_a_photo' }}
-            </mat-icon>
-            {{ photoPreviewUrl() ? 'Cambiar foto' : 'Añadir foto' }}
-          </button>
-          @if (photoPreviewUrl()) {
-            <button matButton type="button" [disabled]="busy() || saving()" (click)="removePhoto()">
-              <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
-              Quitar foto
-            </button>
+      @if (!readOnly() || photoPreviewUrl()) {
+        <div class="photo">
+          <h4 class="photo-title">Foto</h4>
+          @if (photoPreviewUrl(); as previewUrl) {
+            <img class="photo-preview" alt="Foto de la toma" [src]="previewUrl" />
+          }
+          @if (!readOnly()) {
+            <input
+              #photoInput
+              class="photo-input"
+              type="file"
+              accept="image/*"
+              (change)="selectPhoto(photoInput)"
+            />
+            <div class="photo-actions">
+              <button
+                matButton="tonal"
+                type="button"
+                [disabled]="busy() || saving()"
+                (click)="photoInput.click()"
+              >
+                <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">
+                  {{ photoPreviewUrl() ? 'edit' : 'add_a_photo' }}
+                </mat-icon>
+                {{ photoPreviewUrl() ? 'Cambiar foto' : 'Añadir foto' }}
+              </button>
+              @if (photoPreviewUrl()) {
+                <button
+                  matButton
+                  type="button"
+                  [disabled]="busy() || saving()"
+                  (click)="removePhoto()"
+                >
+                  <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
+                  Quitar foto
+                </button>
+              }
+            </div>
           }
         </div>
-      </div>
+      }
 
-      <mat-form-field class="notes-field" appearance="outline">
-        <mat-label>Notas</mat-label>
-        <textarea matInput rows="3" [formField]="form.notes"></textarea>
-      </mat-form-field>
+      @if (!readOnly() || form.notes().value()) {
+        <mat-form-field class="notes-field" appearance="outline">
+          <mat-label>Notas</mat-label>
+          <textarea matInput rows="3" [formField]="form.notes"></textarea>
+        </mat-form-field>
+      }
     </section>
   }
 </app-tracking-dialog-layout>

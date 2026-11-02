@@ -1,7 +1,7 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
-import { form, FormField } from '@angular/forms/signals';
+import { disabled, form, FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -27,10 +27,14 @@ import {
   withTotalPause,
 } from '@app/features/breastfeeding/breastfeeding-timer';
 import {
+  ConfirmationDialog,
+  ConfirmationDialogData,
   createClock,
+  DialogRouteContext,
   EditableTime,
   formatDuration,
   LoadingSpinner,
+  parseTimestamp,
   toIsoString,
   totalGaps,
   TrackingDialogLayout,
@@ -40,6 +44,27 @@ const SIDES: readonly { breast: Breast; label: string }[] = [
   { breast: BREAST_SIDE.LEFT, label: 'Teta izquierda' },
   { breast: BREAST_SIDE.RIGHT, label: 'Teta derecha' },
 ];
+
+const CONFIRM_MODIFY: ConfirmationDialogData = {
+  title: '¿Modificar toma?',
+  message: 'Se actualizarán los datos de la toma.',
+  dismissLabel: 'Volver',
+  confirmLabel: 'Modificar',
+};
+
+const CONFIRM_DELETE: ConfirmationDialogData = {
+  title: '¿Eliminar toma?',
+  message: 'Se borrará de forma definitiva.',
+  dismissLabel: 'Volver',
+  confirmLabel: 'Eliminar toma',
+};
+
+const CONFIRM_DISCARD_CHANGES: ConfirmationDialogData = {
+  title: '¿Descartar cambios?',
+  message: 'Se perderán las modificaciones de la toma.',
+  dismissLabel: 'Seguir editando',
+  confirmLabel: 'Descartar',
+};
 
 @Component({
   imports: [
@@ -58,8 +83,13 @@ const SIDES: readonly { breast: Breast; label: string }[] = [
 export class BreastfeedingDialog {
   private readonly dialogRef =
     inject<MatDialogRef<BreastfeedingDialog, BreastfeedingSession>>(MatDialogRef);
+  private readonly dialog = inject(MatDialog);
   private readonly breastfeedingService = inject(BreastfeedingService);
   private readonly notifications = inject(NotificationService);
+  /** Session opened from the history (`/detalle/pecho/:sessionId`); `null` when logging a new feed. */
+  private readonly requestedSessionId =
+    inject<DialogRouteContext | null>(MAT_DIALOG_DATA, { optional: true })?.params['sessionId'] ??
+    null;
 
   private readonly clock = createClock();
   private readonly segments = signal<TimedSegment[]>([]);
@@ -73,25 +103,69 @@ export class BreastfeedingDialog {
   private readonly durationsMs = computed(() =>
     durationsByBreast(this.segments(), this.clock.now()),
   );
+  /** Start and end stored in the session, used when a feed has no segments to take them from. */
+  private readonly sessionStart = signal<number | null>(null);
+  private readonly sessionEnd = signal<number | null>(null);
+  /** State of a feed opened from the history right after loading it, to detect unsaved changes. */
+  private readonly baseline = signal<string | null>(null);
+  private readonly currentState = computed(() =>
+    JSON.stringify({
+      segments: toSegmentDtos(this.segments()),
+      notes: this.notesModel().notes.trim(),
+      photo: this.pendingPhoto() !== null ? 'new' : this.photoRemoved() ? 'removed' : 'same',
+    }),
+  );
 
   /** Backend session that stores this feed; it is created when the first side starts. */
   private sessionId: string | null = null;
   /** Backend writes run one after another so rapid taps never race each other. */
   private queue: Promise<unknown> = Promise.resolve();
+  private confirming = false;
 
-  protected readonly form = form(this.notesModel);
+  /** A finished feed opened from the history: shown read-only until the user chooses to edit it. */
+  protected readonly historyMode = signal(this.requestedSessionId !== null);
+  protected readonly editing = signal(false);
+  protected readonly readOnly = computed(() => this.historyMode() && !this.editing());
+  protected readonly form = form(this.notesModel, (path) => {
+    disabled(path.notes, () => this.readOnly());
+  });
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
   protected readonly leaving = signal(false);
   protected readonly busy = computed(() => this.loading() || this.leaving());
   protected readonly hasSegments = computed(() => this.segments().length > 0);
+  protected readonly dirty = computed(
+    () => this.baseline() !== null && this.currentState() !== this.baseline(),
+  );
+  protected readonly dialogTitle = computed(() => {
+    if (!this.historyMode()) {
+      return 'Añadir lactancia';
+    }
+    return this.editing() ? 'Editar toma' : 'Detalle de la toma';
+  });
+  protected readonly saveLabel = computed(() => {
+    if (!this.historyMode()) {
+      return 'Guardar';
+    }
+    return this.editing() ? 'Modificar' : 'Editar';
+  });
+  protected readonly saveDisabled = computed(() => {
+    if (this.historyMode()) {
+      return this.editing() && !this.dirty();
+    }
+    return !this.hasSegments();
+  });
   protected readonly photoPreviewUrl = computed(
     () => this.pendingPhoto()?.previewUrl ?? (this.photoRemoved() ? null : this.storedPhotoUrl()),
   );
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.releasePendingPhoto());
-    this.restoreActiveSession();
+    if (this.requestedSessionId === null) {
+      this.restoreActiveSession();
+    } else {
+      this.loadSession(this.requestedSessionId);
+    }
   }
 
   protected readonly sideControls = computed(() =>
@@ -118,18 +192,24 @@ export class BreastfeedingDialog {
       : this.pause() + Math.max(0, this.clock.now() - (last.end ?? last.start));
   });
 
-  protected readonly startTime = computed(() => this.segments()[0]?.start ?? null);
+  protected readonly startTime = computed(() => this.segments()[0]?.start ?? this.sessionStart());
   protected readonly maxStart = computed(() => {
     const first = this.segments()[0];
     return first === undefined ? null : (first.end ?? this.clock.now());
   });
 
   /** `null` while the last segment is still running. */
-  protected readonly endTime = computed(() => this.segments().at(-1)?.end ?? null);
+  protected readonly endTime = computed(() =>
+    this.hasSegments() ? (this.segments().at(-1)?.end ?? null) : this.sessionEnd(),
+  );
   protected readonly minEnd = computed(() => this.segments().at(-1)?.start ?? null);
   protected readonly maxEnd = computed(() => this.clock.now());
 
-  protected readonly editsDisabled = computed(() => this.busy() || this.saving());
+  protected readonly editsDisabled = computed(
+    () => this.busy() || this.saving() || this.readOnly(),
+  );
+  /** Start, pause and end derive from the segments, so a feed without them keeps those values fixed. */
+  protected readonly timesDisabled = computed(() => this.editsDisabled() || !this.hasSegments());
 
   protected changeStart(start: number): void {
     this.applyEdit(withStart(this.segments(), start));
@@ -176,7 +256,18 @@ export class BreastfeedingDialog {
     this.persist(segments).catch(() => undefined);
   }
 
-  protected async save(): Promise<void> {
+  /** Main button: starts editing a feed from the history, confirms its changes, or saves a new feed. */
+  protected onSave(): void {
+    if (!this.historyMode()) {
+      void this.save();
+    } else if (this.readOnly()) {
+      this.editing.set(true);
+    } else {
+      void this.saveChanges();
+    }
+  }
+
+  private async save(): Promise<void> {
     if (this.saving() || this.leaving() || !this.hasSegments()) {
       return;
     }
@@ -196,9 +287,52 @@ export class BreastfeedingDialog {
     }
   }
 
+  /** Stores the edits of a feed opened from the history, once the user confirms them. */
+  private async saveChanges(): Promise<void> {
+    if (this.saving() || this.leaving() || !(await this.confirm(CONFIRM_MODIFY))) {
+      return;
+    }
+
+    const segments = this.segments();
+    const end = segments.at(-1)?.end ?? this.sessionEnd();
+
+    this.saving.set(true);
+    try {
+      const session = await this.persist(segments, end === null ? null : toIsoString(end));
+      this.notifications.success('Toma modificada');
+      this.dialogRef.close(session);
+    } catch {
+      this.saving.set(false);
+    }
+  }
+
+  /** Deletes the feed opened from the history, once the user confirms it. */
+  protected async deleteSession(): Promise<void> {
+    if (this.saving() || this.leaving() || !(await this.confirm(CONFIRM_DELETE))) {
+      return;
+    }
+
+    this.leaving.set(true);
+    try {
+      await this.enqueue(() =>
+        this.sessionId === null
+          ? of(undefined)
+          : this.breastfeedingService.delete(CURRENT_BABY_ID, this.sessionId),
+      );
+      this.notifications.success('Toma eliminada');
+      this.dialogRef.close();
+    } catch {
+      this.leaving.set(false);
+    }
+  }
+
   /** Closes the dialog keeping the feed running in the backend. */
   protected async dismiss(): Promise<void> {
     if (this.saving() || this.leaving()) {
+      return;
+    }
+    if (this.historyMode()) {
+      await this.leaveHistoryFeed();
       return;
     }
     if (!this.hasSegments()) {
@@ -222,6 +356,10 @@ export class BreastfeedingDialog {
     if (this.saving() || this.leaving()) {
       return;
     }
+    if (this.historyMode()) {
+      await this.leaveHistoryFeed();
+      return;
+    }
 
     this.leaving.set(true);
     try {
@@ -236,8 +374,39 @@ export class BreastfeedingDialog {
     }
   }
 
+  /** Closes a feed opened from the history, asking first only when there are unsaved changes. */
+  private async leaveHistoryFeed(): Promise<void> {
+    if (!this.dirty() || (await this.confirm(CONFIRM_DISCARD_CHANGES))) {
+      this.dialogRef.close();
+    }
+  }
+
+  private async confirm(data: ConfirmationDialogData): Promise<boolean> {
+    if (this.confirming) {
+      return false;
+    }
+
+    this.confirming = true;
+    try {
+      const confirmed = await firstValueFrom(
+        this.dialog
+          .open<ConfirmationDialog, ConfirmationDialogData, boolean>(ConfirmationDialog, {
+            data,
+            width: '26rem',
+          })
+          .afterClosed(),
+      );
+      return confirmed === true;
+    } finally {
+      this.confirming = false;
+    }
+  }
+
   private applyEdit(segments: TimedSegment[]): void {
     this.segments.set(segments);
+    if (this.historyMode()) {
+      return;
+    }
     // Failures are reported by the HTTP error interceptor; the next change re-sends the full state.
     this.persist(segments).catch(() => undefined);
   }
@@ -246,10 +415,7 @@ export class BreastfeedingDialog {
     this.breastfeedingService.getLatest(CURRENT_BABY_ID).subscribe({
       next: (session) => {
         if (session !== null && session.status !== 'finished') {
-          this.sessionId = session.id;
-          this.segments.set(toTimedSegments(session.segments));
-          this.notesModel.set({ notes: session.notes ?? '' });
-          this.storedPhotoUrl.set(session.photoUrl ?? null);
+          this.applySession(session);
         }
         this.loading.set(false);
       },
@@ -257,6 +423,32 @@ export class BreastfeedingDialog {
         this.loading.set(false);
       },
     });
+  }
+
+  private loadSession(sessionId: string): void {
+    this.breastfeedingService.getById(CURRENT_BABY_ID, sessionId).subscribe({
+      next: (session) => {
+        this.applySession(session);
+        if (session.status === 'finished') {
+          this.baseline.set(this.currentState());
+        } else {
+          // A feed still running is continued like any other: it is not read-only history.
+          this.historyMode.set(false);
+        }
+        this.loading.set(false);
+      },
+      // The HTTP error interceptor already reports the failure (e.g. the feed no longer exists).
+      error: () => this.dialogRef.close(),
+    });
+  }
+
+  private applySession(session: BreastfeedingSession): void {
+    this.sessionId = session.id;
+    this.segments.set(toTimedSegments(session.segments));
+    this.notesModel.set({ notes: session.notes ?? '' });
+    this.storedPhotoUrl.set(session.photoUrl ?? null);
+    this.sessionStart.set(parseTimestamp(session.startTime));
+    this.sessionEnd.set(session.endTime === null ? null : parseTimestamp(session.endTime));
   }
 
   private enqueue<T>(job: () => Observable<T>): Promise<T> {
@@ -291,6 +483,8 @@ export class BreastfeedingDialog {
 
       return this.breastfeedingService
         .update(CURRENT_BABY_ID, this.sessionId, {
+          // The session start follows the first segment, which the user can move.
+          ...(dtoSegments.length > 0 ? { startTime: dtoSegments[0].startTime } : {}),
           endTime,
           segments: dtoSegments,
           notes,

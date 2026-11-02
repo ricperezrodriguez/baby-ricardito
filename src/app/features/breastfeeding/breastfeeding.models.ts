@@ -72,3 +72,58 @@ export interface CreateBreastfeedingSessionDto {
 
 /** Update a session (change segments, notes, close the session...) */
 export type UpdateBreastfeedingSessionDto = Partial<Omit<CreateBreastfeedingSessionDto, 'babyId'>>;
+
+/** Charts of the history page, in display order */
+export const HISTORY_CHART_IDS = [
+  'feedsPerDay',
+  'minutesPerDay',
+  'breastSplit',
+  'averageDuration',
+  'averageInterval',
+  'hourMap',
+] as const;
+
+export type HistoryChartId = (typeof HISTORY_CHART_IDS)[number];
+
+/** History page preferences stored per baby in the backend */
+export interface BreastfeedingHistoryPreferences {
+  hiddenCharts: HistoryChartId[];
+}
+
+export interface BreastfeedingStatsRequest {
+  /** First local day, `yyyy-MM-dd` (inclusive) */
+  from: string;
+  /** Last local day, `yyyy-MM-dd` (inclusive) */
+  to: string;
+  /** IANA time zone used to split the feeds in days and hours */
+  timeZone: string;
+}
+
+export interface BreastfeedingDayStats {
+  /** Local day, `yyyy-MM-dd` */
+  date: string;
+  feeds: number;
+  totalSeconds: number;
+  leftSeconds: number;
+  rightSeconds: number;
+  averageDurationSeconds: number | null;
+  /** Average time between the start of a feed and the start of the previous one; null without a previous feed */
+  averageIntervalSeconds: number | null;
+}
+
+export interface BreastfeedingStatsTotals {
+  feeds: number;
+  totalSeconds: number;
+  leftSeconds: number;
+  rightSeconds: number;
+  averageDurationSeconds: number | null;
+  averageIntervalSeconds: number | null;
+}
+
+/** Finished feeds aggregated by the backend; one entry in `days` per local day of the range */
+export interface BreastfeedingStats extends BreastfeedingStatsRequest {
+  days: BreastfeedingDayStats[];
+  totals: BreastfeedingStatsTotals;
+  /** Feeds started per weekday (0 = Monday ... 6 = Sunday) and hour of the day (0-23) */
+  hourMap: number[][];
+}

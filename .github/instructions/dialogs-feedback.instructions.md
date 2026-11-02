@@ -1,36 +1,70 @@
 ---
-applyTo: "src/app/**/*dialog*/**,src/app/shared/confirmation-dialog/**,src/app/shared/tracking-card/**,src/app/app.routes.ts,src/app/core/notification.service.ts"
+applyTo: "src/app/**/*dialog*/**,src/app/shared/dialog-route/**,src/app/shared/tracking-dialog/**,src/app/shared/confirmation-dialog/**,src/app/app.routes.ts"
 ---
 
-# Modales, confirmaciones y feedback al usuario
+# View / edit record modal
 
-## Modales con ruta (enlazables)
+This file describes **only** the modal that opens when the user taps a row of a history list to see, modify or delete an existing record. The behavior is the same for every tracker (breastfeeding "toma", bottle, diaper, sleep, and any card added in the future). Only the noun and the editable fields change.
 
-Los modales de registro se abren desde una ruta hija de Inicio, de modo que la URL es la fuente de verdad: el modal está abierto si y solo si la URL lo indica. Así un enlace directo (p. ej. `/lactancia`) abre la app con Inicio detrás y el modal encima.
+For the history page that hosts the modal, see `.github/instructions/history-page.instructions.md`. For the general modal rules (creation modals, closing, snackbars) see `.github/instructions/record-modals.instructions.md`.
 
-- **Ruta:** en `src/app/app.routes.ts`, `''` (Inicio) tiene una ruta hija por modal con `component: DialogRouteHost` y `data: { dialog: () => import(...).then(m => m.XDialog) } satisfies DialogRouteData`. El diálogo se carga de forma diferida. `dialogData` (opcional) aporta `title`/`message` al modal genérico `TrackingDialog`.
-- **Host:** `DialogRouteHost` (`src/app/shared/dialog-route/dialog-route.ts`) no tiene vista. Al activarse abre el modal con `MatDialog` (`closeOnNavigation: false`, porque el cierre lo gobierna la ruta); al cerrarse navega a `/`; si la ruta se abandona (botón «atrás») cierra el modal.
-- **Tarjeta:** `TrackingCard` recibe `dialogRoute="lactancia"`. Con ese input, el botón «+» y el contenido accionable navegan a `/lactancia` en lugar de abrir el diálogo directamente. Sin él, abre `dialogComponent` como antes (comportamiento de las tarjetas aún sin ruta).
-- **Refresco de la tarjeta:** `DialogRouteHost` avisa con `DialogRouteEvents.notifyClosed(path)` y la `TrackingCard` cuyo `dialogRoute` coincide emite `closed`, que dispara su recarga. No refresques la tarjeta de otra forma.
-- **Inicio** debe contener `<router-outlet />` para que las rutas hijas se activen. `Inicio` no se recrea al abrir o cerrar el modal.
-- **Alta de un modal nuevo:** (1) crear el componente de diálogo con `TrackingDialogLayout`; (2) añadir su ruta hija; (3) poner `dialogRoute` en su tarjeta. Las rutas son en español y sin tildes (`lactancia`, `biberon`, `panal`, `sueno`). Una URL desconocida cae en `**` y redirige a Inicio.
-- **Excepciones:** `ConfirmationDialog` no tiene ruta (es efímero y depende del estado del modal que lo abre). Un modal de edición de un registro concreto (`/lactancia/:id`) requeriría que `DialogRouteHost` pasara el `id` al diálogo; hoy no existe ninguno.
+## One component, two uses
 
-## Cierre y cancelación de modales de registro
+The view/edit modal is **not** a new component: it is the same dialog used to create a record (e.g. `BreastfeedingDialog`), built on `TrackingDialogLayout`. It switches to *history mode* when its route provides a record id. New trackers must follow the same pattern: one dialog component that handles both creation and history mode.
 
-Los modales de registro usan `TrackingDialogLayout` (`src/app/shared/tracking-dialog/tracking-dialog-layout.ts`). El layout no cierra el modal: emite eventos y el modal que lo usa decide qué hacer y lo cierra.
+## Route
 
-- **Cerrar (X, clic fuera, Escape)** emite `dismiss`. Es no destructivo: conserva el registro (guarda lo pendiente y cierra). **No pide confirmación.**
-- **Cancelar** emite `discard` solo tras confirmar en `ConfirmationDialog` (`¿Cancelar registro?`). Es destructivo: borra el registro.
-- Regla general: se pide confirmación solo para acciones irreversibles o que pierden datos. Las reversibles no la piden.
-- Si no hay nada que perder (el registro aún no tiene datos), cerrar no debe mostrar confirmación ni aviso.
-- Mientras el modal está guardando, cargando o cerrándose (`busy`/`saving`), cerrar, cancelar y guardar quedan bloqueados.
+- The modal is a child route of the history page, with `component: DialogRouteHost`: `detalle/<category>` > `:sessionId` (use the param name that fits the tracker, keep the same shape).
+- Route `data`: `{ dialog: () => import(...).then(m => m.XDialog), returnTo: '/detalle/<category>' } satisfies DialogRouteData`. `returnTo` is where `DialogRouteHost` navigates when the modal closes (default is `/`).
+- `DialogRouteHost` passes `DialogRouteContext` as `MAT_DIALOG_DATA`: the `dialogData` fields plus `params` (the route params). The dialog injects it as optional and reads `params['sessionId']`; without it the dialog runs in creation mode.
+- The history page must contain `<router-outlet />`. The URL is the source of truth: the modal is open if and only if the URL says so, so the link is shareable and the browser back button closes it.
+- The modal path (`:sessionId`) is what `DialogRouteEvents.notifyClosed(path)` emits when it closes. The history page and its list listen to that path to reload (see the history page file). Do not refresh them any other way.
+- If loading the record fails (e.g. it was deleted), the dialog closes itself; the HTTP error interceptor already reports the error.
+- Only **finished** records open in history mode. A record still in progress is continued in its own creation route (`/lactancia`, ...), so the list links there instead. If a running record is opened by URL, the dialog drops history mode and behaves like the creation dialog.
 
-## Snackbar informativo
+## Modes and buttons
 
-Toda acción cuyo resultado no sea evidente a la vista debe comunicarse con un snackbar, para que el usuario nunca dude de qué ha pasado con sus datos.
+| Mode | Title | Fields | Footer |
+|---|---|---|---|
+| View (initial) | `Detalle de la toma` | All disabled (plain text, no edit icons, no photo buttons; empty notes and missing photo are hidden) | trash icon, `Cancelar`, `Editar` |
+| Edit | `Editar toma` | Enabled | trash icon, `Cancelar`, `Modificar` |
 
-- Usa `NotificationService` (`src/app/core/notification.service.ts`): `success()` para confirmaciones e informaciones, `error()` para fallos. No uses `MatSnackBar` directamente.
-- Ejemplos: `Toma guardada` al guardar; `Toma en curso. Puedes continuarla desde la tarjeta.` al cerrar con la X una toma que sigue en marcha.
-- Muestra el snackbar solo cuando la operación ha tenido éxito, justo antes de cerrar el modal. Los errores HTTP ya los notifica `http-error-snackbar.interceptor.ts`; no los dupliques.
-- Los textos son breves, en español y en tono neutro.
+- `Editar` only switches to edit mode; nothing is saved yet.
+- `Modificar` replaces `Guardar` as the main action. It is disabled until there is at least one change (`dirty`), and opens a `ConfirmationDialog` (`¿Modificar toma?`, buttons `Volver` / `Modificar`) before saving.
+- The **trash icon** (`aria-label="Eliminar toma"`, coral color, left side of the footer through the `[dialogActionsStart]` slot of the layout) is visible in **both** modes, so a record can be deleted without entering edit mode. It opens a `ConfirmationDialog` (`¿Eliminar toma?`, buttons `Volver` / `Eliminar toma`).
+- `Cancelar` never deletes in history mode: it closes the modal (see below). It keeps the label from the creation modal.
+- Timer-style controls (start/stop per breast) are not used in history mode: show the plain label and the duration instead of the toggle buttons.
+- Use the noun of the tracker in the texts (`toma`, `biberón`, `cambio`, `descanso`...), keeping the same sentence structure. Copy is in Spanish.
+
+## Saving behavior
+
+- In history mode **nothing is persisted while editing**. All changes stay local (including the chosen photo) and are sent in one request after the user confirms `Modificar`. In creation mode each change is still persisted immediately.
+- Detect changes by comparing a serialized snapshot of the editable state (segments/times, notes, photo state) taken right after loading the record with the current one. Do not compare by reference.
+- When a time that defines the record changes (e.g. the start), send the matching top-level field too (`startTime`, `endTime`), not only the child data, so lists, ordering and stats stay correct.
+- Records without child data (e.g. a feed without segments) keep their times read-only; only notes and photo are editable.
+- Sends go through the dialog's write queue so they never race each other.
+
+## Closing and discarding
+
+- `Cancelar`, `X`, outside click and `Escape` all end in the same place in history mode: **close the modal and discard local edits**.
+- Ask for confirmation **only when there are unsaved changes**: `¿Descartar cambios?` (buttons `Seguir editando` / `Descartar`). With no changes, close silently.
+- In history mode the layout must not show its own "cancel record" confirmation: bind `[confirmBeforeDiscard]="!historyMode()"` and let the dialog handle `(discard)` and `(dismiss)` itself.
+- While loading, saving or leaving (`busy`/`saving`/`leaving`) closing, cancelling, saving and deleting are blocked, and a second confirmation cannot be opened on top of one that is already open.
+
+## Feedback
+
+Snackbars through `NotificationService.success()`, shown only on success and right before closing: `Toma modificada` after `Modificar`, `Toma eliminada` after deleting. Do not show one when the user only closes or discards. Do not duplicate HTTP errors (the interceptor reports them).
+
+## `TrackingDialogLayout` contract used by this modal
+
+- `title`, `saveLabel` (`Editar` / `Modificar` / `Guardar`), `saveDisabled`, `saving`, `busy`.
+- `confirmBeforeDiscard` (boolean, default `true`): when `false`, `Cancelar` emits `discard` without its own confirmation.
+- Content projection slot `[dialogActionsStart]` for extra actions at the left of the footer (the trash icon).
+- The layout never closes the modal: it emits `save`, `dismiss` and `discard`, and the dialog decides what to do.
+
+## Adding the modal to a new tracker
+
+1. Make the tracker's dialog accept the route context (`MAT_DIALOG_DATA`, optional) and implement history mode: `historyMode`, `editing`, `readOnly = historyMode && !editing`, snapshot-based `dirty`, and the three confirmations above.
+2. Add the child route under the tracker's history page with `returnTo`.
+3. Link the history rows to `['/detalle/<category>', id]` (finished) or to the creation route (in progress).
+4. Make sure the history page reloads when the `:sessionId` path is notified.

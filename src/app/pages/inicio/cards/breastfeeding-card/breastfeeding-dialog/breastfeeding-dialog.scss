@@ -35,6 +35,17 @@
   width: 2rem;
 }
 
+.side-label {
+  font-weight: 500;
+  min-height: 3rem;
+  align-content: center;
+}
+
+.delete-button {
+  color: var(--app-coral);
+  margin-inline-end: auto;
+}
+
 .side-time {
   color: var(--app-ink);
   font-size: 1.75rem;

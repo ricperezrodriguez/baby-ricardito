@@ -24,13 +24,17 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Pages live in `src/app/pages/` and are lazy-loaded in `src/app/app.routes.ts` with `loadComponent`; use `RouterLink` for navigation.
 - The persistent shell (Material nav + `RouterOutlet`) is in `src/app/shell/`; shell-specific styles go in `shell/app.scss`. Global Material 3 theme is in `src/styles.scss`.
 - Page titles, visible copy and detail route names are in Spanish; keep that language.
-- Time operations (start/end times, durations, gaps, countdown timers, elapsed-time formatting, ticking clocks) must use the helpers in `src/app/shared/utils/`, imported from `@shared`; never re-implement them or use ad-hoc `interval`/`Date.now()` in components. Before writing any time logic, load the `time-utils` skill (`.agents/skills/time-utils/SKILL.md`) for the helper catalog and rules.
+- Time logic (start/end, durations, gaps, countdowns, elapsed text, clocks, day grouping) must use the helpers in `src/app/shared/utils/` imported from `@shared`; never re-implement them or use ad-hoc `interval`/`Date.now()` in components. Load the `time-utils` skill (`.agents/skills/time-utils/SKILL.md`) first.
 
-## Modal UX and feedback
+## Modals and history pages
 
-- Closing a modal without losing data (X, outside click, Escape) asks no confirmation; only destructive actions (Cancel record) do.
-- Record modals are route-driven: each opens from a child route of Inicio via `DialogRouteHost`, so its URL (e.g. `/lactancia`) is shareable; cards opt in with `dialogRoute`.
-- Any action with a non-obvious result is reported with a snackbar via `NotificationService`. Details: `.github/instructions/dialogs-feedback.instructions.md`.
+Details live in `.github/instructions/` (they load automatically for matching files; read them before touching this area):
+
+- `record-modals.instructions.md`: creation modals (route-driven, `DialogRouteHost`), closing/cancel rules, snackbars (`NotificationService`).
+- `dialogs-feedback.instructions.md`: view/edit record modal opened from a history row (same for every tracker).
+- `history-page.instructions.md`: "Ver historial" pages (`detalle/<category>`), charts, stats and infinite-scroll list. Reference: `/detalle/pecho`.
+
+Always: confirm only irreversible or data-losing actions; report non-obvious results with `NotificationService`, never `MatSnackBar` directly.
 
 ## Build and Test
 

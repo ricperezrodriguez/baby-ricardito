@@ -49,6 +49,7 @@ import {
       <ng-content />
     </mat-dialog-content>
     <mat-dialog-actions align="end">
+      <ng-content select="[dialogActionsStart]" />
       <button matButton type="button" [disabled]="busy() || saving()" (click)="confirmDiscard()">
         Cancelar
       </button>
@@ -62,7 +63,7 @@ import {
         @if (saving()) {
           <mat-spinner diameter="20" aria-hidden="true" />
         } @else {
-          Guardar
+          {{ saveLabel() }}
         }
       </button>
     </mat-dialog-actions>
@@ -77,6 +78,10 @@ export class TrackingDialogLayout {
   readonly title = input.required<string>();
   readonly saveDisabled = input(false);
   readonly saving = input(false);
+  /** Texto del botón principal. */
+  readonly saveLabel = input('Guardar');
+  /** Si es false, Cancelar emite `discard` sin pedir confirmación (la gestiona el modal). */
+  readonly confirmBeforeDiscard = input(true);
   /** Bloquea cerrar, cancelar y guardar mientras el modal está cargando o cerrándose. */
   readonly busy = input(false);
   readonly save = output<void>();
@@ -116,6 +121,11 @@ export class TrackingDialogLayout {
 
   protected confirmDiscard(): void {
     if (this.busy() || this.saving() || this.confirmingDiscard) {
+      return;
+    }
+
+    if (!this.confirmBeforeDiscard()) {
+      this.discard.emit();
       return;
     }
 

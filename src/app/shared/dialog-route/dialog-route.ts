@@ -8,6 +8,13 @@ import { Observable, Subject } from 'rxjs';
 export interface DialogRouteData {
   dialog: () => Promise<Type<unknown>>;
   dialogData?: TrackingDialogData;
+  /** Ruta a la que se vuelve al cerrar el modal; por defecto Inicio. */
+  returnTo?: string;
+}
+
+/** Datos que recibe el modal: los de `dialogData` más los parámetros de su ruta (p. ej. `sessionId`). */
+export interface DialogRouteContext extends TrackingDialogData {
+  params: Record<string, string>;
 }
 
 const DIALOG_WIDTH = '34rem';
@@ -49,7 +56,7 @@ export class DialogRouteHost {
   }
 
   private async open(): Promise<void> {
-    const { dialog, dialogData } = this.route.snapshot.data as DialogRouteData;
+    const { dialog, dialogData, returnTo } = this.route.snapshot.data as DialogRouteData;
     const path = this.route.snapshot.routeConfig?.path ?? '';
     const component = await dialog();
 
@@ -57,8 +64,12 @@ export class DialogRouteHost {
       return;
     }
 
+    const context: DialogRouteContext = {
+      ...(dialogData ?? { title: '', message: '' }),
+      params: this.route.snapshot.params,
+    };
     this.dialogRef = this.dialog.open(component, {
-      data: dialogData ?? { title: '', message: '' },
+      data: context,
       width: DIALOG_WIDTH,
       autoFocus: 'dialog',
       // El cierre lo gobierna la ruta, no el historial del navegador.
@@ -68,7 +79,7 @@ export class DialogRouteHost {
     this.dialogRef.afterClosed().subscribe(() => {
       this.events.notifyClosed(path);
       if (!this.destroyed) {
-        void this.router.navigate(['/']);
+        void this.router.navigate([returnTo ?? '/']);
       }
     });
   }

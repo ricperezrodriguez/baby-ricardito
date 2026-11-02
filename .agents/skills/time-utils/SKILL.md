@@ -31,6 +31,12 @@ All time calculations live in `src/app/shared/utils/` and are imported from `@sh
 | `toDateTimeLocal(ms)` | Converts epoch milliseconds to local `yyyy-MM-ddTHH:mm:ss`, the value for an `<input type="datetime-local">`. |
 | `parseDateTimeLocal(text)` | Converts a local `datetime-local` value to epoch milliseconds, or returns `null` if empty or invalid. |
 | `formatElapsedSince(iso, now)` | Spanish text, such as "Hace 5 min", "Hace 2 h 10 min", or "Hace menos de 1 min". |
+| `formatDurationText(ms)` | Short Spanish duration such as "45 s", "8 min" or "1 h 05 min". Never negative. |
+| `localDateKey(ms)` | Local calendar day of an instant as `yyyy-MM-dd` (grouping by day). |
+| `localDateRange(now, days)` | Inclusive local-day range `{ from, to }` of `days` days ending on the day of `now`. |
+| `localTimeZone()` | IANA time zone of the device (e.g. `Europe/Madrid`). |
+| `formatDayHeading(dayKey, now)` | Spanish day heading: "Hoy", "Ayer" or "Lunes, 2 de noviembre". |
+| `formatDayLabel(dayKey)` | Short day label for chart axes, such as "2 nov". |
 
 Type: `TimeSpan { start: number; end: number | null }` (`end: null` = still in progress).
 

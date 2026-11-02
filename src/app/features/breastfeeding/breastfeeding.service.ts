@@ -4,9 +4,12 @@ import { Observable, map } from 'rxjs';
 import { environment } from '@environments/environment';
 import {
   BREASTFEEDING_PHOTO_FIELD,
+  BreastfeedingHistoryPreferences,
   BreastfeedingSession,
   BreastfeedingSessionsPage,
   BreastfeedingSessionsPageRequest,
+  BreastfeedingStats,
+  BreastfeedingStatsRequest,
   CreateBreastfeedingSessionDto,
   UpdateBreastfeedingSessionDto,
 } from '@app/features/breastfeeding/breastfeeding.models';
@@ -30,6 +33,25 @@ export class BreastfeedingService {
 
   getById(babyId: string, sessionId: string): Observable<BreastfeedingSession> {
     return this.http.get<BreastfeedingSession>(this.sessionUrl(babyId, sessionId));
+  }
+
+  getStats(babyId: string, request: BreastfeedingStatsRequest): Observable<BreastfeedingStats> {
+    const params = new HttpParams()
+      .set('from', request.from)
+      .set('to', request.to)
+      .set('tz', request.timeZone);
+    return this.http.get<BreastfeedingStats>(`${this.babyUrl(babyId)}/breastfeeding/stats`, { params });
+  }
+
+  getHistoryPreferences(babyId: string): Observable<BreastfeedingHistoryPreferences> {
+    return this.http.get<BreastfeedingHistoryPreferences>(this.historyPreferencesUrl(babyId));
+  }
+
+  saveHistoryPreferences(
+    babyId: string,
+    preferences: BreastfeedingHistoryPreferences,
+  ): Observable<BreastfeedingHistoryPreferences> {
+    return this.http.put<BreastfeedingHistoryPreferences>(this.historyPreferencesUrl(babyId), preferences);
   }
 
   update(babyId: string, sessionId: string, dto: UpdateBreastfeedingSessionDto): Observable<BreastfeedingSession> {
@@ -56,7 +78,15 @@ export class BreastfeedingService {
   }
 
   private sessionsUrl(babyId: string): string {
-    return `${environment.apiUrl}/babies/${encodeURIComponent(babyId)}/breastfeeding/sessions`;
+    return `${this.babyUrl(babyId)}/breastfeeding/sessions`;
+  }
+
+  private babyUrl(babyId: string): string {
+    return `${environment.apiUrl}/babies/${encodeURIComponent(babyId)}`;
+  }
+
+  private historyPreferencesUrl(babyId: string): string {
+    return `${this.babyUrl(babyId)}/preferences/breastfeeding-history`;
   }
 
   private sessionUrl(babyId: string, sessionId: string): string {

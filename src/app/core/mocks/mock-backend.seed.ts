@@ -94,6 +94,45 @@ function buildSeedSession(spec: SeedSessionSpec, now: Date): BreastfeedingSessio
   });
 }
 
+const MINUTES_PER_DAY = 1_440;
+const HISTORY_DAYS = 60;
+
+/** Deterministic pseudo-random sequence so the older history looks the same on every run. */
+function createRandom(seed: number): () => number {
+  let state = seed;
+  return () => {
+    state = (state * 1_664_525 + 1_013_904_223) % 4_294_967_296;
+    return state / 4_294_967_296;
+  };
+}
+
+/** Feeds every ~3 hours (more spaced as the baby grows) for the days older than the hand-written ones. */
+function createOlderSessionSpecs(): SeedSessionSpec[] {
+  const random = createRandom(2026);
+  const specs: SeedSessionSpec[] = [];
+  const firstOlderMinute = 7_200;
+  const lastMinute = HISTORY_DAYS * MINUTES_PER_DAY;
+
+  for (let dayStart = firstOlderMinute; dayStart < lastMinute; dayStart += MINUTES_PER_DAY) {
+    const spacing = 150 + Math.round(((dayStart - firstOlderMinute) / lastMinute) * 90);
+    for (let offset = 0; offset < MINUTES_PER_DAY; offset += spacing + Math.round(random() * 50)) {
+      const bothBreasts = random() > 0.45;
+      const first: Breast = random() > 0.5 ? 'left' : 'right';
+      const second: Breast = first === 'left' ? 'right' : 'left';
+      specs.push({
+        startedMinutesAgo: dayStart + offset,
+        segments: bothBreasts
+          ? [
+              { breast: first, minutes: 6 + Math.round(random() * 10) },
+              { breast: second, minutes: 3 + Math.round(random() * 8) },
+            ]
+          : [{ breast: first, minutes: 8 + Math.round(random() * 14) }],
+      });
+    }
+  }
+  return specs;
+}
+
 export function createSeedSessions(now: Date): BreastfeedingSession[] {
-  return SEED_SESSION_SPECS.map((spec) => buildSeedSession(spec, now));
+  return [...SEED_SESSION_SPECS, ...createOlderSessionSpecs()].map((spec) => buildSeedSession(spec, now));
 }
