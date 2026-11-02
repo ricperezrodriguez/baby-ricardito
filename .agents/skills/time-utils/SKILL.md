@@ -1,49 +1,49 @@
 ---
 name: time-utils
-description: Reglas y catálogo de helpers de tiempo del proyecto. Úsala siempre que escribas o modifiques código que calcule, formatee o mida tiempo - horas de inicio/fin, duraciones, huecos entre tramos, cuenta atrás, tiempo transcurrido ("Hace 5 min"), relojes que avanzan, parseo de fechas ISO - en componentes, servicios, timers o mocks.
+description: Project time-helper rules and catalog. Use whenever writing or modifying code that calculates, formats, or measures time—start/end times, durations, gaps between spans, countdowns, elapsed time ("Hace 5 min"), ticking clocks, or ISO date parsing—in components, services, timers, or mocks.
 ---
 
-# Utilidades de tiempo
+# Time Utilities
 
-Todo cálculo de tiempo vive en `src/app/shared/utils/` y se importa desde `@shared`. No se reimplementa ni se improvisa en componentes o servicios.
+All time calculations live in `src/app/shared/utils/` and are imported from `@shared`. Do not reimplement them or improvise time logic in components or services.
 
-## Reglas
+## Rules
 
-1. Antes de escribir lógica de tiempo, busca en el catálogo de abajo. Si existe un helper, úsalo.
-2. No uses `Date.now()`, `new Date()`, `Date.parse()`, `setInterval` ni `interval()` en componentes o servicios. Quedan solo dentro de `shared/utils/`.
-3. Si el cálculo no existe y puede reutilizarse en otra funcionalidad, añádelo a `time.utils.ts` y expórtalo en `src/app/shared/index.ts`. No lo dejes local en un componente.
-4. Importa siempre desde `@shared`, nunca desde la ruta interna del archivo.
-5. Trabaja en milisegundos epoch (`number`) y convierte a ISO solo en los límites (API o almacenamiento) con `toIsoString` y `parseTimestamp`.
-6. Los helpers son puros: reciben `now` como argumento. No lo leas dentro de la función.
+1. Before writing time logic, check the catalog below. If a helper exists, use it.
+2. Do not use `Date.now()`, `new Date()`, `Date.parse()`, `setInterval`, or `interval()` in components or services. These are allowed only inside `shared/utils/`.
+3. If a calculation does not exist and could be reused by another feature, add it to `time.utils.ts` and export it from `src/app/shared/index.ts`. Do not keep it local to a component.
+4. Always import from `@shared`, never from an internal file path.
+5. Work with epoch milliseconds (`number`) and convert to ISO only at boundaries (API or storage) using `toIsoString` and `parseTimestamp`.
+6. Helpers are pure: pass `now` as an argument. Do not read it inside the function.
 
-## Catálogo (`time.utils.ts`)
+## Catalog (`time.utils.ts`)
 
-| Helper | Para qué |
+| Helper | Purpose |
 |---|---|
-| `formatDuration(ms)` | Formatea ms como `mm:ss` (o `h:mm:ss` desde 1 h). Nunca negativo. |
-| `spanDuration(span, now)` | Ms de un `TimeSpan`. Si `end` es `null`, mide hasta `now`. |
-| `totalGaps(spans)` | Ms de hueco entre tramos consecutivos ordenados por inicio. Los tramos abiertos no suman hueco. |
-| `remainingTime(start, durationMs, now)` | Ms que quedan de una cuenta atrás. Nunca negativo. |
-| `isTimerFinished(start, durationMs, now)` | Si la cuenta atrás ya terminó. |
-| `parseTimestamp(iso)` | ISO a ms epoch, o `null` si es inválido. |
-| `toIsoString(ms)` | Ms epoch a ISO. |
-| `parseDuration(text)` | `m:ss` o `h:mm:ss` a ms (inverso de `formatDuration`), o `null` si es inválido. |
-| `toDateTimeLocal(ms)` | Ms epoch a `yyyy-MM-ddTHH:mm:ss` local, el valor de un `<input type="datetime-local">`. |
-| `parseDateTimeLocal(text)` | Valor local de `datetime-local` a ms epoch, o `null` si está vacío o es inválido. |
-| `formatElapsedSince(iso, now)` | Texto en español: "Hace 5 min", "Hace 2 h 10 min", "Hace menos de 1 min". |
+| `formatDuration(ms)` | Formats milliseconds as `mm:ss` (or `h:mm:ss` from 1 hour onward). Never negative. |
+| `spanDuration(span, now)` | Milliseconds in a `TimeSpan`. If `end` is `null`, measures up to `now`. |
+| `totalGaps(spans)` | Milliseconds of gaps between consecutive spans sorted by start time. Open spans do not contribute a gap. |
+| `remainingTime(start, durationMs, now)` | Milliseconds remaining in a countdown. Never negative. |
+| `isTimerFinished(start, durationMs, now)` | Whether the countdown has finished. |
+| `parseTimestamp(iso)` | Converts ISO to epoch milliseconds, or returns `null` if invalid. |
+| `toIsoString(ms)` | Converts epoch milliseconds to ISO. |
+| `parseDuration(text)` | Converts `m:ss` or `h:mm:ss` to milliseconds (the inverse of `formatDuration`), or returns `null` if invalid. |
+| `toDateTimeLocal(ms)` | Converts epoch milliseconds to local `yyyy-MM-ddTHH:mm:ss`, the value for an `<input type="datetime-local">`. |
+| `parseDateTimeLocal(text)` | Converts a local `datetime-local` value to epoch milliseconds, or returns `null` if empty or invalid. |
+| `formatElapsedSince(iso, now)` | Spanish text, such as "Hace 5 min", "Hace 2 h 10 min", or "Hace menos de 1 min". |
 
-Tipo: `TimeSpan { start: number; end: number | null }` (`end: null` = sigue en curso).
+Type: `TimeSpan { start: number; end: number | null }` (`end: null` = still in progress).
 
-## Reloj (`clock.ts`)
+## Clock (`clock.ts`)
 
-`createClock(tickMs = 1_000)` devuelve un `Clock` con:
+`createClock(tickMs = 1_000)` returns a `Clock` with:
 
-- `now`: signal de solo lectura con el instante actual, que se actualiza en cada tick.
-- `refresh()`: actualiza `now` al momento y devuelve el valor. Úsalo para obtener "la hora actual" al ejecutar una acción (por ejemplo al pulsar un botón) en lugar de `Date.now()`.
+- `now`: A read-only signal containing the current instant, updated on every tick.
+- `refresh()`: Immediately updates `now` and returns its value. Use it to get "the current time" when performing an action (for example, when a button is pressed) instead of `Date.now()`.
 
-Debe llamarse en contexto de inyección (campo de clase o constructor). El intervalo se cancela solo al destruirse el componente.
+It must be called in an injection context (a class field or constructor). The interval is automatically canceled when the component is destroyed.
 
-## Patrón de uso
+## Usage Pattern
 
 ```ts
 import { createClock, formatDuration, spanDuration } from '@shared';
@@ -57,21 +57,21 @@ export class Example {
 
   protected onPress(): void {
     const timestamp = this.clock.refresh();
-    // usar timestamp en lugar de Date.now()
+    // use timestamp instead of Date.now()
   }
 }
 ```
 
-Incorrecto:
+Incorrect:
 
 ```ts
-const elapsed = Date.now() - start;            // usa spanDuration + clock
-timer(0, 1000).subscribe(() => { ... });       // usa createClock
-const label = `${m}:${String(s).padStart(2, '0')}`; // usa formatDuration
+const elapsed = Date.now() - start;            // use spanDuration + clock
+timer(0, 1000).subscribe(() => { ... });       // use createClock
+const label = `${m}:${String(s).padStart(2, '0')}`; // use formatDuration
 ```
 
-## Cómo añadir un helper nuevo
+## How to Add a New Helper
 
-1. Añade la función pura a `time.utils.ts` con un comentario de una línea que explique su contrato (por ejemplo, "nunca negativo").
-2. Expórtala (y su tipo si lo hay) en `src/app/shared/index.ts`.
-3. Añádela a la tabla de este archivo.
+1. Add the pure function to `time.utils.ts` with a one-line comment explaining its contract (for example, "never negative").
+2. Export it (and its type, if any) from `src/app/shared/index.ts`.
+3. Add it to this file's table.
