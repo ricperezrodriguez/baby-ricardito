@@ -1,10 +1,13 @@
-<mat-card class="tracking-card" appearance="outlined">
+<mat-card class="tracking-card" [class.active]="active()" appearance="outlined">
   <div class="card-header">
     <div class="card-heading">
       <span class="card-icon" aria-hidden="true">
         <ng-content select="[cardIcon]" />
       </span>
       <h3 class="card-title">{{ title() }}</h3>
+      @if (active()) {
+        <span class="active-badge"><span class="active-dot" aria-hidden="true"></span>En curso</span>
+      }
     </div>
     <button
       class="add-button"

@@ -38,6 +38,8 @@ export class TrackingCard {
   readonly headerColor = input('var(--app-green)');
   /** Cuando es true, pulsar el contenido de la tarjeta abre el mismo modal que el botón «+». */
   readonly contentOpensDialog = input(false);
+  /** Resalta la tarjeta mientras hay un registro en curso. */
+  readonly active = input(false);
   /** Se emite siempre que el modal se cierra, para que la tarjeta refresque sus datos. */
   readonly closed = output<void>();
 
