@@ -24,6 +24,7 @@ export type {
 } from '@app/shared/history/history-list/paged-list';
 export { RecordFlags } from '@app/shared/history/history-list/record-flags';
 export { InView } from '@app/shared/in-view/in-view';
+export { InstallPrompt } from '@app/shared/install-prompt/install-prompt';
 export { LastRecordSummary } from '@app/shared/last-record-summary/last-record-summary';
 export { createLatestRecord } from '@app/shared/latest-record/latest-record';
 export type { LatestRecord, LatestRecordSource } from '@app/shared/latest-record/latest-record';
