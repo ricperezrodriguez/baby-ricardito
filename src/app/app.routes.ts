@@ -4,8 +4,7 @@ import { DialogRouteData, DialogRouteHost } from '@app/shared/dialog-route/dialo
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () =>
-      import('@app/pages/home/home').then((m) => m.Home),
+    loadComponent: () => import('@app/pages/home/home').then((m) => m.Home),
     children: [
       {
         path: 'lactancia',
@@ -17,12 +16,24 @@ export const routes: Routes = [
             ),
         } satisfies DialogRouteData,
       },
+      {
+        path: 'notificaciones',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/shared/notifications-dialog/notifications-dialog').then(
+              (m) => m.NotificationsDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
     ],
   },
   {
     path: 'detalle/pecho',
     loadComponent: () =>
-      import('@app/pages/breastfeeding-history/breastfeeding-history').then((m) => m.BreastfeedingHistory),
+      import('@app/pages/breastfeeding-history/breastfeeding-history').then(
+        (m) => m.BreastfeedingHistory,
+      ),
     children: [
       {
         path: ':sessionId',
@@ -39,7 +50,8 @@ export const routes: Routes = [
   },
   {
     path: 'detalle/:category',
-    loadComponent: () => import('@app/pages/pending-history/pending-history').then((m) => m.PendingHistory),
+    loadComponent: () =>
+      import('@app/pages/pending-history/pending-history').then((m) => m.PendingHistory),
   },
   { path: '**', redirectTo: '' },
 ];

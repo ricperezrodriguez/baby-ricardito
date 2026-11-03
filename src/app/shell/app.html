@@ -1,14 +1,86 @@
-<header class="app-header">
-  <a class="brand" routerLink="/" aria-label="Nido, inicio">
-    <span class="brand-mark" aria-hidden="true">n</span>
-    <span>Nido</span>
-  </a>
-  <nav aria-label="Navegación principal">
-    <a matButton="outlined" routerLink="/">
-      Inicio
-    </a>
-  </nav>
-</header>
-<main class="app-main">
-  <router-outlet />
-</main>
+<mat-sidenav-container class="app-container">
+  <mat-sidenav
+    #drawer
+    class="settings-drawer"
+    mode="over"
+    fixedInViewport
+    aria-label="Menú de configuración"
+  >
+    <div class="drawer-header">
+      <span class="avatar avatar-large" aria-hidden="true">
+        @if (babyPhoto(); as photo) {
+          <img [src]="photo" alt="" />
+        } @else {
+          n
+        }
+      </span>
+      <div>
+        <p class="drawer-title">baby-ricardito</p>
+        <p class="drawer-subtitle">Configuración</p>
+      </div>
+      <button
+        matIconButton
+        type="button"
+        class="drawer-close"
+        aria-label="Cerrar menú"
+        (click)="drawer.close()"
+      >
+        <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">close</mat-icon>
+      </button>
+    </div>
+
+    <mat-nav-list>
+      <a mat-list-item routerLink="/" (click)="drawer.close()">
+        <mat-icon matListItemIcon fontSet="material-symbols-outlined" aria-hidden="true"
+          >home</mat-icon
+        >
+        <span matListItemTitle>Inicio</span>
+      </a>
+    </mat-nav-list>
+
+    <mat-divider />
+
+    <mat-action-list aria-label="Configuración">
+      @for (item of settings; track item.label) {
+        <button mat-list-item type="button" disabled>
+          <mat-icon matListItemIcon fontSet="material-symbols-outlined" aria-hidden="true">{{
+            item.icon
+          }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+          <span matListItemLine>{{ item.description }}</span>
+        </button>
+      }
+    </mat-action-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <header class="app-header">
+      <div class="header-start">
+        <button
+          type="button"
+          class="avatar"
+          aria-label="Abrir menú de configuración"
+          (click)="drawer.open()"
+        >
+          @if (babyPhoto(); as photo) {
+            <img [src]="photo" alt="" />
+          } @else {
+            <span aria-hidden="true">n</span>
+          }
+        </button>
+        <a class="logo" routerLink="/" aria-label="baby-ricardito, inicio">
+          <span class="logo-text" aria-hidden="true">
+            <span class="logo-baby">baby</span><span class="logo-dash">-</span
+            ><span class="logo-name">ricardito</span>
+          </span>
+        </a>
+      </div>
+      <a matIconButton routerLink="/notificaciones" aria-label="Notificaciones">
+        <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">notifications</mat-icon>
+      </a>
+    </header>
+    <main class="app-main">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

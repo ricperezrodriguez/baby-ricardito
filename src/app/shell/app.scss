@@ -5,6 +5,17 @@
   color: var(--app-ink);
 }
 
+.app-container {
+  --mat-sidenav-container-background-color: var(--app-background);
+  --mat-sidenav-content-background-color: var(--app-background);
+  min-height: 100vh;
+}
+
+.settings-drawer {
+  --mat-sidenav-container-width: min(20rem, 85vw);
+  background: var(--app-surface);
+}
+
 .app-header {
   align-items: center;
   background: var(--app-background);
@@ -12,52 +23,128 @@
   justify-content: space-between;
   margin: 0 auto;
   max-width: 1120px;
-  padding: 1.25rem 2rem;
+  padding: 1rem 2rem;
 }
 
-.brand {
+.header-start {
   align-items: center;
-  color: inherit;
+  display: flex;
+  gap: 0.85rem;
+}
+
+.logo {
+  align-items: center;
+  border-radius: 0.5rem;
+  color: var(--app-green);
   display: inline-flex;
-  font-size: 1.25rem;
-  font-weight: 700;
-  gap: 0.65rem;
-  letter-spacing: -0.04em;
+  gap: 0.55rem;
   text-decoration: none;
 }
 
-.brand-mark {
-  align-items: center;
-  background: var(--app-green);
-  border-radius: 50% 50% 45% 45%;
-  color: var(--app-surface);
-  display: inline-flex;
-  font-size: 1.25rem;
-  height: 2.25rem;
-  justify-content: center;
-  line-height: 1;
-  width: 2.25rem;
-}
-
-.brand:focus-visible,
-.app-header a:focus-visible {
-  border-radius: 0.25rem;
+.logo:focus-visible {
   outline: 3px solid var(--app-focus);
   outline-offset: 3px;
+}
+
+.logo-text {
+  font-family: Fredoka, Roboto, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.logo-baby {
+  color: var(--app-green);
+}
+
+.logo-dash {
+  color: var(--app-muted);
+  margin: 0 0.05em;
+}
+
+.logo-name {
+  color: var(--app-coral);
+}
+
+.avatar {
+  align-items: center;
+  background: var(--app-green);
+  border: 0;
+  border-radius: 50%;
+  color: var(--app-surface);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  height: 2.75rem;
+  justify-content: center;
+  line-height: 1;
+  overflow: hidden;
+  padding: 0;
+  width: 2.75rem;
+}
+
+.avatar img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.avatar:focus-visible {
+  outline: 3px solid var(--app-focus);
+  outline-offset: 3px;
+}
+
+.avatar-large {
+  cursor: default;
+  flex: none;
+  font-size: 1.5rem;
+  height: 3.5rem;
+  width: 3.5rem;
+}
+
+.drawer-header {
+  align-items: center;
+  display: flex;
+  gap: 0.85rem;
+  padding: 1.25rem 1rem 1rem 1.25rem;
+}
+
+.drawer-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.drawer-subtitle {
+  color: var(--app-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.drawer-close {
+  margin-left: auto;
 }
 
 .app-main {
   margin: 0 auto;
   max-width: 1120px;
-  padding: 1rem 2rem 4rem;
+  padding: 0.5rem 2rem 4rem;
 }
 
 @media (max-width: 600px) {
+  .logo-text {
+    font-size: 1.15rem;
+  }
+
   .app-header {
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1.25rem;
   }
 
   .app-main {
-    padding: 0.75rem 1.25rem 3rem;
+    padding: 0.5rem 1.25rem 3rem;
   }
 }
