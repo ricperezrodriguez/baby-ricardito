@@ -1,5 +1,5 @@
 ---
-applyTo: "src/app/pages/*-history/**,src/app/shared/in-view/**,src/app/features/**,src/app/core/mocks/**,src/app/app.routes.ts"
+applyTo: "src/app/pages/*-history/**,src/app/shared/history/**,src/app/shared/in-view/**,src/app/features/**,src/app/core/mocks/**,src/app/app.routes.ts"
 ---
 
 # History page ("Ver historial")
@@ -13,7 +13,7 @@ The modal that opens from a row is described in `.github/instructions/dialogs-fe
 1. **Header:** back link to Home ("Inicio"), `h1` ("Historial de lactancia") and a period selector (`mat-button-toggle-group`: 7 / 30 / 90 days, **7 by default**).
 2. **Summary** (`dl`): number of feeds, total time, average duration, average interval for the selected period. `—` when there is no data.
 3. **Charts** section: title, a `mat-chip-listbox` (multiple) with one chip per chart (selected = visible), and the grid of chart cards.
-4. **Feeds** section: the list grouped by day with infinite scroll.
+4. **Records** section: the list grouped by day with infinite scroll (see "Record list": shared `createPagedList` + `app-history-list`).
 5. `<router-outlet />` for the record modal (child route `:sessionId`).
 
 All visible copy is in Spanish. Design tokens come from `src/styles.scss` (`--app-*`); chart colors in `history-charts.ts` mirror them (left `#99620d`, right `#285c8c`, lines `#155f56`). Layout must work from 360 px wide with no horizontal scroll.
@@ -58,29 +58,60 @@ The charts cannot depend on the paginated list, so the backend aggregates the da
 - The mock implementation is `src/app/core/mocks/mock-backend.stats.ts` (routing in `mock-backend.interceptor.ts`, state in `mock-backend.store.ts`). The mock seed generates ~60 days of feeds so the charts have content; keep it deterministic.
 - Reload the stats (and the list) when the record modal closes (see "Refresh").
 
-## Feed list
+## Record list
 
-- **Grouping:** by local day (`localDateKey`), newest first, in a `section` with an `h3` heading and a `ul`. The day heading is **sticky**, reads `Hoy`, `Ayer` or `Sábado, 31 de octubre` (`formatDayHeading`) and shows `N tomas · <total time>` (`formatDurationText`).
-- **Day totals** of the last loaded day are hidden while more pages remain, because that day may continue in the next page.
-- **Row:** a full-width link with start - end time (`HH:mm`), total duration, the time per side (`I` left / `D` right, only the sides actually used, with hidden full text for screen readers) and small icons when the feed has notes or a photo. A feed in progress shows "En curso" and links to the creation route (`/lactancia`); a finished one links to `['/detalle/pecho', id]`, which opens the record modal. Rows must be keyboard-focusable with a visible focus outline.
-- **Infinite scroll:** pages of 20 through `getPage(limit, offset)`. A sentinel element with the shared `InView` directive (`IntersectionObserver`, 300 px margin) loads the next page. The sentinel is rendered only when `hasMore && !loadingMore && !moreFailed`, so that after each load it is re-created and fires again if it is still visible.
-- **States:** spinner while loading the first page, "Reintentar" on first-page error, empty message "Todavía no hay tomas registradas.", spinner while loading more, and a "Reintentar" button if loading a later page fails (automatic loading stops until the user retries).
-- **Refresh:** when the modal closes, the list reloads in a single request with `limit = max(20, loaded count)` and `offset = 0`, so the user keeps the scroll position and the loaded rows.
+The list of records (grouped by day, infinite scroll) is the same for **every** tracker, so its layout, styles, states and paging logic live only in shared code (`src/app/shared/history/history-list/`, exported from `@shared`). A tracker's list component (`pages/<tracker>-history/<tracker>-history-list/`) only provides what is specific: how a record becomes a row, the day summary and the content of the row. **Never copy markup, styles or paging code from another tracker's list.**
+
+| Piece | Responsibility |
+|---|---|
+| `createPagedList<Item, Row>(options)` | Data side. Options: `load({ limit, offset })` (the service `getPage`), `toRow` (record -> row, `null` skips it), `timeOf` (instant used to group by local day), `summaryOf(rows)` (text of the day heading) and `dialogRoute` (the `:sessionId` path whose modal closing reloads the list). Returns `groups` (`DayGroup<Row>[]`), `status`, `loadingMore`, `moreFailed`, `hasMore`, `reload()` and `loadMore()`. Does pages of 20, grouping by `localDateKey`, hiding the summary of the last day while more pages remain, the retry after a failed page, and the reload in one request (`limit = max(20, loaded)`, `offset = 0`) when the modal closes. Call it in a field initializer. |
+| `app-history-list` (`HistoryList`) | Frame. Inputs: `list` (the object returned above), `accent` (`var(--app-card-<tracker>)`), `timeWidth` (width of the first column; default `3.5rem`, widen it for ranges such as `7rem`) and the Spanish texts `loadingLabel`, `emptyMessage`, `errorMessage`, `loadingMoreLabel`. Renders the states (`app-async-state`), the retry of a failed "load more", the spinner and the `InView` sentinel. |
+| `app-history-day` (`HistoryDay`) | One day: sticky heading (`Hoy`, `Ayer`, `Sábado, 31 de octubre`) with its summary and the framed `ul`. Inputs `key`, `heading`, `summary` from the group. |
+| `li[appHistoryRow]` (`HistoryRow`) | One row: full-width link with hover, visible focus outline, chevron and the responsive grid. Inputs `link` and `inProgress` (tints the time). Content goes in three slots: `historyTime`, `historyMain` and `historyDetails`. |
+| `app-record-flags` (`RecordFlags`) | The notes / photo icons with hidden text for screen readers. Use it in every row's `historyDetails`. |
+
+Template of a tracker list (the whole file, apart from the row content):
+
+```html
+<app-history-list [list]="list" accent="var(--app-card-bottle)" loadingLabel="Cargando el historial"
+  emptyMessage="Todavía no hay biberones registrados." errorMessage="No se ha podido cargar el historial."
+  loadingMoreLabel="Cargando más biberones">
+  @for (group of list.groups(); track group.key) {
+    <app-history-day [key]="group.key" [heading]="group.heading" [summary]="group.summary">
+      @for (row of group.rows; track row.id) {
+        <li appHistoryRow [link]="row.link">
+          <span historyTime>{{ row.startMs | date: 'HH:mm' }}</span>
+          <span historyMain>...</span>
+          <span historyDetails>... <app-record-flags [hasNotes]="row.hasNotes" [hasPhoto]="row.hasPhoto" /></span>
+        </li>
+      }
+    </app-history-day>
+  }
+</app-history-list>
+```
+
+Rules:
+
+- **Styles:** the tracker's `.scss` contains **only** styles of its own row content (a type label, a warning, a muted duration). Do not restyle `.history-row`, `.day-*`, the grid, the chevron or the sentinel; if the common layout needs a change, change the shared component so every tracker stays identical. Do not use `::ng-deep`.
+- **Row:** a running record links to its creation route (`/lactancia`) and passes `inProgress`; a finished one links to `['/detalle/<category>', id]`, which opens the record modal. Rows keep the link, hover and keyboard focus from `HistoryRow`; do not wrap them in another link or button.
+- **Counts and time in the day summary** use `@shared` helpers (`formatDurationText`...) and the correct singular/plural noun (`1 toma`, `2 tomas`). The day summary is computed from the rows, so keep whatever it needs (e.g. seconds) in the row.
+- **States:** loading, empty and error come from `app-history-list` (see `.github/instructions/loading-states.instructions.md`); never add them by hand.
+- **Refresh:** `createPagedList` reloads by itself when `dialogRoute` is notified (see "Refresh"); the list never subscribes by hand.
 
 ## Refresh
 
-`DialogRouteHost` emits `DialogRouteEvents.notifyClosed(':sessionId')` when the record modal closes (saved, deleted or just closed). Both the page (stats) and the list subscribe to that path with `takeUntilDestroyed`. Do not refresh by other means. The card on Home refreshes by itself when Home is shown again.
+`DialogRouteHost` emits `DialogRouteEvents.notifyClosed(':sessionId')` when the record modal closes (saved, deleted or just closed). Both the page (stats) and the list (`createPagedList`, through `dialogRoute`) subscribe to that path. Do not refresh by other means. The card on Home refreshes by itself when Home is shown again.
 
 ## Rules for the code
 
 - Time logic only through `@shared` helpers (`localDateRange`, `localDateKey`, `localTimeZone`, `formatDayHeading`, `formatDayLabel`, `formatDurationText`, `parseTimestamp`, ...); load the `time-utils` skill first. Use `createClock(60_000)` for "now" in this page: a one-second tick is not needed and would recompute the groups constantly. A computed that feeds a resource must be stable (`equal` on `from`/`to`) so the tick does not refetch.
 - State with signals; data with `rxResource` (`params`/`stream`); `linkedSignal` for state derived from a resource.
-- Keep component styles under the `anyComponentStyle` budget (4 kB warning / 8 kB error): split into small components (`feed-history-list`, `feed-heatmap`, `history-chart`) instead of growing one stylesheet.
+- Keep component styles under the `anyComponentStyle` budget (4 kB warning / 8 kB error): split into small components (`<tracker>-history-list`, heatmap, `history-chart`) instead of growing one stylesheet.
 - Build with `npm run build` and watch the initial bundle budget (500 kB warning): everything heavy (Chart.js, chips, button toggle) must stay in the lazy page chunk.
 
 ## Adding the history page for another tracker
 
-1. Add the models and service calls for its stats and preferences (same contract, different path segment and charts) and the mock implementation.
-2. Create `src/app/pages/<tracker>-history/` (English name, e.g. `bottle-history`) reusing `InView`, `app-history-chart`-style wrapper and the heatmap where it applies; extract them to a shared lazy location when a second tracker needs them (never through the `@shared` barrel if they import Chart.js).
+1. Add the models and service calls for its stats and preferences (same contract, different path segment and charts) and the mock implementation. The service needs `getPage({ limit, offset })` returning `{ items, total }`.
+2. Create `src/app/pages/<tracker>-history/` (English name, e.g. `bottle-history`) reusing the shared pieces: `HistoryChart` and `HourHeatmap` (`shared/history/`, never through the `@shared` barrel because of Chart.js), `createHiddenCharts`, and for the list **`createPagedList` + `app-history-list`/`app-history-day`/`appHistoryRow`/`app-record-flags`** as described in "Record list". Do not write the list paging, states or row layout again.
 3. Declare `detalle/<category>` with its `:sessionId` child route (see the modal file) before `detalle/:category`.
 4. Point the card's `link` to that route.

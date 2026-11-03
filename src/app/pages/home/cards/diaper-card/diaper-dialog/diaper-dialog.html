@@ -1,0 +1,135 @@
+<app-tracking-dialog-layout
+  [title]="record.dialogTitle()"
+  [saveLabel]="record.saveLabel()"
+  [saveDisabled]="saveDisabled()"
+  [saving]="record.saving()"
+  [busy]="record.busy()"
+  [confirmBeforeDiscard]="false"
+  (save)="onSave()"
+  (dismiss)="close()"
+  (discard)="close()"
+>
+  @if (record.historyMode()) {
+    <button
+      dialogActionsStart
+      matIconButton
+      type="button"
+      class="delete-button"
+      [attr.aria-label]="record.texts.deleteLabel"
+      [disabled]="record.busy() || record.saving()"
+      (click)="deleteChange()"
+    >
+      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
+    </button>
+  }
+  @if (record.loading()) {
+    <app-loading-spinner [label]="record.texts.loadingLabel" />
+  } @else {
+    <section class="summary" aria-labelledby="summary-title">
+      <h3 id="summary-title" class="summary-title">Datos del pañal</h3>
+      <dl class="summary-list">
+        <div class="summary-row">
+          <dt>Fecha y hora</dt>
+          <dd>
+            <app-editable-time
+              label="Fecha y hora"
+              kind="datetime"
+              [value]="changedAt()"
+              [max]="maxChangedAt()"
+              [disabled]="record.editsDisabled()"
+              (committed)="changedAt.set($event)"
+            />
+          </dd>
+        </div>
+        @if (record.readOnly()) {
+          <div class="summary-row">
+            <dt>Tipo</dt>
+            <dd>{{ typeText() }}</dd>
+          </div>
+          @if (hasStool()) {
+            <div class="summary-row">
+              <dt>Color de la caca</dt>
+              <dd>{{ stoolColorText() }}</dd>
+            </div>
+            <div class="summary-row">
+              <dt>Consistencia de la caca</dt>
+              <dd>{{ stoolConsistencyText() }}</dd>
+            </div>
+          }
+          <div class="summary-row">
+            <dt>Irritación en la piel</dt>
+            <dd>{{ form.hasRash().value() ? 'Sí' : 'No' }}</dd>
+          </div>
+        }
+      </dl>
+
+      @if (!record.readOnly()) {
+        <div class="field-group">
+          <h4 class="group-title">Tipo de pañal</h4>
+          <app-choice-group
+            class="type-group"
+            label="Tipo de pañal"
+            [options]="typeOptions"
+            [value]="type()"
+            [disabled]="record.editsDisabled()"
+            (valueChange)="selectType($event)"
+          >
+            <ng-template #optionIcon let-option>
+              <app-diaper-type-icon [type]="option.value" />
+            </ng-template>
+          </app-choice-group>
+        </div>
+
+        @if (hasStool()) {
+          <div class="field-group">
+            <h4 class="group-title">Color de la caca</h4>
+            <app-choice-group
+              label="Color de la caca"
+              [options]="stoolColorOptions"
+              [disabled]="record.editsDisabled()"
+              [(value)]="stoolColor"
+            />
+          </div>
+
+          <div class="field-group">
+            <h4 class="group-title">Consistencia de la caca</h4>
+            <app-choice-group
+              label="Consistencia de la caca"
+              [options]="stoolConsistencyOptions"
+              [disabled]="record.editsDisabled()"
+              [(value)]="stoolConsistency"
+            />
+          </div>
+        }
+
+        <div class="field-group">
+          <mat-slide-toggle [formField]="form.hasRash">Irritación en la piel</mat-slide-toggle>
+        </div>
+      }
+
+      <app-record-photo-field
+        alt="Foto del pañal"
+        [previewUrl]="photo.previewUrl()"
+        [readOnly]="record.readOnly()"
+        [disabled]="record.busy() || record.saving()"
+        (fileSelected)="photo.select($event)"
+        (removeRequested)="photo.remove()"
+      />
+
+      @if (!record.readOnly() || form.notes().value()) {
+        <mat-form-field class="notes-field" appearance="outline">
+          <mat-label>Notas</mat-label>
+          <textarea matInput rows="3" [formField]="form.notes"></textarea>
+          @if (!record.readOnly()) {
+            <mat-hint align="end" [class.over-limit]="form.notes().invalid()">
+              {{ form.notes().value().length }}/{{ notesMaxLength }}
+              @if (form.notes().invalid()) {
+                · Máximo superado
+              }
+            </mat-hint>
+          }
+        </mat-form-field>
+      }
+    </section>
+  }
+</app-tracking-dialog-layout>

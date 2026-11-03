@@ -2,34 +2,22 @@ import { HttpErrorResponse, HttpEvent, HttpInterceptorFn, HttpRequest, HttpRespo
 import { inject } from '@angular/core';
 import { Observable, defer, delay, mergeMap, of, throwError } from 'rxjs';
 import { environment } from '@environments/environment';
-import { MockApiError, badRequest, notFound } from '@app/core/mocks/mock-backend.errors';
+import { MockApiError, notFound } from '@app/core/mocks/mock-backend.errors';
 import { MockBackendStore } from '@app/core/mocks/mock-backend.store';
-import { parseStatsRequest } from '@app/core/mocks/mock-backend.stats';
-
-interface MockReply {
-  status: number;
-  body: unknown;
-}
-
-interface SessionsRoute {
-  babyId: string;
-  sessionId: string | null;
-  photo: boolean;
-}
+import { parseStatsRequest } from '@app/core/mocks/mock-backend.time';
+import {
+  MockReply,
+  STATUS_TEXTS,
+  matchBabyRoute,
+  parsePageParameter,
+  parseRecordRoute,
+} from '@app/core/mocks/mock-backend.routing';
+import { MockDiaperStore } from '@app/core/mocks/mock-backend.diaper.store';
+import { computeDiaperReply } from '@app/core/mocks/mock-backend.diaper.routes';
 
 const SESSIONS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/sessions(?:\/([^/]+)(\/photo)?)?\/?$/;
 const STATS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/stats\/?$/;
 const HISTORY_PREFERENCES_ROUTE_PATTERN = /^\/babies\/([^/]+)\/preferences\/breastfeeding-history\/?$/;
-
-const STATUS_TEXTS: Record<number, string> = {
-  200: 'OK',
-  201: 'Created',
-  204: 'No Content',
-  400: 'Bad Request',
-  404: 'Not Found',
-  409: 'Conflict',
-  422: 'Unprocessable Entity',
-};
 
 function isApiUrl(url: string): boolean {
   if (!url.startsWith(environment.apiUrl)) {
@@ -39,39 +27,12 @@ function isApiUrl(url: string): boolean {
   return next === '' || next === '/' || next === '?';
 }
 
-function parseSessionsRoute(url: string): SessionsRoute | null {
-  const path = url.slice(environment.apiUrl.length).split('?')[0];
-  const match = SESSIONS_ROUTE_PATTERN.exec(path);
-  if (match === null) {
-    return null;
+function computeReply(req: HttpRequest<unknown>, store: MockBackendStore, diaperStore: MockDiaperStore): MockReply {
+  const diaperReply = computeDiaperReply(req, diaperStore);
+  if (diaperReply !== null) {
+    return diaperReply;
   }
-  return {
-    babyId: decodeURIComponent(match[1]),
-    sessionId: match[2] === undefined ? null : decodeURIComponent(match[2]),
-    photo: match[3] !== undefined,
-  };
-}
 
-function parsePageParameter(value: string | null, name: string, defaultValue: number, minimum: number): number {
-  if (value === null) {
-    return defaultValue;
-  }
-  if (!/^\d+$/.test(value)) {
-    throw badRequest('INVALID_PAGINATION', `"${name}" must be an integer greater than or equal to ${minimum}.`);
-  }
-  const parsed = Number(value);
-  if (!Number.isSafeInteger(parsed) || parsed < minimum) {
-    throw badRequest('INVALID_PAGINATION', `"${name}" must be an integer greater than or equal to ${minimum}.`);
-  }
-  return parsed;
-}
-
-function matchBabyRoute(url: string, pattern: RegExp): string | null {
-  const match = pattern.exec(url.slice(environment.apiUrl.length).split('?')[0]);
-  return match === null ? null : decodeURIComponent(match[1]);
-}
-
-function computeReply(req: HttpRequest<unknown>, store: MockBackendStore): MockReply {
   const statsBabyId = matchBabyRoute(req.url, STATS_ROUTE_PATTERN);
   if (statsBabyId !== null && req.method === 'GET') {
     const request = parseStatsRequest({
@@ -92,11 +53,11 @@ function computeReply(req: HttpRequest<unknown>, store: MockBackendStore): MockR
     }
   }
 
-  const route = parseSessionsRoute(req.url);
+  const route = parseRecordRoute(req.url, SESSIONS_ROUTE_PATTERN);
   if (route === null) {
     throw notFound('ROUTE_NOT_FOUND', `No mocked route for ${req.method} ${req.url}.`);
   }
-  const { babyId, sessionId, photo } = route;
+  const { babyId, recordId: sessionId, photo } = route;
 
   if (sessionId !== null && photo) {
     if (req.method === 'PUT') {
@@ -140,9 +101,13 @@ function logMock(req: HttpRequest<unknown>, status: number, detail: unknown): vo
   console.log(`[MOCK] ${req.method} ${req.urlWithParams} -> ${status}`, { requestBody: req.body, response: detail });
 }
 
-function resolveOutcome(req: HttpRequest<unknown>, store: MockBackendStore): HttpEvent<unknown> | HttpErrorResponse {
+function resolveOutcome(
+  req: HttpRequest<unknown>,
+  store: MockBackendStore,
+  diaperStore: MockDiaperStore,
+): HttpEvent<unknown> | HttpErrorResponse {
   try {
-    const reply = computeReply(req, store);
+    const reply = computeReply(req, store, diaperStore);
     logMock(req, reply.status, reply.body);
     return new HttpResponse({
       status: reply.status,
@@ -173,9 +138,10 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req, next): Observable
   }
 
   const store = inject(MockBackendStore);
+  const diaperStore = inject(MockDiaperStore);
 
   // The delay is applied to errors too, so they are materialized as values first.
-  return defer(() => of(resolveOutcome(req, store))).pipe(
+  return defer(() => of(resolveOutcome(req, store, diaperStore))).pipe(
     delay(randomDelayMs()),
     mergeMap((outcome) => (outcome instanceof HttpErrorResponse ? throwError(() => outcome) : of(outcome))),
   );

@@ -9,7 +9,7 @@ user-invocable: false
 
 You build the Home card. Reference: `src/app/pages/home/cards/breastfeeding-card/` (`.ts`, `.html`, `.scss`) and the shared `TrackingCard` (`src/app/shared/tracking-card/`). You never talk to the user: you return proposals and questions to `feature-orchestrator`.
 
-Read `AGENTS.md` and `.github/instructions/record-modals.instructions.md` first. For time-related logic (elapsed text, clocks, durations) load the `time-utils` skill and use helpers from `@shared`; no ad-hoc `interval`/`Date.now()`.
+Read `AGENTS.md`, `.github/instructions/record-modals.instructions.md` and `.github/instructions/loading-states.instructions.md` first (the card's loading/empty/error states use `AsyncState`, never hand-written markup). If the card needs a Home alert (e.g. "too long since the last ...") also read `.github/instructions/alerts.instructions.md` and reuse `AlertBanner`/`createAlertDismissal`. For time-related logic (elapsed text, clocks, durations) load the `time-utils` skill and use helpers from `@shared`; no ad-hoc `interval`/`Date.now()`.
 
 ## Input
 The prompt starts with `MODE`, `FEATURE`, `ROUTE_SLUG`, `HISTORY_URL`, `APPROVED_DECISIONS`, `UPSTREAM_CONTRACT` (model/service from `feature-data`).

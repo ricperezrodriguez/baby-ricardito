@@ -20,6 +20,7 @@ Compare the new feature with breastfeeding and harmonize:
 - HTML structure and semantics: headings, landmarks, `aria-label`s, focus order, contrast (WCAG AA).
 - Visual behavior: states (empty, loading, running), hover/focus, button placement, footer layout of the modal, icon sizes (`TRACKING_CARD_ICON_SIZE`).
 - Duplicated styles: if several features repeat the same SCSS, propose or create a shared one (mixin, shared class or component in `src/app/shared/`) instead of copying.
+- Shared building blocks must not be re-styled in a feature: the record list (`app-history-list`, `app-history-day`, `appHistoryRow`, `app-record-flags`), `app-async-state`/`app-error-state`/`app-loading-spinner` and `app-alert-banner`. A feature `.scss` only styles its own row/card content; if it restyles or copies a shared piece (rows, day heading, grid, chevron, error or alert boxes), report it as a finding for the orchestrator instead of tweaking it, and never use `::ng-deep`.
 
 ## Hard limits
 - **Do not touch logic**: no changes to `.ts` behavior, services, signals, routes or templates' control flow/bindings. Allowed: SCSS, class names, static markup/attributes and `aria-*` text.

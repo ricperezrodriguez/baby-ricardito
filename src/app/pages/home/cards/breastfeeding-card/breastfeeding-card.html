@@ -27,16 +27,16 @@
     />
     <path d="M11 19h.01M21 19h.01" stroke-width="2.4" />
   </svg>
-  @if (latestState(); as state) {
-    @if (state.status === 'loaded') {
-      <div class="breastfeeding-summary">
-        <div class="feed-details">
-          <span class="feed-status">{{ feedStatus() }}</span>
-          @if (feedElapsed(); as elapsed) {
-            <span class="feed-elapsed">{{ elapsed }}</span>
-          }
-        </div>
-        <div class="last-breast">
+  <app-async-state
+    [status]="latestState().status"
+    loadingLabel="Cargando la última toma"
+    emptyMessage="Todavía no hay sesiones de lactancia registradas."
+    errorMessage="No se pudo cargar la última toma."
+    (retry)="reload()"
+  >
+    @if (latestState().status === 'loaded') {
+      <app-last-record-summary [title]="feedStatus()" [secondaryLines]="[feedElapsed()]">
+        <div summaryAside class="last-breast">
           @if (breastDurations() === null) {
             <span class="last-breast-caption">{{ lastBreastCaption() }}</span>
           }
@@ -72,11 +72,7 @@
             <span class="last-breast-label">{{ lastBreastLabel() }}</span>
           }
         </div>
-      </div>
-    } @else if (state.status === 'loading') {
-      <app-loading-spinner label="Cargando la última toma" />
-    } @else if (state.status === 'empty') {
-      <p class="state-message">Todavía no hay sesiones de lactancia registradas.</p>
+      </app-last-record-summary>
     }
-  }
+  </app-async-state>
 </app-tracking-card>

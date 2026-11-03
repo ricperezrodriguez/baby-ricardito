@@ -1,41 +1,43 @@
 <app-tracking-dialog-layout
-  [title]="dialogTitle()"
-  [saveLabel]="saveLabel()"
+  [title]="record.dialogTitle()"
+  [saveLabel]="record.saveLabel()"
   [saveDisabled]="saveDisabled()"
-  [saving]="saving()"
-  [busy]="busy()"
-  [confirmBeforeDiscard]="!historyMode()"
+  [saving]="record.saving()"
+  [busy]="record.busy()"
+  [confirmBeforeDiscard]="!record.historyMode()"
   (save)="onSave()"
   (dismiss)="dismiss()"
   (discard)="discard()"
 >
-  @if (historyMode()) {
+  @if (record.historyMode()) {
     <button
       dialogActionsStart
       matIconButton
       type="button"
       class="delete-button"
-      aria-label="Eliminar toma"
-      [disabled]="busy() || saving()"
+      [attr.aria-label]="record.texts.deleteLabel"
+      [disabled]="record.busy() || record.saving()"
       (click)="deleteSession()"
     >
       <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
     </button>
   }
-  @if (loading()) {
-    <app-loading-spinner [label]="historyMode() ? 'Cargando la toma' : 'Cargando la toma en curso'" />
+  @if (record.loading()) {
+    <app-loading-spinner
+      [label]="record.historyMode() ? record.texts.loadingLabel : 'Cargando la toma en curso'"
+    />
   } @else {
     <div class="side-controls">
       @for (side of sideControls(); track side.breast) {
         <div class="side-control">
-          @if (historyMode()) {
+          @if (record.historyMode()) {
             <span class="side-label">{{ side.label }}</span>
           } @else {
             <button
               matButton="tonal"
               type="button"
               class="side-button"
-              [disabled]="busy() || saving()"
+              [disabled]="record.busy() || record.saving()"
               [attr.aria-pressed]="side.active"
               (click)="toggle(side.breast)"
             >
@@ -107,49 +109,16 @@
         </div>
       </dl>
 
-      @if (!readOnly() || photoPreviewUrl()) {
-        <div class="photo">
-          <h4 class="photo-title">Foto</h4>
-          @if (photoPreviewUrl(); as previewUrl) {
-            <img class="photo-preview" alt="Foto de la toma" [src]="previewUrl" />
-          }
-          @if (!readOnly()) {
-            <input
-              #photoInput
-              class="photo-input"
-              type="file"
-              accept="image/*"
-              (change)="selectPhoto(photoInput)"
-            />
-            <div class="photo-actions">
-              <button
-                matButton="tonal"
-                type="button"
-                [disabled]="busy() || saving()"
-                (click)="photoInput.click()"
-              >
-                <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">
-                  {{ photoPreviewUrl() ? 'edit' : 'add_a_photo' }}
-                </mat-icon>
-                {{ photoPreviewUrl() ? 'Cambiar foto' : 'Añadir foto' }}
-              </button>
-              @if (photoPreviewUrl()) {
-                <button
-                  matButton
-                  type="button"
-                  [disabled]="busy() || saving()"
-                  (click)="removePhoto()"
-                >
-                  <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
-                  Quitar foto
-                </button>
-              }
-            </div>
-          }
-        </div>
-      }
+      <app-record-photo-field
+        alt="Foto de la toma"
+        [previewUrl]="photo.previewUrl()"
+        [readOnly]="record.readOnly()"
+        [disabled]="record.busy() || record.saving()"
+        (fileSelected)="photo.select($event)"
+        (removeRequested)="photo.remove()"
+      />
 
-      @if (!readOnly() || form.notes().value()) {
+      @if (!record.readOnly() || form.notes().value()) {
         <mat-form-field class="notes-field" appearance="outline">
           <mat-label>Notas</mat-label>
           <textarea matInput rows="3" [formField]="form.notes"></textarea>

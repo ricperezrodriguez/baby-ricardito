@@ -8,8 +8,8 @@ export const BREAST_SIDE = {
 /** Name of the multipart field that carries the photo file */
 export const BREASTFEEDING_PHOTO_FIELD = 'photo';
 
-/** Photo limits shared by the form and the mock backend */
-export const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+/** Photo limits shared by the form and the mock backend (defined in the shared tracker models) */
+export { PHOTO_MAX_BYTES } from '@app/features/shared/tracker.models';
 
 /** Breast used */
 export type Breast = (typeof BREAST_SIDE)[keyof typeof BREAST_SIDE];

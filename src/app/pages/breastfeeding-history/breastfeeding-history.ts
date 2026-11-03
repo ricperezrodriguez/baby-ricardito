@@ -14,7 +14,6 @@ import {
   HistoryChartId,
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { BreastfeedingService } from '@app/features/breastfeeding/breastfeeding.service';
-import { FeedHeatmap } from '@app/pages/breastfeeding-history/feed-heatmap/feed-heatmap';
 import { FeedHistoryList } from '@app/pages/breastfeeding-history/feed-history-list/feed-history-list';
 import {
   averageDurationConfig,
@@ -23,14 +22,17 @@ import {
   feedsPerDayConfig,
   minutesPerDayConfig,
 } from '@app/pages/breastfeeding-history/history-charts';
-import { HistoryChart } from '@app/pages/breastfeeding-history/history-chart/history-chart';
+import { createHiddenCharts } from '@app/shared/history/hidden-charts';
+import { HistoryChart } from '@app/shared/history/history-chart/history-chart';
+import { HourHeatmap } from '@app/shared/history/hour-heatmap/hour-heatmap';
 import {
+  AsyncState,
   createClock,
   DialogRouteEvents,
   formatDurationText,
-  LoadingSpinner,
   localDateRange,
   localTimeZone,
+  resourceStatus,
 } from '@shared';
 
 const PERIOD_OPTIONS = [7, 30, 90] as const;
@@ -52,10 +54,10 @@ interface SummaryItem {
 
 @Component({
   imports: [
-    FeedHeatmap,
+    AsyncState,
     FeedHistoryList,
     HistoryChart,
-    LoadingSpinner,
+    HourHeatmap,
     MatButtonModule,
     MatButtonToggleModule,
     MatChipsModule,
@@ -96,18 +98,18 @@ export class BreastfeedingHistory {
     computation: (value, previous) => value ?? previous?.value,
   });
 
-  private readonly preferences = rxResource({
-    stream: () => this.service.getHistoryPreferences(CURRENT_BABY_ID),
-  });
+  protected readonly statsStatus = computed(() => resourceStatus(this.shownStats(), this.stats.error()));
+
+  private readonly preferences = createHiddenCharts(
+    HISTORY_CHART_IDS,
+    () => this.service.getHistoryPreferences(CURRENT_BABY_ID),
+    (hiddenCharts) => this.service.saveHistoryPreferences(CURRENT_BABY_ID, { hiddenCharts }),
+  );
 
   /** Charts the user hid; saved in the backend. */
-  protected readonly hiddenCharts = linkedSignal<HistoryChartId[]>(
-    () => this.preferences.value()?.hiddenCharts ?? [],
-  );
-  protected readonly preferencesReady = computed(() => !this.preferences.isLoading());
-  protected readonly visibleCharts = computed(() =>
-    HISTORY_CHART_IDS.filter((id) => !this.hiddenCharts().includes(id)),
-  );
+  protected readonly hiddenCharts = this.preferences.hidden;
+  protected readonly preferencesReady = this.preferences.ready;
+  protected readonly visibleCharts = this.preferences.visible;
 
   protected readonly summary = computed<SummaryItem[]>(() => {
     const totals = this.shownStats()?.totals;
@@ -156,16 +158,6 @@ export class BreastfeedingHistory {
   }
 
   protected setChartVisible(id: HistoryChartId, visible: boolean): void {
-    const previous = this.hiddenCharts();
-    const hidden = visible ? previous.filter((hiddenId) => hiddenId !== id) : [...new Set([...previous, id])];
-    if (hidden.length === previous.length) {
-      return;
-    }
-
-    this.hiddenCharts.set(hidden);
-    this.service.saveHistoryPreferences(CURRENT_BABY_ID, { hiddenCharts: hidden }).subscribe({
-      // The HTTP error interceptor reports the failure; the choice goes back to what is stored.
-      error: () => this.hiddenCharts.set(previous),
-    });
+    this.preferences.setVisible(id, visible);
   }
 }

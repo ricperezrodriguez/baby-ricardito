@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '@environments/environment';
 import {
@@ -14,7 +14,7 @@ import {
   UpdateBreastfeedingSessionDto,
 } from '@app/features/breastfeeding/breastfeeding.models';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class BreastfeedingService {
   private readonly http = inject(HttpClient);
 

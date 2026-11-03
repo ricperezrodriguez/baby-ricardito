@@ -144,6 +144,20 @@ export function formatDayLabel(dayKey: string): string {
   return DAY_LABEL_FORMAT.format(new Date(year, month - 1, day)).replace('.', '');
 }
 
+const HOUR_MS = 3_600_000;
+const DAYS_FROM_HOURS = 72;
+
+/** Formats a duration in whole hours (`53 h`), or in whole days from 72 hours on (`3 días`). Never negative. */
+export function formatElapsedHoursOrDays(milliseconds: number): string {
+  const hours = Math.max(0, Math.floor(milliseconds / HOUR_MS));
+  if (hours < DAYS_FROM_HOURS) {
+    return `${hours} h`;
+  }
+
+  const days = Math.floor(hours / 24);
+  return `${days} días`;
+}
+
 export function formatElapsedSince(timestamp: string, now: number): string {
   const elapsedMilliseconds = now - Date.parse(timestamp);
   if (!Number.isFinite(elapsedMilliseconds)) {

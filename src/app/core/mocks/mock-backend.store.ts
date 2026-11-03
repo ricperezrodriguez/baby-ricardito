@@ -8,18 +8,13 @@ import {
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { applyUpdate, buildSession } from '@app/core/mocks/mock-backend.calculations';
 import { conflict, notFound } from '@app/core/mocks/mock-backend.errors';
-import { createSeedSessions, SEED_BABY_ID } from '@app/core/mocks/mock-backend.seed';
+import { createSeedSessions } from '@app/core/mocks/mock-backend.seed';
+import { SEED_BABY_ID } from '@app/core/mocks/mock-backend.seed-utils';
+import { revokePhotoUrl } from '@app/core/mocks/mock-backend.photos';
 import { calculateStats, parseHistoryPreferencesBody } from '@app/core/mocks/mock-backend.stats';
 import { assertChronology, parseCreateBody, parsePhotoBody, parseUpdateBody } from '@app/core/mocks/mock-backend.validation';
 
 type BabySessions = Map<string, BreastfeedingSession>;
-
-/** Only photos uploaded in this run are blob URLs; seed photos are inline data URLs. */
-function revokePhotoUrl(photoUrl: string | null | undefined): void {
-  if (photoUrl?.startsWith('blob:')) {
-    URL.revokeObjectURL(photoUrl);
-  }
-}
 
 function toSessionMap(sessions: BreastfeedingSession[]): BabySessions {
   return new Map(sessions.map((session) => [session.id, session]));

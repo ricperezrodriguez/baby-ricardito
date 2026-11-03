@@ -1,0 +1,37 @@
+<app-history-list
+  [list]="list"
+  accent="var(--app-card-diaper)"
+  loadingLabel="Cargando el historial"
+  emptyMessage="Todavía no hay pañales registrados."
+  errorMessage="No se ha podido cargar el historial."
+  loadingMoreLabel="Cargando más pañales"
+>
+  @for (group of list.groups(); track group.key) {
+    <app-history-day [key]="group.key" [heading]="group.heading" [summary]="group.summary">
+      @for (row of group.rows; track row.id) {
+        <li appHistoryRow [link]="row.link">
+          <span historyTime>{{ row.changedMs | date: 'HH:mm' }}</span>
+          <span historyMain class="type">
+            <app-diaper-type-icon [type]="row.type" />
+            {{ row.typeLabel }}
+          </span>
+          <span historyDetails>
+            @if (row.stoolColor !== null) {
+              <span>{{ row.stoolColor }}</span>
+            }
+            @if (row.consistency !== null) {
+              <span>{{ row.consistency }}</span>
+            }
+            @if (row.hasRash) {
+              <span class="rash">
+                <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">warning</mat-icon>
+                Rojeces
+              </span>
+            }
+            <app-record-flags [hasNotes]="row.hasNotes" [hasPhoto]="row.hasPhoto" />
+          </span>
+        </li>
+      }
+    </app-history-day>
+  }
+</app-history-list>

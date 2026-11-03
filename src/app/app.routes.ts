@@ -17,6 +17,16 @@ export const routes: Routes = [
         } satisfies DialogRouteData,
       },
       {
+        path: 'panal',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/diaper-card/diaper-dialog/diaper-dialog').then(
+              (m) => m.DiaperDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
         path: 'notificaciones',
         component: DialogRouteHost,
         data: {
@@ -44,6 +54,24 @@ export const routes: Routes = [
               (m) => m.BreastfeedingDialog,
             ),
           returnTo: '/detalle/pecho',
+        } satisfies DialogRouteData,
+      },
+    ],
+  },
+  {
+    path: 'detalle/panal',
+    loadComponent: () =>
+      import('@app/pages/diaper-history/diaper-history').then((m) => m.DiaperHistory),
+    children: [
+      {
+        path: ':changeId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/diaper-card/diaper-dialog/diaper-dialog').then(
+              (m) => m.DiaperDialog,
+            ),
+          returnTo: '/detalle/panal',
         } satisfies DialogRouteData,
       },
     ],

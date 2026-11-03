@@ -1,6 +1,12 @@
+@use '../../../../../shared/record-dialog/record-dialog' as record;
+
 :host {
   display: block;
 }
+
+@include record.summary;
+@include record.delete-button;
+@include record.notes-field;
 
 .side-controls {
   display: grid;
@@ -41,80 +47,9 @@
   align-content: center;
 }
 
-.delete-button {
-  color: var(--app-coral);
-  margin-inline-end: auto;
-}
-
 .side-time {
   color: var(--app-ink);
   font-size: 1.75rem;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-}
-
-.summary {
-  margin-top: 1.5rem;
-}
-
-.summary-title {
-  font-size: 1rem;
-  margin: 0 0 0.5rem;
-}
-
-.summary-list {
-  margin: 0 0 1rem;
-}
-
-.summary-row {
-  border-bottom: 1px solid var(--app-border);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-  justify-content: space-between;
-  padding: 0.5rem 0;
-
-  dt {
-    align-self: center;
-    color: var(--app-muted);
-  }
-
-  dd {
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-    margin: 0;
-    text-align: right;
-  }
-}
-
-.notes-field {
-  width: 100%;
-}
-
-.photo {
-  margin-bottom: 1rem;
-}
-
-.photo-title {
-  font-size: 1rem;
-  margin: 0 0 0.5rem;
-}
-
-.photo-preview {
-  border-radius: 0.5rem;
-  display: block;
-  margin-bottom: 0.75rem;
-  max-height: 16rem;
-  object-fit: cover;
-  width: 100%;
-}
-
-.photo-input {
-  display: none;
-}
-
-.photo-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
 }

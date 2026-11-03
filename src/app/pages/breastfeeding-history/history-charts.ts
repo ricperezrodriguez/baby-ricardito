@@ -1,28 +1,10 @@
 import { ChartConfiguration, TooltipItem } from 'chart.js';
 import { BreastfeedingDayStats, BreastfeedingStatsTotals } from '@app/features/breastfeeding/breastfeeding.models';
-import { formatDayLabel, formatDurationText } from '@shared';
+import { BASE_OPTIONS, labelsOf, LINE_COLOR, lineConfig, round } from '@app/shared/history/chart-config.utils';
+import { formatDurationText } from '@shared';
 
 const LEFT_COLOR = '#99620d';
 const RIGHT_COLOR = '#285c8c';
-const LINE_COLOR = '#155f56';
-
-const BASE_OPTIONS = {
-  responsive: true,
-  maintainAspectRatio: false,
-  animation: false,
-} as const;
-
-function labelsOf(days: readonly BreastfeedingDayStats[]): string[] {
-  return days.map(({ date }) => formatDayLabel(date));
-}
-
-function round(value: number | null, decimals: number): number | null {
-  if (value === null) {
-    return null;
-  }
-  const factor = 10 ** decimals;
-  return Math.round(value * factor) / factor;
-}
 
 export function feedsPerDayConfig(days: readonly BreastfeedingDayStats[]): ChartConfiguration {
   return {
@@ -84,34 +66,6 @@ export function breastSplitConfig(totals: BreastfeedingStatsTotals): ChartConfig
         },
       },
     } as ChartConfiguration['options'],
-  };
-}
-
-function lineConfig(
-  days: readonly BreastfeedingDayStats[],
-  label: string,
-  values: (number | null)[],
-): ChartConfiguration {
-  return {
-    type: 'line',
-    data: {
-      labels: labelsOf(days),
-      datasets: [
-        {
-          label,
-          data: values,
-          borderColor: LINE_COLOR,
-          backgroundColor: LINE_COLOR,
-          spanGaps: true,
-          tension: 0.25,
-        },
-      ],
-    },
-    options: {
-      ...BASE_OPTIONS,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } },
-    },
   };
 }
 

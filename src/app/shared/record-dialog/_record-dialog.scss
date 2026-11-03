@@ -1,0 +1,55 @@
+// Styles shared by the record dialogs (creation and history mode). Include them in the dialog stylesheet:
+//   @use '<relative path>/shared/record-dialog/record-dialog' as record;
+//   @include record.summary;
+
+/// Titled summary block with `dl` rows (label on the left, value on the right).
+/// `$top-margin` separates it from the content above it.
+@mixin summary($top-margin: 1.5rem) {
+  .summary {
+    margin-top: $top-margin;
+  }
+
+  .summary-title {
+    font-size: 1rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .summary-list {
+    margin: 0 0 1rem;
+  }
+
+  .summary-row {
+    border-bottom: 1px solid var(--app-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+
+    dt {
+      align-self: center;
+      color: var(--app-muted);
+    }
+
+    dd {
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      margin: 0;
+      text-align: right;
+    }
+  }
+}
+
+/// Trash button of the history mode, on the left of the footer.
+@mixin delete-button {
+  .delete-button {
+    color: var(--app-coral);
+    margin-inline-end: auto;
+  }
+}
+
+@mixin notes-field {
+  .notes-field {
+    width: 100%;
+  }
+}

@@ -1,7 +1,7 @@
 import { Breast, BreastfeedingSession } from '@app/features/breastfeeding/breastfeeding.models';
 import { buildSession, SegmentInput } from '@app/core/mocks/mock-backend.calculations';
-
-export const SEED_BABY_ID = 'baby-1';
+import { buildSeedPhoto } from '@app/core/mocks/mock-backend.photos';
+import { createRandom, MS_PER_MINUTE, SEED_BABY_ID } from '@app/core/mocks/mock-backend.seed-utils';
 
 interface SeedSegmentSpec {
   breast: Breast;
@@ -14,16 +14,6 @@ interface SeedSessionSpec {
   notes?: string;
   photoUrl?: string;
   inProgress?: boolean;
-}
-
-const MS_PER_MINUTE = 60_000;
-
-function buildSeedPhoto(background: string, emoji: string): string {
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360">` +
-    `<rect width="480" height="360" fill="${background}"/>` +
-    `<text x="240" y="220" font-size="140" text-anchor="middle">${emoji}</text></svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 const SEED_PHOTOS = {
@@ -96,15 +86,6 @@ function buildSeedSession(spec: SeedSessionSpec, now: Date): BreastfeedingSessio
 
 const MINUTES_PER_DAY = 1_440;
 const HISTORY_DAYS = 60;
-
-/** Deterministic pseudo-random sequence so the older history looks the same on every run. */
-function createRandom(seed: number): () => number {
-  let state = seed;
-  return () => {
-    state = (state * 1_664_525 + 1_013_904_223) % 4_294_967_296;
-    return state / 4_294_967_296;
-  };
-}
 
 /** Feeds every ~3 hours (more spaced as the baby grows) for the days older than the hand-written ones. */
 function createOlderSessionSpecs(): SeedSessionSpec[] {

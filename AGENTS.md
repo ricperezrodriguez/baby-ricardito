@@ -41,7 +41,9 @@ Details live in `.github/instructions/` (they load automatically for matching fi
 
 - `record-modals.instructions.md`: creation modals (route-driven, `DialogRouteHost`), closing/cancel rules, snackbars (`NotificationService`).
 - `dialogs-feedback.instructions.md`: view/edit record modal opened from a history row (same for every tracker).
-- `history-page.instructions.md`: "Ver historial" pages (`detalle/<category>` URLs, code in `pages/<tracker>-history/`), charts, stats and infinite-scroll list. Reference: `/detalle/pecho`.
+- `history-page.instructions.md`: "Ver historial" pages (`detalle/<category>` URLs, code in `pages/<tracker>-history/`), charts, stats and the record list (shared `createPagedList` + `app-history-list`, never copied per tracker). Reference: `/detalle/pecho`.
+- `loading-states.instructions.md`: loading, empty and error states of any data (`AsyncState`, `ErrorState`, `LoadingSpinner`): always the shared spinner and an error with "Reintentar", never hand-written.
+- `alerts.instructions.md`: dismissible alerts on Home (`AlertBanner`, `createAlertDismissal`): one small component per alert with its own rule, never copying the markup or the `localStorage` code.
 
 Always: confirm only irreversible or data-losing actions; report non-obvious results with `NotificationService`, never `MatSnackBar` directly.
 

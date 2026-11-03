@@ -1,6 +1,4 @@
 import { Component, computed, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, catchError, map, of, switchMap } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
   BREAST_SIDE,
@@ -19,16 +17,12 @@ import {
   createClock,
   formatDuration,
   formatElapsedSince,
-  LoadingSpinner,
   TRACKING_CARD_ICON_SIZE,
   TrackingCard,
 } from '@shared';
-
-type LatestBreastfeedingState =
-  | { status: 'loading' }
-  | { status: 'empty' }
-  | { status: 'loaded'; session: BreastfeedingSession }
-  | { status: 'error' };
+import { AsyncState } from '@app/shared/async-state/async-state';
+import { createLatestRecord } from '@app/shared/latest-record/latest-record';
+import { LastRecordSummary } from '@app/shared/last-record-summary/last-record-summary';
 
 function getLastBreast(session: BreastfeedingSession): Breast | null {
   let lastSegment: BreastSegment | undefined;
@@ -44,7 +38,7 @@ function getLastBreast(session: BreastfeedingSession): Breast | null {
 
 @Component({
   selector: 'app-breastfeeding-card',
-  imports: [LoadingSpinner, TrackingCard],
+  imports: [AsyncState, LastRecordSummary, TrackingCard],
   styleUrl: './breastfeeding-card.scss',
   templateUrl: './breastfeeding-card.html',
 })
@@ -54,32 +48,21 @@ export class BreastfeedingCard {
 
   private readonly breastfeedingService = inject(BreastfeedingService);
   private readonly clock = createClock();
-  private readonly reload$ = new BehaviorSubject<void>(undefined);
-  private readonly latestState = toSignal(
-    this.reload$.pipe(
-      switchMap(() =>
-        this.breastfeedingService.getLatest(CURRENT_BABY_ID).pipe(
-          map((session): LatestBreastfeedingState =>
-            session === null ? { status: 'empty' } : { status: 'loaded', session },
-          ),
-          catchError(() => {
-            return of<LatestBreastfeedingState>({ status: 'error' });
-          }),
-        ),
-      ),
-    ),
-    { initialValue: { status: 'loading' } as LatestBreastfeedingState },
+  private readonly latest = createLatestRecord<BreastfeedingSession>(() =>
+    this.breastfeedingService.getLatest(CURRENT_BABY_ID),
   );
 
+  protected readonly latestState = this.latest.state;
+
   reload(): void {
-    this.reload$.next();
+    this.latest.reload();
   }
 
   /** Segments of the feed that is still open (running or paused), or `null` when there is none. */
   private readonly openFeedSegments = computed(() => {
     const state = this.latestState();
-    return state.status === 'loaded' && state.session.status !== 'finished'
-      ? toTimedSegments(state.session.segments)
+    return state.status === 'loaded' && state.data.status !== 'finished'
+      ? toTimedSegments(state.data.segments)
       : null;
   });
 
@@ -102,11 +85,11 @@ export class BreastfeedingCard {
     }
 
     const state = this.latestState();
-    if (state.status !== 'loaded' || state.session.status !== 'finished' || !state.session.endTime) {
+    if (state.status !== 'loaded' || state.data.status !== 'finished' || !state.data.endTime) {
       return null;
     }
 
-    return formatElapsedSince(state.session.endTime, now);
+    return formatElapsedSince(state.data.endTime, now);
   });
 
   /** Time spent on each breast while a feed is in progress; `null` otherwise. */
@@ -122,7 +105,7 @@ export class BreastfeedingCard {
 
   readonly lastBreast = computed(() => {
     const state = this.latestState();
-    return state.status === 'loaded' ? getLastBreast(state.session) : null;
+    return state.status === 'loaded' ? getLastBreast(state.data) : null;
   });
 
   readonly lastBreastCaption = computed(() => {

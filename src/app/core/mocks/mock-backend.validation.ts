@@ -2,41 +2,18 @@ import {
   BREAST_SIDE,
   BREASTFEEDING_PHOTO_FIELD,
   Breast,
-  PHOTO_MAX_BYTES,
   UpdateBreastfeedingSessionDto,
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { closeOpenSegments, SegmentInput, SessionInput } from '@app/core/mocks/mock-backend.calculations';
 import { badRequest, unprocessableEntity } from '@app/core/mocks/mock-backend.errors';
-
-const ISO_DATE_PATTERN =
-  /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})$/;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function hasValidCalendarDay(year: number, month: number, day: number): boolean {
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-}
-
-/** Validates an ISO 8601 string and normalizes it to UTC. */
-export function parseIsoDate(value: unknown, field: string): string {
-  const match = typeof value === 'string' ? ISO_DATE_PATTERN.exec(value) : null;
-  if (typeof value !== 'string' || match === null) {
-    throw badRequest('INVALID_DATE_FORMAT', `"${field}" must be an ISO 8601 date string.`);
-  }
-  const [, year, month, day] = match;
-  const timestamp = Date.parse(value);
-  if (Number.isNaN(timestamp) || !hasValidCalendarDay(Number(year), Number(month), Number(day))) {
-    throw badRequest('INVALID_DATE_FORMAT', `"${field}" is not a valid date.`);
-  }
-  return new Date(timestamp).toISOString();
-}
-
-function parseNullableIsoDate(value: unknown, field: string): string | null {
-  return value === null ? null : parseIsoDate(value, field);
-}
+import {
+  isRecord,
+  parseBody,
+  parseIsoDate,
+  parseNotes,
+  parseNullableIsoDate,
+} from '@app/core/mocks/mock-backend.parsing';
+import { parsePhotoFile } from '@app/core/mocks/mock-backend.photos';
 
 function parseBreast(value: unknown, field: string): Breast {
   if (value !== BREAST_SIDE.LEFT && value !== BREAST_SIDE.RIGHT) {
@@ -62,20 +39,6 @@ function parseSegments(value: unknown): SegmentInput[] {
     throw badRequest('INVALID_SEGMENTS', '"segments" must be an array.');
   }
   return value.map((segment: unknown, index) => parseSegment(segment, index));
-}
-
-function parseNotes(value: unknown): string {
-  if (typeof value !== 'string') {
-    throw badRequest('INVALID_NOTES', '"notes" must be a string.');
-  }
-  return value;
-}
-
-function parseBody(body: unknown): Record<string, unknown> {
-  if (!isRecord(body)) {
-    throw badRequest('INVALID_BODY', 'The request body must be a JSON object.');
-  }
-  return body;
 }
 
 /** Parses the create body; `babyId` is ignored because the URL is the source of truth. */
@@ -110,17 +73,7 @@ export function parseUpdateBody(body: unknown): UpdateBreastfeedingSessionDto {
 
 /** Parses the multipart body of the photo upload and returns the file. */
 export function parsePhotoBody(body: unknown): File {
-  const photo = body instanceof FormData ? body.get(BREASTFEEDING_PHOTO_FIELD) : null;
-  if (!(photo instanceof File)) {
-    throw badRequest('INVALID_PHOTO', `The multipart field "${BREASTFEEDING_PHOTO_FIELD}" must be a file.`);
-  }
-  if (!photo.type.startsWith('image/')) {
-    throw badRequest('INVALID_PHOTO_TYPE', 'The photo must be an image.');
-  }
-  if (photo.size > PHOTO_MAX_BYTES) {
-    throw unprocessableEntity('PHOTO_TOO_LARGE', 'The photo must not be larger than 5 MB.');
-  }
-  return photo;
+  return parsePhotoFile(body, BREASTFEEDING_PHOTO_FIELD);
 }
 
 function isBefore(a: string, b: string): boolean {

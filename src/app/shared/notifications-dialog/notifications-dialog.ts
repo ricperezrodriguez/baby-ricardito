@@ -1,9 +1,24 @@
-import { Component, computed } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { disabled, form, FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { createClock, formatElapsedSince, toIsoString } from '@shared';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { EMPTY, Subject, catchError, switchMap, tap } from 'rxjs';
+import { CURRENT_BABY_ID } from '@app/core/current-baby';
+import {
+  DEFAULT_DIAPER_POOP_ALERT_SETTINGS,
+  DIAPER_POOP_ALERT_THRESHOLDS,
+  DiaperPoopAlertSettings,
+  DiaperPoopAlertThreshold,
+} from '@app/features/diaper/diaper.models';
+import { DiaperService } from '@app/features/diaper/diaper.service';
+import { AsyncState, createClock, formatElapsedSince, LoadStatus, toIsoString } from '@shared';
 
 interface NotificationExample {
   readonly icon: string;
@@ -14,6 +29,19 @@ interface NotificationExample {
 }
 
 const MINUTE_MS = 60_000;
+
+const THRESHOLD_LABELS: Record<DiaperPoopAlertThreshold, string> = {
+  12: '12 h',
+  24: '24 h',
+  36: '36 h',
+  48: '2 días',
+  72: '3 días',
+};
+
+const THRESHOLD_OPTIONS = DIAPER_POOP_ALERT_THRESHOLDS.map((hours) => ({
+  hours,
+  label: THRESHOLD_LABELS[hours],
+}));
 
 // Ejemplos de contenido; las notificaciones reales aún no existen.
 const EXAMPLES: readonly NotificationExample[] = [
@@ -62,7 +90,18 @@ const EXAMPLES: readonly NotificationExample[] = [
 ];
 
 @Component({
-  imports: [MatButtonModule, MatDialogModule, MatIconModule, MatListModule],
+  imports: [
+    AsyncState,
+    FormField,
+    MatButtonModule,
+    MatDialogModule,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatListModule,
+    MatSelectModule,
+    MatSlideToggleModule,
+  ],
   styles: `
     .header {
       align-items: flex-start;
@@ -77,10 +116,29 @@ const EXAMPLES: readonly NotificationExample[] = [
       min-width: 0;
     }
 
+    .settings {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-block-end: 1rem;
+    }
+
+    .settings-title {
+      color: var(--app-ink);
+      font-size: 1.05rem;
+      margin: 0;
+    }
+
+    .settings-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
     .note {
       color: var(--app-muted);
       font-size: 0.9rem;
-      margin: 0 0 0.5rem;
+      margin: 1rem 0 0.5rem;
     }
 
     .unread {
@@ -97,6 +155,30 @@ const EXAMPLES: readonly NotificationExample[] = [
       </button>
     </div>
     <mat-dialog-content>
+      <section class="settings" aria-labelledby="diaper-settings-title">
+        <h3 class="settings-title" id="diaper-settings-title">Pañal</h3>
+        <app-async-state
+          [status]="settingsStatus()"
+          loadingLabel="Cargando los avisos de pañal"
+          errorMessage="No se pudieron cargar los avisos de pañal."
+          (retry)="loadSettings()"
+        >
+          <div class="settings-fields">
+            <mat-slide-toggle [formField]="settingsForm.enabled">
+              Avisar si pasa mucho tiempo sin hacer caca
+            </mat-slide-toggle>
+            <mat-form-field subscriptSizing="dynamic">
+              <mat-label>Avisar a partir de</mat-label>
+              <mat-select [formField]="settingsForm.thresholdHours">
+                @for (option of thresholdOptions; track option.hours) {
+                  <mat-option [value]="option.hours">{{ option.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </app-async-state>
+      </section>
+      <mat-divider />
       <p class="note">Ejemplos de avisos que podrás recibir. Todavía no están activos.</p>
       <mat-list>
         @for (item of items(); track item.title) {
@@ -123,6 +205,20 @@ const EXAMPLES: readonly NotificationExample[] = [
 })
 export class NotificationsDialog {
   private readonly clock = createClock();
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly diaperService = inject(DiaperService);
+  private readonly saveRequests = new Subject<DiaperPoopAlertSettings>();
+  /** Last settings known to be stored in the backend; the UI reverts to them if saving fails. */
+  private confirmedSettings = DEFAULT_DIAPER_POOP_ALERT_SETTINGS;
+  /** Last settings sent to the backend (or confirmed); changes are saved only when they differ. */
+  private requestedSettings = DEFAULT_DIAPER_POOP_ALERT_SETTINGS;
+
+  protected readonly thresholdOptions = THRESHOLD_OPTIONS;
+  protected readonly settingsStatus = signal<LoadStatus>('loading');
+  private readonly settings = signal<DiaperPoopAlertSettings>(DEFAULT_DIAPER_POOP_ALERT_SETTINGS);
+  protected readonly settingsForm = form(this.settings, (path) => {
+    disabled(path.thresholdHours, ({ valueOf }) => !valueOf(path.enabled));
+  });
 
   protected readonly items = computed(() => {
     const now = this.clock.now();
@@ -131,4 +227,57 @@ export class NotificationsDialog {
       elapsed: formatElapsedSince(toIsoString(now - item.minutesAgo * MINUTE_MS), now),
     }));
   });
+
+  constructor() {
+    this.loadSettings();
+
+    // Optimistic UI: the form already shows the change; only a failed save reverts it (the HTTP
+    // interceptor reports the error).
+    this.saveRequests
+      .pipe(
+        switchMap((settings) =>
+          this.diaperService.savePoopAlertSettings(CURRENT_BABY_ID, settings).pipe(
+            tap(() => (this.confirmedSettings = settings)),
+            catchError(() => {
+              this.requestedSettings = this.confirmedSettings;
+              this.settings.set(this.confirmedSettings);
+              return EMPTY;
+            }),
+          ),
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe();
+
+    effect(() => {
+      const settings = this.settings();
+      if (this.settingsStatus() !== 'loaded') {
+        return;
+      }
+
+      untracked(() => {
+        const requested = this.requestedSettings;
+        if (settings.enabled !== requested.enabled || settings.thresholdHours !== requested.thresholdHours) {
+          this.requestedSettings = { ...settings };
+          this.saveRequests.next({ ...settings });
+        }
+      });
+    });
+  }
+
+  protected loadSettings(): void {
+    this.settingsStatus.set('loading');
+    this.diaperService
+      .getPoopAlertSettings(CURRENT_BABY_ID)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (settings) => {
+          this.confirmedSettings = settings;
+          this.requestedSettings = settings;
+          this.settings.set(settings);
+          this.settingsStatus.set('loaded');
+        },
+        error: () => this.settingsStatus.set('error'),
+      });
+  }
 }

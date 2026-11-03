@@ -3,9 +3,15 @@ import { Component, computed, input } from '@angular/core';
 const WEEKDAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
-/** Feeds started per weekday and hour, with color intensity proportional to the number of feeds. */
+export interface HeatmapUnit {
+  singular: string;
+  plural: string;
+}
+
+/** Records per weekday and hour, with color intensity proportional to their number. No Chart.js dependency. */
 @Component({
-  selector: 'app-feed-heatmap',
+  selector: 'app-hour-heatmap',
+  host: { '[style.--heat-color]': 'color()' },
   styles: `
     :host {
       display: block;
@@ -40,7 +46,7 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
     }
 
     td {
-      background: color-mix(in srgb, var(--app-card-breastfeeding) calc(var(--level) * 1%), #fff);
+      background: color-mix(in srgb, var(--heat-color) calc(var(--level) * 1%), #fff);
       border: 1px solid var(--app-border);
       border-radius: 0.25rem;
       height: 1.5rem;
@@ -57,7 +63,7 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
     }
 
     .swatch {
-      background: color-mix(in srgb, var(--app-card-breastfeeding) calc(var(--level) * 1%), #fff);
+      background: color-mix(in srgb, var(--heat-color) calc(var(--level) * 1%), #fff);
       border: 1px solid var(--app-border);
       border-radius: 0.25rem;
       display: inline-block;
@@ -68,7 +74,7 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
   template: `
     <table>
       <caption class="visually-hidden">
-        Tomas empezadas por día de la semana y hora del día
+        {{ caption() }}
       </caption>
       <thead>
         <tr>
@@ -107,9 +113,13 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
     </div>
   `,
 })
-export class FeedHeatmap {
-  /** Feeds per weekday (0 = Monday) and hour (0-23). */
+export class HourHeatmap {
+  /** Records per weekday (0 = Monday) and hour (0-23). */
   readonly hourMap = input.required<number[][]>();
+  /** Any CSS color; the cell tint grows from white towards it. */
+  readonly color = input('var(--app-card-breastfeeding)');
+  readonly caption = input('Tomas empezadas por día de la semana y hora del día');
+  readonly unit = input<HeatmapUnit>({ singular: 'toma', plural: 'tomas' });
 
   protected readonly hours = HOURS;
   protected readonly legendLevels = [0, 25, 50, 75, 100];
@@ -117,6 +127,7 @@ export class FeedHeatmap {
   protected readonly rows = computed(() => {
     const map = this.hourMap();
     const max = Math.max(1, ...map.flat());
+    const { singular, plural } = this.unit();
     return WEEKDAYS.map((weekday, weekdayIndex) => ({
       weekday,
       cells: HOURS.map((hour) => {
@@ -124,7 +135,7 @@ export class FeedHeatmap {
         return {
           count,
           level: Math.round((count / max) * 100),
-          title: `${weekday} ${hour}h: ${count} ${count === 1 ? 'toma' : 'tomas'}`,
+          title: `${weekday} ${hour}h: ${count} ${count === 1 ? singular : plural}`,
         };
       }),
     }));

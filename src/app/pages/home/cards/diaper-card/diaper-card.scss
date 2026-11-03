@@ -1,0 +1,14 @@
+.last-type {
+  align-items: center;
+  color: var(--app-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 4rem;
+}
+
+.last-type-label {
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.25;
+}

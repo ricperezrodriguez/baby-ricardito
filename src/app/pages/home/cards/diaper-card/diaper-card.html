@@ -1,0 +1,46 @@
+<app-tracking-card
+  link="/detalle/panal"
+  title="Pañal"
+  dialogRoute="panal"
+  (closed)="reload()"
+  accent="var(--app-card-diaper)"
+  headerColor="var(--app-card-diaper)"
+>
+  <svg
+    cardIcon
+    viewBox="0 0 32 32"
+    fill="currentColor"
+    [attr.width]="iconSize"
+    [attr.height]="iconSize"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="1.6"
+  >
+    <path
+      d="M3 9h26l-2 11h-3c-2.2 0-3 1.3-3.8 3l-.9 2h-6.6l-.9-2C11 21.3 10.2 20 8 20H5L3 9Z"
+    />
+    <path
+      d="M4 13h6m12 0h6M10 10v5m12-5v5M12 20c1.2-1 2.5-1.5 4-1.5s2.8.5 4 1.5"
+      fill="none"
+      stroke="var(--card-header-color)"
+      stroke-width="1.2"
+    />
+  </svg>
+  <app-async-state
+    [status]="latestState().status"
+    loadingLabel="Cargando el último pañal"
+    emptyMessage="Todavía no hay cambios de pañal registrados."
+    errorMessage="No se pudo cargar el último pañal."
+    (retry)="reload()"
+  >
+    @if (lastChange(); as change) {
+      <app-last-record-summary [title]="change.elapsed" [secondaryLines]="secondaryLines()">
+        <div summaryAside class="last-type">
+          <app-diaper-type-icon [type]="change.type" />
+          <span class="last-type-label">{{ change.typeLabel }}</span>
+        </div>
+      </app-last-record-summary>
+    }
+  </app-async-state>
+</app-tracking-card>

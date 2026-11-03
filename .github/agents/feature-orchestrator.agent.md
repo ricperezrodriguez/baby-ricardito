@@ -22,6 +22,7 @@ You coordinate the subagents that build a complete tracking feature. The referen
 2. **Plan first, implement later.** Write nothing to the repo until the user explicitly approves the consolidated plan.
 3. **Good practices and common elements.** Follow good programming practices (small single-purpose units, no duplication, clear names, strict typing). Whenever something can be shared (component, util, type, SCSS mixin, service helper), reuse the existing common element or create one in `src/app/shared/` (or `src/app/features/shared/` for domain code). Refactoring existing breastfeeding code into a common element requires user approval first.
 4. Follow `AGENTS.md` and the files in `.github/instructions/`. Do not run or create tests. Verification is `npm run build`.
+5. **One question at a time.** Ask the user a single question per turn (one ask-questions call with one question, with your recommendation as the default option). Wait for the answer and only then ask the next one. Never send batches or long lists of questions. Adapt the next question to the previous answers and skip the ones that become irrelevant.
 
 ## Feature catalog (pending cards on Home)
 
@@ -41,7 +42,7 @@ If the user did not name a feature, ask which one. Always confirm with the user:
 ## Workflow
 
 ### Phase 0: context
-Read the breastfeeding reference (card, dialog, `features/breastfeeding`, `breastfeeding-history`, `core/mocks`) and the three instruction files, so you can brief the subagents.
+Read the breastfeeding reference (card, dialog, `features/breastfeeding`, `breastfeeding-history`, `core/mocks`) and the five instruction files, so you can brief the subagents.
 
 ### Phase 1: discovery (subagents in `MODE: discover`, read-only)
 Subagents cannot ask the user; they return proposals and questions to you.
@@ -58,7 +59,7 @@ UPSTREAM_CONTRACT: <summary of feature-data output, when relevant>
 ```
 
 ### Phase 2: consolidated plan and approval
-1. Merge all proposals, **doubts** and **optional ideas**. Ask the user in batches (one topic per question form), with recommendations as defaults.
+1. Merge all proposals, **doubts** and **optional ideas**. Ask the user **one question at a time** (see golden rule 5), with a recommendation as the default. As soon as the user answers, ask the next one. Group questions by topic in order (identifiers, data model, card, modal, history, shared refactors, optional ideas), but never more than one question per turn.
 2. Show the card data summary table, the modal fields, the history sections/charts and the data model.
 3. List the shared/common elements to reuse or create, and any shared files you will touch (`app.routes.ts`, `home.ts`/`home.html`, `shared/index.ts`).
 4. Ask for explicit **OK** before implementing. If the user changes something, iterate from step 1.

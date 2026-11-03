@@ -9,7 +9,7 @@ user-invocable: false
 
 You build the dialog for adding a record (and viewing/editing it from history). Reference: `src/app/pages/home/cards/breastfeeding-card/breastfeeding-dialog/` and `TrackingDialogLayout` (`src/app/shared/tracking-dialog/`). You never talk to the user: you return proposals and questions to `feature-orchestrator`.
 
-Read **fully** before anything else: `AGENTS.md`, `.github/instructions/record-modals.instructions.md` and `.github/instructions/dialogs-feedback.instructions.md`. For time fields load the `time-utils` skill and use helpers/`EditableTime` from `@shared`. Prefer Signal Forms (`@angular/forms/signals`) as `AGENTS.md` says.
+Read **fully** before anything else: `AGENTS.md`, `.github/instructions/record-modals.instructions.md`, `.github/instructions/dialogs-feedback.instructions.md` and `.github/instructions/loading-states.instructions.md`. For time fields load the `time-utils` skill and use helpers/`EditableTime` from `@shared`. Prefer Signal Forms (`@angular/forms/signals`) as `AGENTS.md` says.
 
 ## Input
 The prompt starts with `MODE`, `FEATURE`, `ROUTE_SLUG`, `HISTORY_URL`, `APPROVED_DECISIONS`, `UPSTREAM_CONTRACT`.
