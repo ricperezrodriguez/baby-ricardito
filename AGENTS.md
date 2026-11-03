@@ -45,6 +45,18 @@ Details live in `.github/instructions/` (they load automatically for matching fi
 
 Always: confirm only irreversible or data-losing actions; report non-obvious results with `NotificationService`, never `MatSnackBar` directly.
 
+## Code quality and common elements
+
+- Follow good programming practices: small single-purpose units, no duplication, clear names, strict typing.
+- Whenever something can be shared (component, util, type, SCSS mixin, service helper), reuse the existing common element or create one in `src/app/shared/` (or shared domain code under `src/app/features/`) instead of copying code between features. Refactoring existing features into a common element must be agreed with the user first.
+
+## Agents
+
+New tracking features (card, creation/edit modal, history page, services and mocks) are built with the orchestrator in `.github/agents/`:
+
+- `feature-orchestrator` (invoke it with the feature to build, e.g. "biberón"): asks the user, plans and only implements after explicit approval.
+- Subagents (not user-invocable): `feature-data`, `feature-card`, `feature-dialog`, `feature-history`, `feature-style-harmonizer`. Each one has a `discover` (read-only) and an `implement` mode. Only the orchestrator edits the shared files `app.routes.ts`, `home.ts`/`home.html` and `shared/index.ts`.
+
 ## Build and Test
 
 From the repo root: `npm run start` (dev server), `npm run build` (production build). There is no lint script.
