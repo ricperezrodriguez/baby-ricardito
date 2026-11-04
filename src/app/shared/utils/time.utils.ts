@@ -150,9 +150,9 @@ export function formatDayLabel(dayKey: string): string {
 }
 
 const HOUR_MS = 3_600_000;
-const DAYS_FROM_HOURS = 72;
+const DAYS_FROM_HOURS = 48;
 
-/** Formats a duration in whole hours (`53 h`), or in whole days from 72 hours on (`3 días`). Never negative. */
+/** Formats a duration in whole hours (`36 h`), or in whole days from 48 hours on (`2 días`). Never negative. */
 export function formatElapsedHoursOrDays(milliseconds: number): string {
   const hours = Math.max(0, Math.floor(milliseconds / HOUR_MS));
   if (hours < DAYS_FROM_HOURS) {
