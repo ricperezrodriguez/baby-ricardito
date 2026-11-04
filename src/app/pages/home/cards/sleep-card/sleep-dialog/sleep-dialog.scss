@@ -1,0 +1,29 @@
+@use '../../../../../shared/record-dialog/record-dialog' as record;
+
+:host {
+  display: block;
+}
+
+// The large clock of the ongoing sleep (above the summary) brings its own spacing.
+@include record.summary(0);
+@include record.delete-button;
+@include record.notes-field;
+@include record.over-limit;
+
+.elapsed {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.elapsed-time {
+  color: var(--app-ink);
+  font-size: 3rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.awake-toggle {
+  margin-bottom: 1rem;
+}

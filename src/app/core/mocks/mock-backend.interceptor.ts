@@ -14,6 +14,8 @@ import {
 } from '@app/core/mocks/mock-backend.routing';
 import { MockDiaperStore } from '@app/core/mocks/mock-backend.diaper.store';
 import { computeDiaperReply } from '@app/core/mocks/mock-backend.diaper.routes';
+import { MockSleepStore } from '@app/core/mocks/mock-backend.sleep.store';
+import { computeSleepReply } from '@app/core/mocks/mock-backend.sleep.routes';
 
 const SESSIONS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/sessions(?:\/([^/]+)(\/photo)?)?\/?$/;
 const STATS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/stats\/?$/;
@@ -27,10 +29,20 @@ function isApiUrl(url: string): boolean {
   return next === '' || next === '/' || next === '?';
 }
 
-function computeReply(req: HttpRequest<unknown>, store: MockBackendStore, diaperStore: MockDiaperStore): MockReply {
+function computeReply(
+  req: HttpRequest<unknown>,
+  store: MockBackendStore,
+  diaperStore: MockDiaperStore,
+  sleepStore: MockSleepStore,
+): MockReply {
   const diaperReply = computeDiaperReply(req, diaperStore);
   if (diaperReply !== null) {
     return diaperReply;
+  }
+
+  const sleepReply = computeSleepReply(req, sleepStore);
+  if (sleepReply !== null) {
+    return sleepReply;
   }
 
   const statsBabyId = matchBabyRoute(req.url, STATS_ROUTE_PATTERN);
@@ -105,9 +117,10 @@ function resolveOutcome(
   req: HttpRequest<unknown>,
   store: MockBackendStore,
   diaperStore: MockDiaperStore,
+  sleepStore: MockSleepStore,
 ): HttpEvent<unknown> | HttpErrorResponse {
   try {
-    const reply = computeReply(req, store, diaperStore);
+    const reply = computeReply(req, store, diaperStore, sleepStore);
     logMock(req, reply.status, reply.body);
     return new HttpResponse({
       status: reply.status,
@@ -139,9 +152,10 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req, next): Observable
 
   const store = inject(MockBackendStore);
   const diaperStore = inject(MockDiaperStore);
+  const sleepStore = inject(MockSleepStore);
 
   // The delay is applied to errors too, so they are materialized as values first.
-  return defer(() => of(resolveOutcome(req, store, diaperStore))).pipe(
+  return defer(() => of(resolveOutcome(req, store, diaperStore, sleepStore))).pipe(
     delay(randomDelayMs()),
     mergeMap((outcome) => (outcome instanceof HttpErrorResponse ? throwError(() => outcome) : of(outcome))),
   );

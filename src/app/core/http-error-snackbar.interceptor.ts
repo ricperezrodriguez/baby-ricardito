@@ -3,7 +3,26 @@ import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { NotificationService } from '@app/core/notification.service';
 
-function getErrorMessage(status: number): string {
+/** Friendly messages for specific API error codes; they take precedence over the generic status messages. */
+const ERROR_MESSAGES_BY_CODE: ReadonlyMap<string, string> = new Map([
+  ['SLEEP_OVERLAP', 'Ya hay un sueño registrado en esas horas.'],
+  ['SLEEP_IN_PROGRESS', 'Ya hay un sueño en curso.'],
+]);
+
+function getErrorCode(error: HttpErrorResponse): string | null {
+  const body: unknown = error.error;
+  if (typeof body !== 'object' || body === null || !('code' in body)) {
+    return null;
+  }
+  return typeof body.code === 'string' ? body.code : null;
+}
+
+function getErrorMessage(error: HttpErrorResponse): string {
+  const code = getErrorCode(error);
+  return (code === null ? undefined : ERROR_MESSAGES_BY_CODE.get(code)) ?? getStatusMessage(error.status);
+}
+
+function getStatusMessage(status: number): string {
   if (status === 0) {
     return 'No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
   }
@@ -31,7 +50,7 @@ export const httpErrorSnackbarInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse) {
-        notifications.error(getErrorMessage(error.status));
+        notifications.error(getErrorMessage(error));
       }
       return throwError(() => error);
     }),

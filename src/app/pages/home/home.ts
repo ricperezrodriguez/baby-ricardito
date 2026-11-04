@@ -7,13 +7,17 @@ import { BreastfeedingCard } from '@app/pages/home/cards/breastfeeding-card/brea
 import { DiaperCard } from '@app/pages/home/cards/diaper-card/diaper-card';
 import { MedicalVisitCard } from '@app/pages/home/cards/medical-visit-card';
 import { NailTrimmingCard } from '@app/pages/home/cards/nail-trimming-card';
-import { SleepCard } from '@app/pages/home/cards/sleep-card';
+import { SleepCard } from '@app/pages/home/cards/sleep-card/sleep-card';
 import { VitaminDCard } from '@app/pages/home/cards/vitamin-d-card';
 import { DiaperPoopAlert } from '@app/pages/home/diaper-poop-alert/diaper-poop-alert';
+import { SleepAwakeAlert } from '@app/pages/home/sleep-awake-alert/sleep-awake-alert';
+import { SleepLongNapAlert } from '@app/pages/home/sleep-long-nap-alert/sleep-long-nap-alert';
 
 @Component({
   imports: [
     DiaperPoopAlert,
+    SleepAwakeAlert,
+    SleepLongNapAlert,
     BreastfeedingCard,
     BottleCard,
     DiaperCard,

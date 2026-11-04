@@ -53,3 +53,10 @@
     width: 100%;
   }
 }
+
+/// Notes character counter (`mat-hint`) once the limit is exceeded.
+@mixin over-limit {
+  .over-limit {
+    color: var(--app-coral);
+  }
+}

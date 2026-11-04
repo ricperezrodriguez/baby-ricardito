@@ -1,0 +1,12 @@
+// Only what is specific to a sleep row; the list, day and row layout live in `app-history-list`.
+.duration {
+  color: var(--app-muted);
+}
+
+// "(+1)" marker of a sleep that ends the next day: secondary to the clock times.
+.next-day {
+  color: var(--app-muted);
+  font-size: 0.85em;
+  font-weight: 500;
+  white-space: nowrap;
+}

@@ -1,24 +1,27 @@
-import { Component, computed, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { disabled, form, FormField } from '@angular/forms/signals';
+import { Component, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { EMPTY, Subject, catchError, switchMap, tap } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
-  DEFAULT_DIAPER_POOP_ALERT_SETTINGS,
   DIAPER_POOP_ALERT_THRESHOLDS,
   DiaperPoopAlertSettings,
   DiaperPoopAlertThreshold,
 } from '@app/features/diaper/diaper.models';
 import { DiaperService } from '@app/features/diaper/diaper.service';
-import { AsyncState, createClock, formatElapsedSince, LoadStatus, toIsoString } from '@shared';
+import {
+  SLEEP_AWAKE_ALERT_THRESHOLDS,
+  SLEEP_LONG_NAP_ALERT_THRESHOLDS,
+  SleepAwakeAlertSettings,
+  SleepAwakeAlertThreshold,
+  SleepLongNapAlertSettings,
+  SleepLongNapAlertThreshold,
+} from '@app/features/sleep/sleep.models';
+import { SleepService } from '@app/features/sleep/sleep.service';
+import { AlertSettingsSection } from '@app/shared/alert-settings-section/alert-settings-section';
+import { createClock, formatElapsedSince, toIsoString } from '@shared';
 
 interface NotificationExample {
   readonly icon: string;
@@ -38,9 +41,19 @@ const THRESHOLD_LABELS: Record<DiaperPoopAlertThreshold, string> = {
   72: '3 días',
 };
 
-const THRESHOLD_OPTIONS = DIAPER_POOP_ALERT_THRESHOLDS.map((hours) => ({
+const POOP_THRESHOLD_OPTIONS = DIAPER_POOP_ALERT_THRESHOLDS.map((hours) => ({
   hours,
   label: THRESHOLD_LABELS[hours],
+}));
+
+const AWAKE_THRESHOLD_OPTIONS = SLEEP_AWAKE_ALERT_THRESHOLDS.map((hours: SleepAwakeAlertThreshold) => ({
+  hours,
+  label: `${hours} h`,
+}));
+
+const LONG_NAP_THRESHOLD_OPTIONS = SLEEP_LONG_NAP_ALERT_THRESHOLDS.map((hours: SleepLongNapAlertThreshold) => ({
+  hours,
+  label: `${hours} h`,
 }));
 
 // Ejemplos de contenido; las notificaciones reales aún no existen.
@@ -91,16 +104,12 @@ const EXAMPLES: readonly NotificationExample[] = [
 
 @Component({
   imports: [
-    AsyncState,
-    FormField,
+    AlertSettingsSection,
     MatButtonModule,
     MatDialogModule,
     MatDividerModule,
-    MatFormFieldModule,
     MatIconModule,
     MatListModule,
-    MatSelectModule,
-    MatSlideToggleModule,
   ],
   styles: `
     .header {
@@ -114,25 +123,6 @@ const EXAMPLES: readonly NotificationExample[] = [
     .header h2 {
       flex: 1;
       min-width: 0;
-    }
-
-    .settings {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      margin-block-end: 1rem;
-    }
-
-    .settings-title {
-      color: var(--app-ink);
-      font-size: 1.05rem;
-      margin: 0;
-    }
-
-    .settings-fields {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
     }
 
     .note {
@@ -155,29 +145,33 @@ const EXAMPLES: readonly NotificationExample[] = [
       </button>
     </div>
     <mat-dialog-content>
-      <section class="settings" aria-labelledby="diaper-settings-title">
-        <h3 class="settings-title" id="diaper-settings-title">Pañal</h3>
-        <app-async-state
-          [status]="settingsStatus()"
-          loadingLabel="Cargando los avisos de pañal"
-          errorMessage="No se pudieron cargar los avisos de pañal."
-          (retry)="loadSettings()"
-        >
-          <div class="settings-fields">
-            <mat-slide-toggle [formField]="settingsForm.enabled">
-              Avisar si pasa mucho tiempo sin hacer caca
-            </mat-slide-toggle>
-            <mat-form-field subscriptSizing="dynamic">
-              <mat-label>Avisar a partir de</mat-label>
-              <mat-select [formField]="settingsForm.thresholdHours">
-                @for (option of thresholdOptions; track option.hours) {
-                  <mat-option [value]="option.hours">{{ option.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-        </app-async-state>
-      </section>
+      <app-alert-settings-section
+        heading="Pañal"
+        description="Avisar si pasa mucho tiempo sin hacer caca"
+        loadingLabel="Cargando los avisos de pañal"
+        errorMessage="No se pudieron cargar los avisos de pañal."
+        [options]="poopOptions"
+        [load]="loadPoopSettings"
+        [save]="savePoopSettings"
+      />
+      <app-alert-settings-section
+        heading="Despierto mucho tiempo"
+        description="Avisar si pasa mucho tiempo despierto"
+        loadingLabel="Cargando el aviso de despierto"
+        errorMessage="No se pudo cargar el aviso de despierto."
+        [options]="awakeOptions"
+        [load]="loadAwakeSettings"
+        [save]="saveAwakeSettings"
+      />
+      <app-alert-settings-section
+        heading="Siesta muy larga"
+        description="Avisar si una siesta dura mucho tiempo"
+        loadingLabel="Cargando el aviso de siesta larga"
+        errorMessage="No se pudo cargar el aviso de siesta larga."
+        [options]="longNapOptions"
+        [load]="loadLongNapSettings"
+        [save]="saveLongNapSettings"
+      />
       <mat-divider />
       <p class="note">Ejemplos de avisos que podrás recibir. Todavía no están activos.</p>
       <mat-list>
@@ -205,20 +199,22 @@ const EXAMPLES: readonly NotificationExample[] = [
 })
 export class NotificationsDialog {
   private readonly clock = createClock();
-  private readonly destroyRef = inject(DestroyRef);
   private readonly diaperService = inject(DiaperService);
-  private readonly saveRequests = new Subject<DiaperPoopAlertSettings>();
-  /** Last settings known to be stored in the backend; the UI reverts to them if saving fails. */
-  private confirmedSettings = DEFAULT_DIAPER_POOP_ALERT_SETTINGS;
-  /** Last settings sent to the backend (or confirmed); changes are saved only when they differ. */
-  private requestedSettings = DEFAULT_DIAPER_POOP_ALERT_SETTINGS;
+  private readonly sleepService = inject(SleepService);
 
-  protected readonly thresholdOptions = THRESHOLD_OPTIONS;
-  protected readonly settingsStatus = signal<LoadStatus>('loading');
-  private readonly settings = signal<DiaperPoopAlertSettings>(DEFAULT_DIAPER_POOP_ALERT_SETTINGS);
-  protected readonly settingsForm = form(this.settings, (path) => {
-    disabled(path.thresholdHours, ({ valueOf }) => !valueOf(path.enabled));
-  });
+  protected readonly poopOptions = POOP_THRESHOLD_OPTIONS;
+  protected readonly awakeOptions = AWAKE_THRESHOLD_OPTIONS;
+  protected readonly longNapOptions = LONG_NAP_THRESHOLD_OPTIONS;
+
+  protected readonly loadPoopSettings = () => this.diaperService.getPoopAlertSettings(CURRENT_BABY_ID);
+  protected readonly savePoopSettings = (settings: DiaperPoopAlertSettings) =>
+    this.diaperService.savePoopAlertSettings(CURRENT_BABY_ID, settings);
+  protected readonly loadAwakeSettings = () => this.sleepService.getAwakeAlertSettings(CURRENT_BABY_ID);
+  protected readonly saveAwakeSettings = (settings: SleepAwakeAlertSettings) =>
+    this.sleepService.saveAwakeAlertSettings(CURRENT_BABY_ID, settings);
+  protected readonly loadLongNapSettings = () => this.sleepService.getLongNapAlertSettings(CURRENT_BABY_ID);
+  protected readonly saveLongNapSettings = (settings: SleepLongNapAlertSettings) =>
+    this.sleepService.saveLongNapAlertSettings(CURRENT_BABY_ID, settings);
 
   protected readonly items = computed(() => {
     const now = this.clock.now();
@@ -227,57 +223,4 @@ export class NotificationsDialog {
       elapsed: formatElapsedSince(toIsoString(now - item.minutesAgo * MINUTE_MS), now),
     }));
   });
-
-  constructor() {
-    this.loadSettings();
-
-    // Optimistic UI: the form already shows the change; only a failed save reverts it (the HTTP
-    // interceptor reports the error).
-    this.saveRequests
-      .pipe(
-        switchMap((settings) =>
-          this.diaperService.savePoopAlertSettings(CURRENT_BABY_ID, settings).pipe(
-            tap(() => (this.confirmedSettings = settings)),
-            catchError(() => {
-              this.requestedSettings = this.confirmedSettings;
-              this.settings.set(this.confirmedSettings);
-              return EMPTY;
-            }),
-          ),
-        ),
-        takeUntilDestroyed(),
-      )
-      .subscribe();
-
-    effect(() => {
-      const settings = this.settings();
-      if (this.settingsStatus() !== 'loaded') {
-        return;
-      }
-
-      untracked(() => {
-        const requested = this.requestedSettings;
-        if (settings.enabled !== requested.enabled || settings.thresholdHours !== requested.thresholdHours) {
-          this.requestedSettings = { ...settings };
-          this.saveRequests.next({ ...settings });
-        }
-      });
-    });
-  }
-
-  protected loadSettings(): void {
-    this.settingsStatus.set('loading');
-    this.diaperService
-      .getPoopAlertSettings(CURRENT_BABY_ID)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (settings) => {
-          this.confirmedSettings = settings;
-          this.requestedSettings = settings;
-          this.settings.set(settings);
-          this.settingsStatus.set('loaded');
-        },
-        error: () => this.settingsStatus.set('error'),
-      });
-  }
 }

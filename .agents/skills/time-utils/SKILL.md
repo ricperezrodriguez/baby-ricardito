@@ -34,6 +34,7 @@ All time calculations live in `src/app/shared/utils/` and are imported from `@sh
 | `formatElapsedHoursOrDays(ms)` | Whole hours ("53 h"), or whole days from 72 h on ("3 días"). Never negative. |
 | `formatDurationText(ms)` | Short Spanish duration such as "45 s", "8 min" or "1 h 05 min". Never negative. |
 | `localDateKey(ms)` | Local calendar day of an instant as `yyyy-MM-dd` (grouping by day). |
+| `localHour(ms)` | Local hour of the day (0-23) of an instant. |
 | `localDateRange(now, days)` | Inclusive local-day range `{ from, to }` of `days` days ending on the day of `now`. |
 | `localTimeZone()` | IANA time zone of the device (e.g. `Europe/Madrid`). |
 | `formatDayHeading(dayKey, now)` | Spanish day heading: "Hoy", "Ayer" or "Lunes, 2 de noviembre". |

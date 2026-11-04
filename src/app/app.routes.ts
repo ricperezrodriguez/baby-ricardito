@@ -27,6 +27,16 @@ export const routes: Routes = [
         } satisfies DialogRouteData,
       },
       {
+        path: 'sueno',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/sleep-card/sleep-dialog/sleep-dialog').then(
+              (m) => m.SleepDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
         path: 'notificaciones',
         component: DialogRouteHost,
         data: {
@@ -72,6 +82,24 @@ export const routes: Routes = [
               (m) => m.DiaperDialog,
             ),
           returnTo: '/detalle/panal',
+        } satisfies DialogRouteData,
+      },
+    ],
+  },
+  {
+    path: 'detalle/sueno',
+    loadComponent: () =>
+      import('@app/pages/sleep-history/sleep-history').then((m) => m.SleepHistory),
+    children: [
+      {
+        path: ':sessionId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/sleep-card/sleep-dialog/sleep-dialog').then(
+              (m) => m.SleepDialog,
+            ),
+          returnTo: '/detalle/sueno',
         } satisfies DialogRouteData,
       },
     ],

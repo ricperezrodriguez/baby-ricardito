@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { firstValueFrom, Observable, of, switchMap, tap } from 'rxjs';
+import { of, switchMap, tap } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
   Breast,
@@ -25,6 +25,7 @@ import {
 } from '@app/features/breastfeeding/breastfeeding-timer';
 import {
   createClock,
+  createWriteQueue,
   EditableTime,
   formatDuration,
   LoadingSpinner,
@@ -87,7 +88,7 @@ export class BreastfeedingDialog {
   /** Backend session that stores this feed; it is created when the first side starts. */
   private sessionId: string | null = null;
   /** Backend writes run one after another so rapid taps never race each other. */
-  private queue: Promise<unknown> = Promise.resolve();
+  private readonly enqueue = createWriteQueue();
 
   /**
    * View/edit/delete flows shared by the record dialogs. A feed opened from the history
@@ -309,12 +310,6 @@ export class BreastfeedingDialog {
     this.photo.setStored(session.photoUrl);
     this.sessionStart.set(parseTimestamp(session.startTime));
     this.sessionEnd.set(session.endTime === null ? null : parseTimestamp(session.endTime));
-  }
-
-  private enqueue<T>(job: () => Observable<T>): Promise<T> {
-    const result = this.queue.then(() => firstValueFrom(job()));
-    this.queue = result.catch(() => undefined);
-    return result;
   }
 
   /** Stores the full state: creates the session on the first call and updates it afterwards. */

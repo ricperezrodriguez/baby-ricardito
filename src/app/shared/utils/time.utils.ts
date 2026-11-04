@@ -101,6 +101,11 @@ export function localDateKey(epochMilliseconds: number): string {
   return toDateTimeLocal(epochMilliseconds).slice(0, 10);
 }
 
+/** Local hour of the day (0-23) of an instant. */
+export function localHour(epochMilliseconds: number): number {
+  return new Date(epochMilliseconds).getHours();
+}
+
 /** Inclusive local-day range of `days` days that ends on the day of `now`. */
 export function localDateRange(now: number, days: number): { from: string; to: string } {
   const start = new Date(now);

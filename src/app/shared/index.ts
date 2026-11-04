@@ -1,3 +1,8 @@
+export { AlertSettingsSection } from '@app/shared/alert-settings-section/alert-settings-section';
+export type {
+  AlertSettings,
+  AlertThresholdOption,
+} from '@app/shared/alert-settings-section/alert-settings-section';
 export { AlertBanner } from '@app/shared/alerts/alert-banner';
 export type { AlertTone } from '@app/shared/alerts/alert-banner';
 export { createAlertDismissal } from '@app/shared/alerts/alert-dismissal';
@@ -38,6 +43,8 @@ export type {
 export { RecordPhoto } from '@app/shared/record-dialog/record-photo';
 export type { PhotoApi, PhotoRecord } from '@app/shared/record-dialog/record-photo';
 export { RecordPhotoField } from '@app/shared/record-dialog/record-photo-field';
+export { createWriteQueue } from '@app/shared/record-dialog/write-queue';
+export type { WriteQueue } from '@app/shared/record-dialog/write-queue';
 export { TRACKING_CARD_ICON_SIZE, TrackingCard } from '@app/shared/tracking-card/tracking-card';
 export { TrackingDialog } from '@app/shared/tracking-dialog/tracking-dialog';
 export type { TrackingDialogData } from '@app/shared/tracking-dialog/tracking-dialog';
@@ -55,6 +62,7 @@ export {
   isTimerFinished,
   localDateKey,
   localDateRange,
+  localHour,
   localTimeZone,
   parseDateTimeLocal,
   parseDuration,

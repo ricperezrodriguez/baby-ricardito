@@ -1,0 +1,99 @@
+<app-tracking-dialog-layout
+  [title]="title()"
+  [saveLabel]="saveLabel()"
+  [saveDisabled]="saveDisabled()"
+  [saving]="record.saving()"
+  [busy]="record.busy()"
+  [confirmBeforeDiscard]="ongoing()"
+  (save)="onSave()"
+  (dismiss)="dismiss()"
+  (discard)="discard()"
+>
+  @if (record.historyMode()) {
+    <button
+      dialogActionsStart
+      matIconButton
+      type="button"
+      class="delete-button"
+      [attr.aria-label]="record.texts.deleteLabel"
+      [disabled]="record.busy() || record.saving()"
+      (click)="deleteSession()"
+    >
+      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
+    </button>
+  }
+  @if (record.loading()) {
+    <app-loading-spinner [label]="record.texts.loadingLabel" />
+  } @else {
+    @if (ongoing()) {
+      <div class="elapsed">
+        <span class="elapsed-time" role="timer" aria-label="Tiempo dormido">
+          {{ elapsedText() }}
+        </span>
+      </div>
+    }
+
+    <section class="summary" aria-labelledby="summary-title">
+      <h3 id="summary-title" class="summary-title">Datos del sueño</h3>
+
+      @if (showAwakeToggle()) {
+        <div class="awake-toggle">
+          <mat-slide-toggle [formField]="form.awake">Ya se ha despertado</mat-slide-toggle>
+        </div>
+      }
+
+      <dl class="summary-list">
+        <div class="summary-row">
+          <dt>Inicio</dt>
+          <dd>
+            <app-editable-time
+              label="Inicio"
+              kind="datetime"
+              [value]="startTime()"
+              [max]="maxStart()"
+              [disabled]="record.editsDisabled()"
+              (committed)="changeStart($event)"
+            />
+          </dd>
+        </div>
+        @if (showEnd()) {
+          <div class="summary-row">
+            <dt>Fin</dt>
+            <dd>
+              <app-editable-time
+                label="Fin"
+                kind="datetime"
+                [value]="endTime()"
+                [min]="minEnd()"
+                [max]="maxEnd()"
+                [disabled]="record.editsDisabled()"
+                (committed)="endTime.set($event)"
+              />
+            </dd>
+          </div>
+        }
+        @if (showDuration()) {
+          <div class="summary-row">
+            <dt>Duración</dt>
+            <dd>{{ elapsedText() }}</dd>
+          </div>
+        }
+      </dl>
+
+      @if (!record.readOnly() || form.notes().value()) {
+        <mat-form-field class="notes-field" appearance="outline">
+          <mat-label>Notas</mat-label>
+          <textarea matInput rows="3" [formField]="form.notes"></textarea>
+          @if (!record.readOnly()) {
+            <mat-hint align="end" [class.over-limit]="form.notes().invalid()">
+              {{ form.notes().value().length }}/{{ notesMaxLength }}
+              @if (form.notes().invalid()) {
+                · Máximo superado
+              }
+            </mat-hint>
+          }
+        </mat-form-field>
+      }
+    </section>
+  }
+</app-tracking-dialog-layout>

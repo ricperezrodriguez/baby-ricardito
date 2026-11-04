@@ -1,0 +1,6 @@
+// The button sits in the grid cell of `app-last-record-summary` (already vertically centered); it never
+// shrinks or wraps, so the title takes the remaining width even at 360 px.
+.wake-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}

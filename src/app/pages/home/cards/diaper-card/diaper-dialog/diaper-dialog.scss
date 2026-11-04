@@ -8,6 +8,7 @@
 @include record.summary(0);
 @include record.delete-button;
 @include record.notes-field;
+@include record.over-limit;
 
 .field-group {
   margin-bottom: 1rem;
@@ -20,8 +21,4 @@
 .group-title {
   font-size: 1rem;
   margin: 0 0 0.5rem;
-}
-
-.over-limit {
-  color: var(--app-coral);
 }
