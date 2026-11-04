@@ -59,6 +59,10 @@ New tracking features (card, creation/edit modal, history page, services and moc
 - `feature-orchestrator` (invoke it with the feature to build, e.g. "biberón"): asks the user, plans and only implements after explicit approval.
 - Subagents (not user-invocable): `feature-data`, `feature-card`, `feature-dialog`, `feature-history`, `feature-style-harmonizer`. Each one has a `discover` (read-only) and an `implement` mode. Only the orchestrator edits the shared files `app.routes.ts`, `home.ts`/`home.html` and `shared/index.ts`.
 
+## Feature decision records
+
+Each tracking feature has a decision record in `.github/features/<feature>.md` (approved decisions, declined/deferred ideas, open points, file map). Before touching a feature, read its record. Whenever the user changes, confirms or discards a decision about a feature, update its record in the same change.
+
 ## Build and Test
 
 From the repo root: `npm run start` (dev server), `npm run build` (production build). There is no lint script.

@@ -42,7 +42,7 @@ If the user did not name a feature, ask which one. Always confirm with the user:
 ## Workflow
 
 ### Phase 0: context
-Read the breastfeeding reference (card, dialog, `features/breastfeeding`, `breastfeeding-history`, `core/mocks`) and the five instruction files, so you can brief the subagents.
+If `.github/features/<feature>.md` exists, read it first: it holds the decisions already made for that feature. Then read the breastfeeding reference (card, dialog, `features/breastfeeding`, `breastfeeding-history`, `core/mocks`) and the five instruction files, so you can brief the subagents.
 
 ### Phase 1: discovery (subagents in `MODE: discover`, read-only)
 Subagents cannot ask the user; they return proposals and questions to you.
@@ -72,7 +72,8 @@ UPSTREAM_CONTRACT: <summary of feature-data output, when relevant>
 5. Run `npm run build` and fix or report failures.
 
 ### Phase 4: report
-Summarize in Spanish: files created/changed, common elements created, pending suggestions the user declined or deferred.
+1. Write or update the decision record `.github/features/<feature>.md` (English): identifiers and routes, approved decisions, declined or deferred ideas, open points, common elements created and a file map. Use `.github/features/sleep.md` as the model. Keep it updated whenever the user later changes, confirms or discards a decision.
+2. Summarize in Spanish: files created/changed, common elements created, pending suggestions the user declined or deferred.
 
 ## Dependency order
 `feature-data` -> (`feature-card` | `feature-dialog` | `feature-history`) -> orchestrator shared edits -> `feature-style-harmonizer` -> build.
