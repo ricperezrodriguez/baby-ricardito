@@ -1,5 +1,5 @@
 ---
-applyTo: "src/app/pages/*-history/**,src/app/shared/history/**,src/app/shared/in-view/**,src/app/features/**,src/app/core/mocks/**,src/app/app.routes.ts"
+applyTo: 'src/app/pages/*-history/**,src/app/shared/history/**,src/app/shared/in-view/**,src/app/features/**,src/app/core/mocks/**,src/app/app.routes.ts'
 ---
 
 # History page ("Ver historial")
@@ -7,6 +7,19 @@ applyTo: "src/app/pages/*-history/**,src/app/shared/history/**,src/app/shared/in
 Every tracking card has a "Ver historial" link that opens a detail page with the whole history of that tracker. The reference implementation is the breastfeeding one: route `/detalle/pecho`, code in `src/app/pages/breastfeeding-history/` (`BreastfeedingHistory`). Other trackers (bottle, diaper, sleep, and any future card) must reproduce the same behavior in their own `detalle/<category>` page (`src/app/pages/<tracker>-history/`), replacing the `PendingHistory` placeholder (`detalle/:category`). Keep the specific `detalle/<category>` route declared **before** the `detalle/:category` fallback in `src/app/app.routes.ts`.
 
 The modal that opens from a row is described in `.github/instructions/dialogs-feedback.instructions.md`.
+
+## Shared page pieces
+
+The layout and the stats state are common to every tracker; a tracker page (`pages/<tracker>-history/<tracker>-history.ts`, inline template) only provides what is specific. **Never copy the markup, styles or stats logic into a tracker page.**
+
+| Piece                                                                        | Responsibility                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createHistoryStats<Stats, Id>(options)` (`shared/history/history-stats.ts`) | Data side. Options: `chartIds`, `getStats(request)` (service call with the baby bound), `getPreferences`, `savePreferences` and `dialogRoute` (the `:sessionId`-like path whose modal closing reloads the stats). Returns period state, `shownStats` (last stats kept while reloading), `status`, hidden/visible charts, `preferencesReady`, `selectPeriod`, `setChartVisible` and `reload`. Call it in a field initializer.                                                      |
+| `app-history-page` (`HistoryPage`, `shared/history/history-page/`)           | Layout and styles of the page: header, period toggle, summary, chips, chart grid (cards, hide buttons, heatmap), states and the `<router-outlet />`. Inputs: `history` (the object above), `content` (`HistoryPageContent`: `summary`, `hasData`, `hourMap`, `charts`, optional `notices` for a chart card that shows a text instead), `heading`, `recordsTitle`, `emptyMessage`, `chartTitles`, `heatmap` (`color`, `caption`, `unit`). The record list is projected as content. |
+
+A tracker page only defines: chart titles, heatmap options, `toContent(stats)` (summary and chart configurations from `history-charts.ts`) and the list. Chart ids must include `hourMap`. Not exported from `@shared` (Chart.js).
+
+The sections below describe the behavior these pieces implement.
 
 ## Page structure (top to bottom)
 
@@ -22,14 +35,14 @@ All visible copy is in Spanish. Design tokens come from `src/styles.scss` (`--ap
 
 All six charts are shown by default; each can be hidden individually.
 
-| Id (`HISTORY_CHART_IDS`) | Title | Type |
-|---|---|---|
-| `feedsPerDay` | Tomas por día | Bar |
-| `minutesPerDay` | Minutos totales por día | Stacked bar (left / right, in minutes) |
-| `breastSplit` | Reparto izquierdo / derecho | Doughnut (tooltip: time and percentage) |
-| `averageDuration` | Duración media por toma | Line (minutes, gaps for days without feeds) |
-| `averageInterval` | Intervalo medio entre tomas | Line (hours, gaps for days without feeds) |
-| `hourMap` | Mapa de horas del día | Heatmap (own HTML table, full width) |
+| Id (`HISTORY_CHART_IDS`) | Title                       | Type                                        |
+| ------------------------ | --------------------------- | ------------------------------------------- |
+| `feedsPerDay`            | Tomas por día               | Bar                                         |
+| `minutesPerDay`          | Minutos totales por día     | Stacked bar (left / right, in minutes)      |
+| `breastSplit`            | Reparto izquierdo / derecho | Doughnut (tooltip: time and percentage)     |
+| `averageDuration`        | Duración media por toma     | Line (minutes, gaps for days without feeds) |
+| `averageInterval`        | Intervalo medio entre tomas | Line (hours, gaps for days without feeds)   |
+| `hourMap`                | Mapa de horas del día       | Heatmap (own HTML table, full width)        |
 
 - **Library:** Chart.js used directly (no wrapper). Register only the controllers/elements/scales that are used, in `history-chart.ts`. The module has side effects, so it must stay inside the lazy page and **never** be exported from the `@shared` barrel (it would end up in the initial bundle).
 - **Wrapper:** `app-history-chart` receives a `ChartConfiguration` and a caption; it creates the chart once and updates `data`/`options` afterwards, and destroys it on destroy. Chart configurations are pure functions in `history-charts.ts` (animations off, `maintainAspectRatio: false`). Day labels use `formatDayLabel`.
@@ -62,30 +75,37 @@ The charts cannot depend on the paginated list, so the backend aggregates the da
 
 The list of records (grouped by day, infinite scroll) is the same for **every** tracker, so its layout, styles, states and paging logic live only in shared code (`src/app/shared/history/history-list/`, exported from `@shared`). A tracker's list component (`pages/<tracker>-history/<tracker>-history-list/`) only provides what is specific: how a record becomes a row, the day summary and the content of the row. **Never copy markup, styles or paging code from another tracker's list.**
 
-| Piece | Responsibility |
-|---|---|
+| Piece                                 | Responsibility                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `createPagedList<Item, Row>(options)` | Data side. Options: `load({ limit, offset })` (the service `getPage`), `toRow` (record -> row, `null` skips it), `timeOf` (instant used to group by local day), `summaryOf(rows)` (text of the day heading) and `dialogRoute` (the `:sessionId` path whose modal closing reloads the list). Returns `groups` (`DayGroup<Row>[]`), `status`, `loadingMore`, `moreFailed`, `hasMore`, `reload()` and `loadMore()`. Does pages of 20, grouping by `localDateKey`, hiding the summary of the last day while more pages remain, the retry after a failed page, and the reload in one request (`limit = max(20, loaded)`, `offset = 0`) when the modal closes. Call it in a field initializer. |
-| `app-history-list` (`HistoryList`) | Frame. Inputs: `list` (the object returned above), `accent` (`var(--app-card-<tracker>)`), `timeWidth` (width of the first column; default `3.5rem`, widen it for ranges such as `7rem`) and the Spanish texts `loadingLabel`, `emptyMessage`, `errorMessage`, `loadingMoreLabel`. Renders the states (`app-async-state`), the retry of a failed "load more", the spinner and the `InView` sentinel. |
-| `app-history-day` (`HistoryDay`) | One day: sticky heading (`Hoy`, `Ayer`, `Sábado, 31 de octubre`) with its summary and the framed `ul`. Inputs `key`, `heading`, `summary` from the group. |
-| `li[appHistoryRow]` (`HistoryRow`) | One row: full-width link with hover, visible focus outline, chevron and the responsive grid. Inputs `link` and `inProgress` (tints the time). Content goes in three slots: `historyTime`, `historyMain` and `historyDetails`. |
-| `app-record-flags` (`RecordFlags`) | The notes / photo icons with hidden text for screen readers. Use it in every row's `historyDetails`. |
+| `app-history-list` (`HistoryList`)    | Frame. Inputs: `list` (the object returned above), `accent` (`var(--app-card-<tracker>)`), `timeWidth` (width of the first column; default `3.5rem`, widen it for ranges such as `7rem`) and the Spanish texts `loadingLabel`, `emptyMessage`, `errorMessage`, `loadingMoreLabel`. Renders the states (`app-async-state`), the retry of a failed "load more", the spinner and the `InView` sentinel.                                                                                                                                                                                                                                                                                     |
+| `app-history-day` (`HistoryDay`)      | One day: sticky heading (`Hoy`, `Ayer`, `Sábado, 31 de octubre`) with its summary and the framed `ul`. Inputs `key`, `heading`, `summary` from the group.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `li[appHistoryRow]` (`HistoryRow`)    | One row: full-width link with hover, visible focus outline, chevron and the responsive grid. Inputs `link` and `inProgress` (tints the time). Content goes in three slots: `historyTime`, `historyMain` and `historyDetails`.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `app-record-flags` (`RecordFlags`)    | The notes / photo icons with hidden text for screen readers. Use it in every row's `historyDetails`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 Template of a tracker list (the whole file, apart from the row content):
 
 ```html
-<app-history-list [list]="list" accent="var(--app-card-bottle)" loadingLabel="Cargando el historial"
-  emptyMessage="Todavía no hay biberones registrados." errorMessage="No se ha podido cargar el historial."
-  loadingMoreLabel="Cargando más biberones">
+<app-history-list
+  [list]="list"
+  accent="var(--app-card-bottle)"
+  loadingLabel="Cargando el historial"
+  emptyMessage="Todavía no hay biberones registrados."
+  errorMessage="No se ha podido cargar el historial."
+  loadingMoreLabel="Cargando más biberones"
+>
   @for (group of list.groups(); track group.key) {
-    <app-history-day [key]="group.key" [heading]="group.heading" [summary]="group.summary">
-      @for (row of group.rows; track row.id) {
-        <li appHistoryRow [link]="row.link">
-          <span historyTime>{{ row.startMs | date: 'HH:mm' }}</span>
-          <span historyMain>...</span>
-          <span historyDetails>... <app-record-flags [hasNotes]="row.hasNotes" [hasPhoto]="row.hasPhoto" /></span>
-        </li>
-      }
-    </app-history-day>
+  <app-history-day [key]="group.key" [heading]="group.heading" [summary]="group.summary">
+    @for (row of group.rows; track row.id) {
+    <li appHistoryRow [link]="row.link">
+      <span historyTime>{{ row.startMs | date: 'HH:mm' }}</span>
+      <span historyMain>...</span>
+      <span historyDetails
+        >... <app-record-flags [hasNotes]="row.hasNotes" [hasPhoto]="row.hasPhoto"
+      /></span>
+    </li>
+    }
+  </app-history-day>
   }
 </app-history-list>
 ```
@@ -112,6 +132,6 @@ Rules:
 ## Adding the history page for another tracker
 
 1. Add the models and service calls for its stats and preferences (same contract, different path segment and charts) and the mock implementation. The service needs `getPage({ limit, offset })` returning `{ items, total }`.
-2. Create `src/app/pages/<tracker>-history/` (English name, e.g. `bottle-history`) reusing the shared pieces: `HistoryChart` and `HourHeatmap` (`shared/history/`, never through the `@shared` barrel because of Chart.js), `createHiddenCharts`, and for the list **`createPagedList` + `app-history-list`/`app-history-day`/`appHistoryRow`/`app-record-flags`** as described in "Record list". Do not write the list paging, states or row layout again.
+2. Create `src/app/pages/<tracker>-history/` (English name, e.g. `bottle-history`) reusing the shared pieces: `createHistoryStats` + `app-history-page` (see "Shared page pieces"; `shared/history/`, never through the `@shared` barrel because of Chart.js) and, for the list **`createPagedList` + `app-history-list`/`app-history-day`/`appHistoryRow`/`app-record-flags`** as described in "Record list". Do not write the list paging, states or row layout again.
 3. Declare `detalle/<category>` with its `:sessionId` child route (see the modal file) before `detalle/:category`.
 4. Point the card's `link` to that route.

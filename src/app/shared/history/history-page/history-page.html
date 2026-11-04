@@ -1,0 +1,108 @@
+<section class="history" aria-labelledby="history-title">
+  <header class="history-header">
+    <div>
+      <a class="back-link" routerLink="/">
+        <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">arrow_back</mat-icon>
+        Inicio
+      </a>
+      <h1 id="history-title">{{ heading() }}</h1>
+    </div>
+    <mat-button-toggle-group
+      aria-label="Periodo de las gráficas"
+      hideSingleSelectionIndicator
+      [value]="history().period()"
+      (change)="history().selectPeriod($event.value)"
+    >
+      @for (days of history().periodOptions; track days) {
+        <mat-button-toggle [value]="days">{{ days }} días</mat-button-toggle>
+      }
+    </mat-button-toggle-group>
+  </header>
+
+  <app-async-state
+    [status]="history().status()"
+    loadingLabel="Cargando estadísticas"
+    errorMessage="No se han podido cargar las estadísticas."
+    (retry)="history().reload()"
+  >
+    @if (content(); as data) {
+      <dl class="summary" aria-label="Resumen del periodo">
+        @for (item of data.summary; track item.label) {
+          <div class="summary-item">
+            <dt>{{ item.label }}</dt>
+            <dd>{{ item.value }}</dd>
+          </div>
+        }
+      </dl>
+
+      <section class="charts" aria-labelledby="charts-title">
+        <div class="charts-header">
+          <h2 id="charts-title">Gráficas</h2>
+          @if (history().preferencesReady()) {
+            <mat-chip-listbox multiple aria-label="Gráficas visibles">
+              @for (id of history().chartIds; track id) {
+                <mat-chip-option
+                  [selected]="!history().hidden().includes(id)"
+                  (selectionChange)="history().setChartVisible(id, $event.selected)"
+                >
+                  {{ chartTitles()[id] }}
+                </mat-chip-option>
+              }
+            </mat-chip-listbox>
+          }
+        </div>
+
+        @if (!data.hasData) {
+          <p class="empty">{{ emptyMessage() }}</p>
+        } @else if (history().visible().length === 0) {
+          <p class="empty">
+            Has ocultado todas las gráficas. Actívalas desde los filtros de arriba.
+          </p>
+        } @else {
+          <div class="chart-grid">
+            @for (id of history().visible(); track id) {
+              <article
+                class="chart-card"
+                [class.wide]="id === 'hourMap'"
+                [attr.aria-labelledby]="'chart-' + id"
+              >
+                <header class="chart-card-header">
+                  <h3 [id]="'chart-' + id">{{ chartTitles()[id] }}</h3>
+                  <button
+                    matIconButton
+                    type="button"
+                    [attr.aria-label]="'Ocultar ' + chartTitles()[id]"
+                    (click)="history().setChartVisible(id, false)"
+                  >
+                    <mat-icon fontSet="material-symbols-outlined" aria-hidden="true"
+                      >visibility_off</mat-icon
+                    >
+                  </button>
+                </header>
+                @if (id === 'hourMap') {
+                  <app-hour-heatmap
+                    [color]="heatmap().color"
+                    [caption]="heatmap().caption"
+                    [hourMap]="data.hourMap"
+                    [unit]="heatmap().unit"
+                  />
+                } @else if (data.notices?.[id]; as notice) {
+                  <p class="empty">{{ notice }}</p>
+                } @else if (data.charts[id]; as config) {
+                  <app-history-chart [config]="config" [caption]="chartTitles()[id]" />
+                }
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
+  </app-async-state>
+
+  <section class="records" aria-labelledby="records-title">
+    <h2 id="records-title">{{ recordsTitle() }}</h2>
+    <ng-content />
+  </section>
+</section>
+
+<router-outlet />
