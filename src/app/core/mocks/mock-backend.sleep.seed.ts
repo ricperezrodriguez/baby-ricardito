@@ -14,36 +14,36 @@ const MINUTES_PER_HOUR = 60;
 const GENERATED_UNTIL_MINUTES_AGO = 2_900;
 
 const LONG_NOTES =
-  'Fell asleep in her arms after the evening feed and woke up twice in the first hour, so we rocked her back to ' +
-  'sleep with the white noise machine on. She finally settled when we laid her on her side of the cot with the ' +
-  'swaddle a bit looser. After that she slept deeply and did not even wake up when the dog barked outside.';
+  'Se durmió en mis brazos después de la toma de la tarde y se despertó dos veces durante la primera hora, así que la acunamos hasta que volvió a dormirse, con el ruido blanco encendido. ' +
+  'Por fin se tranquilizó cuando la acostamos de lado en la cuna, con el saquito un poco más holgado. ' +
+  'Después durmió profundamente y ni siquiera se despertó cuando ladró el perro afuera.';
 
 /** Hand-written recent sleeps (minutes ago when it started, minutes of duration); the last one ended ~50 min ago. */
 const RECENT_SPECS: { startedMinutesAgo: number; durationMinutes: number; notes?: string }[] = [
-  { startedMinutesAgo: 95, durationMinutes: 45, notes: 'Short nap in the stroller.' },
+  { startedMinutesAgo: 95, durationMinutes: 45, notes: 'Siesta corta en el cochecito.' },
   { startedMinutesAgo: 230, durationMinutes: 80 },
   { startedMinutesAgo: 400, durationMinutes: 100 },
   { startedMinutesAgo: 560, durationMinutes: 60 },
   { startedMinutesAgo: 800, durationMinutes: 150, notes: LONG_NOTES },
   { startedMinutesAgo: 1_000, durationMinutes: 90 },
   { startedMinutesAgo: 1_190, durationMinutes: 120 },
-  { startedMinutesAgo: 1_420, durationMinutes: 200, notes: 'Slept through the vaccine fuss.' },
+  { startedMinutesAgo: 1_420, durationMinutes: 200, notes: 'Durmió a pesar del malestar de la vacuna.' },
   { startedMinutesAgo: 1_600, durationMinutes: 110 },
   { startedMinutesAgo: 1_800, durationMinutes: 95 },
   { startedMinutesAgo: 2_000, durationMinutes: 130 },
   { startedMinutesAgo: 2_230, durationMinutes: 170 },
-  { startedMinutesAgo: 2_430, durationMinutes: 90, notes: 'Woke up crying, wanted a feed.' },
+  { startedMinutesAgo: 2_430, durationMinutes: 90, notes: 'Se despertó llorando; quería comer.' },
   { startedMinutesAgo: 2_620, durationMinutes: 100 },
   { startedMinutesAgo: 2_830, durationMinutes: 140 },
 ];
 
 /** Notes of generated sleeps, by `<days ago>:<slot>`. */
 const GENERATED_NOTES: Record<string, string> = {
-  '3:nap0': 'Only napped on the car seat.',
+  '3:nap0': 'Solo durmió en la silla del coche.',
   '5:night1': LONG_NOTES,
-  '9:nap1': 'Teething, very restless.',
-  '14:night2': 'Slept right through until the alarm.',
-  '21:nap0': 'Short nap, woke up with the lawn mower.',
+  '9:nap1': 'Le están saliendo los dientes y estuvo muy inquieta.',
+  '14:night2': 'Durmió del tirón hasta que sonó la alarma.',
+  '21:nap0': 'Siesta corta; se despertó con el ruido del cortacésped.',
 };
 
 function localTime(now: Date, daysAgo: number, minutesOfDay: number): number {

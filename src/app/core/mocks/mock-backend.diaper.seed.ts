@@ -30,9 +30,9 @@ const SEED_PHOTOS = {
 };
 
 const LONG_NOTES =
-  'Changed her right after the feed because she was fussy. The diaper was quite full and she had a slightly red ' +
-  'bottom, so I cleaned it with water and cotton instead of wipes and let her stay a few minutes without a diaper ' +
-  'to air the skin. Applied a thin layer of zinc cream before putting on a fresh one. She calmed down immediately.';
+  'La cambié justo después de la toma porque estaba inquieta. El pañal estaba bastante lleno y tenía el culito algo enrojecido, ' +
+  'así que la limpié con agua y algodón en lugar de toallitas y la dejé unos minutos sin pañal para que la piel se aireara. ' +
+  'Le puse una fina capa de crema de zinc antes de ponerle un pañal limpio. Se tranquilizó enseguida.';
 
 /** Hand-written recent changes: the last poop is ~3 hours ago, so the poop alert does not fire by default. */
 const RECENT_SPECS: SeedChangeSpec[] = [
@@ -55,7 +55,7 @@ const RECENT_SPECS: SeedChangeSpec[] = [
     type: DIAPER_TYPE.DIRTY,
     stoolColor: 'yellow',
     stoolConsistency: 'liquid',
-    notes: 'Very runny, third one today.',
+    notes: 'Muy líquida; la tercera de hoy.',
   },
   { changedMinutesAgo: 1_790, type: DIAPER_TYPE.WET },
   { changedMinutesAgo: 2_050, type: DIAPER_TYPE.BOTH, stoolColor: 'yellow', stoolConsistency: 'firm' },
@@ -71,14 +71,14 @@ const RARE_COLOR_SPECS: SeedChangeSpec[] = [
     type: DIAPER_TYPE.DIRTY,
     stoolColor: 'black',
     stoolConsistency: 'soft',
-    notes: 'Dark and sticky; mentioned it at the pediatrician visit.',
+    notes: 'Oscura y pegajosa; se lo comenté al pediatra.',
   },
   {
     changedMinutesAgo: 17_000,
     type: DIAPER_TYPE.DIRTY,
     stoolColor: 'red',
     stoolConsistency: 'liquid',
-    notes: 'Small red streak. Called the pediatrician, it was from a cracked bottom.',
+    notes: 'Una pequeña veta roja. Llamé al pediatra; era por una pequeña fisura en la piel.',
   },
   { changedMinutesAgo: 23_000, type: DIAPER_TYPE.BOTH, stoolColor: 'white', stoolConsistency: 'mucous' },
 ];
