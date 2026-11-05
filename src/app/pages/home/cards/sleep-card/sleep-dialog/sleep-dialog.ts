@@ -137,6 +137,12 @@ export class SleepDialog {
   );
   protected readonly minEnd = computed(() => this.startTime());
   protected readonly maxEnd = computed(() => this.clock.now());
+  /** Duration of a finished record, which the user can set from its fixed start; `null` while there is no end. */
+  protected readonly editableDuration = computed(() => {
+    const end = this.endTime();
+    return end === null ? null : Math.max(0, end - this.startTime());
+  });
+  protected readonly maxDuration = computed(() => Math.max(0, this.maxEnd() - this.startTime()));
 
   constructor() {
     if (this.record.requestedId === null) {
@@ -151,6 +157,11 @@ export class SleepDialog {
     if (this.ongoing()) {
       this.storeStart(start);
     }
+  }
+
+  /** The start stays fixed, so the wake-up time moves. */
+  protected changeDuration(duration: number): void {
+    this.endTime.set(this.startTime() + duration);
   }
 
   /** Main button: starts or saves a new sleep, wakes the baby up, starts editing a record or confirms its changes. */

@@ -75,7 +75,21 @@
         @if (showDuration()) {
           <div class="summary-row">
             <dt>Duración</dt>
-            <dd>{{ elapsedText() }}</dd>
+            <dd>
+              @if (record.historyMode()) {
+                <app-editable-time
+                  label="Duración"
+                  kind="duration"
+                  [value]="editableDuration()"
+                  [min]="0"
+                  [max]="maxDuration()"
+                  [disabled]="record.editsDisabled()"
+                  (committed)="changeDuration($event)"
+                />
+              } @else {
+                {{ elapsedText() }}
+              }
+            </dd>
           </div>
         }
       </dl>
