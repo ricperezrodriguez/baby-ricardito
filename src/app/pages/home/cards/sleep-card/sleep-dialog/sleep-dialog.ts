@@ -5,7 +5,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { firstValueFrom } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
   SLEEP_NOTES_MAX_LENGTH,
@@ -25,6 +24,7 @@ import {
   toIsoString,
   TrackingDialogLayout,
 } from '@shared';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   imports: [
@@ -76,13 +76,12 @@ export class SleepDialog {
 
   /**
    * View/edit/delete flows shared by the record dialogs. A sleep opened from the history
-   * (`/detalle/sueno/:sessionId`) is a finished one; otherwise the dialog logs a new or running sleep.
+   * (`/detalle/sueno/:recordId`) is a finished one; otherwise the dialog logs a new or running sleep.
    */
   protected readonly record = new RecordDialogController<SleepSession>({
     noun: 'sueño',
     gender: 'masculine',
     creationTitle: 'Añadir sueño',
-    idParam: 'sessionId',
     snapshot: () => this.snapshot(),
     startLoading: true,
   });
@@ -93,12 +92,16 @@ export class SleepDialog {
   });
 
   /** A running sleep is continued here: only its start and notes can change until the baby wakes up. */
-  protected readonly ongoing = computed(() => !this.record.historyMode() && this.sessionId() !== null);
+  protected readonly ongoing = computed(
+    () => !this.record.historyMode() && this.sessionId() !== null,
+  );
   /** The wake-up time exists for finished records and for a new sleep that already ended. */
   protected readonly showEnd = computed(
     () => this.record.historyMode() || (!this.ongoing() && this.form.awake().value()),
   );
-  protected readonly showAwakeToggle = computed(() => !this.record.historyMode() && !this.ongoing());
+  protected readonly showAwakeToggle = computed(
+    () => !this.record.historyMode() && !this.ongoing(),
+  );
 
   protected readonly title = computed(() =>
     this.ongoing() ? 'Sueño en curso' : this.record.dialogTitle(),

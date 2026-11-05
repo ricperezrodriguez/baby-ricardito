@@ -19,10 +19,7 @@ import {
   HistoryPageContent,
 } from '@app/shared/history/history-page/history-page';
 import { createHistoryStats } from '@app/shared/history/history-stats';
-import { formatDurationText } from '@shared';
-
-/** Path of the child route that opens a sleep; its modal closing reloads the page. */
-const SLEEP_DIALOG_ROUTE = ':sessionId';
+import { formatDurationText, RECORD_DIALOG_ROUTE } from '@shared';
 
 const CHART_TITLES: Record<SleepHistoryChartId, string> = {
   sleepsPerDay: 'Sueños por día',
@@ -96,7 +93,7 @@ export class SleepHistory {
     getPreferences: () => this.service.getHistoryPreferences(CURRENT_BABY_ID),
     savePreferences: (hiddenCharts) =>
       this.service.saveHistoryPreferences(CURRENT_BABY_ID, { hiddenCharts }),
-    dialogRoute: SLEEP_DIALOG_ROUTE,
+    dialogRoute: RECORD_DIALOG_ROUTE,
   });
 
   protected readonly content = computed(() => {

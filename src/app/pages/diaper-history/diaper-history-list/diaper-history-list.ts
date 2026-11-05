@@ -16,11 +16,9 @@ import {
   HistoryList,
   HistoryRow,
   parseTimestamp,
+  RECORD_DIALOG_ROUTE,
   RecordFlags,
 } from '@shared';
-
-/** Path of the child route that opens a change; its modal closing refreshes the list. */
-const CHANGE_DIALOG_ROUTE = ':changeId';
 
 interface ChangeRow {
   id: string;
@@ -47,7 +45,8 @@ function toRow(change: DiaperChange): ChangeRow | null {
     type: change.type,
     typeLabel: DIAPER_TYPE_LABELS[change.type],
     stoolColor: change.stoolColor === null ? null : STOOL_COLOR_LABELS[change.stoolColor],
-    consistency: change.stoolConsistency === null ? null : STOOL_CONSISTENCY_LABELS[change.stoolConsistency],
+    consistency:
+      change.stoolConsistency === null ? null : STOOL_CONSISTENCY_LABELS[change.stoolConsistency],
     hasRash: change.hasRash,
     hasNotes: !!change.notes?.trim(),
     hasPhoto: !!change.photoUrl,
@@ -66,7 +65,15 @@ function summaryOf(rows: readonly ChangeRow[]): string {
 /** Diaper changes grouped by day, loaded page by page as the user scrolls down. */
 @Component({
   selector: 'app-diaper-history-list',
-  imports: [DatePipe, DiaperTypeIcon, HistoryDay, HistoryList, HistoryRow, MatIconModule, RecordFlags],
+  imports: [
+    DatePipe,
+    DiaperTypeIcon,
+    HistoryDay,
+    HistoryList,
+    HistoryRow,
+    MatIconModule,
+    RecordFlags,
+  ],
   styleUrl: './diaper-history-list.scss',
   templateUrl: './diaper-history-list.html',
 })
@@ -78,6 +85,6 @@ export class DiaperHistoryList {
     toRow,
     timeOf: ({ changedMs }) => changedMs,
     summaryOf,
-    dialogRoute: CHANGE_DIALOG_ROUTE,
+    dialogRoute: RECORD_DIALOG_ROUTE,
   });
 }

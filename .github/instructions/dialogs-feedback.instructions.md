@@ -1,5 +1,5 @@
 ---
-applyTo: "src/app/**/*dialog*/**,src/app/shared/dialog-route/**,src/app/shared/tracking-dialog/**,src/app/shared/confirmation-dialog/**,src/app/app.routes.ts"
+applyTo: 'src/app/**/*dialog*/**,src/app/shared/dialog-route/**,src/app/shared/tracking-dialog/**,src/app/shared/confirmation-dialog/**,src/app/app.routes.ts'
 ---
 
 # View / edit record modal
@@ -10,24 +10,24 @@ For the history page that hosts the modal, see `.github/instructions/history-pag
 
 ## One component, two uses
 
-The view/edit modal is **not** a new component: it is the same dialog used to create a record (e.g. `BreastfeedingDialog`), built on `TrackingDialogLayout`. It switches to *history mode* when its route provides a record id. New trackers must follow the same pattern: one dialog component that handles both creation and history mode.
+The view/edit modal is **not** a new component: it is the same dialog used to create a record (e.g. `BreastfeedingDialog`), built on `TrackingDialogLayout`. It switches to _history mode_ when its route provides a record id. New trackers must follow the same pattern: one dialog component that handles both creation and history mode.
 
 ## Route
 
-- The modal is a child route of the history page, with `component: DialogRouteHost`: `detalle/<category>` > `:sessionId` (use the param name that fits the tracker, keep the same shape).
+- The modal is a child route of the history page, with `component: DialogRouteHost`: `detalle/<category>` > `:recordId`. The param is **always** `recordId`, for every tracker: never choose a tracker-specific name (`sessionId`, `changeId`...). It is defined once as `RECORD_ID_PARAM` / `RECORD_DIALOG_ROUTE` (`:recordId`) in `shared/dialog-route/dialog-route.ts` (`RECORD_DIALOG_ROUTE` is exported from `@shared`).
 - Route `data`: `{ dialog: () => import(...).then(m => m.XDialog), returnTo: '/detalle/<category>' } satisfies DialogRouteData`. `returnTo` is where `DialogRouteHost` navigates when the modal closes (default is `/`).
-- `DialogRouteHost` passes `DialogRouteContext` as `MAT_DIALOG_DATA`: the `dialogData` fields plus `params` (the route params). The dialog injects it as optional and reads `params['sessionId']`; without it the dialog runs in creation mode.
+- `DialogRouteHost` passes `DialogRouteContext` as `MAT_DIALOG_DATA`: the `dialogData` fields plus `params` (the route params). The dialog injects it as optional and reads `params['recordId']` through `RecordDialogController` (no per-dialog configuration); without it the dialog runs in creation mode.
 - The history page must contain `<router-outlet />`. The URL is the source of truth: the modal is open if and only if the URL says so, so the link is shareable and the browser back button closes it.
-- The modal path (`:sessionId`) is what `DialogRouteEvents.notifyClosed(path)` emits when it closes. The history page and its list listen to that path to reload (see the history page file). Do not refresh them any other way.
+- The modal path (`:recordId`, `RECORD_DIALOG_ROUTE`) is what `DialogRouteEvents.notifyClosed(path)` emits when it closes. The history page and its list listen to that path to reload (see the history page file). Do not refresh them any other way.
 - If loading the record fails (e.g. it was deleted), the dialog closes itself; the HTTP error interceptor already reports the error.
 - Only **finished** records open in history mode. A record still in progress is continued in its own creation route (`/lactancia`, ...), so the list links there instead. If a running record is opened by URL, the dialog drops history mode and behaves like the creation dialog.
 
 ## Modes and buttons
 
-| Mode | Title | Fields | Footer |
-|---|---|---|---|
-| View (initial) | `Detalle de la toma` | All disabled (plain text, no edit icons, no photo buttons; empty notes and missing photo are hidden) | trash icon, `Cancelar`, `Editar` |
-| Edit | `Editar toma` | Enabled | trash icon, `Cancelar`, `Modificar` |
+| Mode           | Title                | Fields                                                                                               | Footer                              |
+| -------------- | -------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| View (initial) | `Detalle de la toma` | All disabled (plain text, no edit icons, no photo buttons; empty notes and missing photo are hidden) | trash icon, `Cancelar`, `Editar`    |
+| Edit           | `Editar toma`        | Enabled                                                                                              | trash icon, `Cancelar`, `Modificar` |
 
 - `Editar` only switches to edit mode; nothing is saved yet.
 - `Modificar` replaces `Guardar` as the main action. It is disabled until there is at least one change (`dirty`), and opens a `ConfirmationDialog` (`¿Modificar toma?`, buttons `Volver` / `Modificar`) before saving.
@@ -67,4 +67,4 @@ Snackbars through `NotificationService.success()`, shown only on success and rig
 1. Make the tracker's dialog accept the route context (`MAT_DIALOG_DATA`, optional) and implement history mode: `historyMode`, `editing`, `readOnly = historyMode && !editing`, snapshot-based `dirty`, and the three confirmations above.
 2. Add the child route under the tracker's history page with `returnTo`.
 3. Link the history rows to `['/detalle/<category>', id]` (finished) or to the creation route (in progress).
-4. Make sure the history page reloads when the `:sessionId` path is notified.
+4. Make sure the history page reloads when the `:recordId` path is notified (use `RECORD_DIALOG_ROUTE` as `dialogRoute`).

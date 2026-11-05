@@ -10,11 +10,9 @@ import {
   HistoryList,
   HistoryRow,
   parseTimestamp,
+  RECORD_DIALOG_ROUTE,
   RecordFlags,
 } from '@shared';
-
-/** Path of the child route that opens a feed; its modal closing refreshes the list. */
-const FEED_DIALOG_ROUTE = ':sessionId';
 
 interface FeedRow {
   id: string;
@@ -77,6 +75,6 @@ export class FeedHistoryList {
     toRow,
     timeOf: ({ startMs }) => startMs,
     summaryOf,
-    dialogRoute: FEED_DIALOG_ROUTE,
+    dialogRoute: RECORD_DIALOG_ROUTE,
   });
 }

@@ -3,13 +3,7 @@ name: feature-orchestrator
 description: Orchestrates the implementation of a new tracking feature (card, creation/edit modal, history page, services and mocks), modeled on the breastfeeding feature. Invoke it with the feature to build (bottle, diaper, sleep, ...).
 tools: ['agent', 'read', 'search', 'edit', 'execute', 'todo', 'vscode/askQuestions']
 agents:
-  [
-    'feature-data',
-    'feature-card',
-    'feature-dialog',
-    'feature-history',
-    'feature-style-harmonizer',
-  ]
+  ['feature-data', 'feature-card', 'feature-dialog', 'feature-history', 'feature-style-harmonizer']
 ---
 
 # Feature orchestrator
@@ -26,31 +20,35 @@ You coordinate the subagents that build a complete tracking feature. The referen
 
 ## Feature catalog (pending cards on Home)
 
-| Feature | Existing placeholder | Link already set |
-|---|---|---|
-| Bottle | `cards/bottle-card.ts` | `/detalle/biberon` |
-| Diaper | `cards/diaper-card.ts` | `/detalle/panal` |
-| Sleep | `cards/sleep-card.ts` | `/detalle/sueno` |
-| Vitamin D | `cards/vitamin-d-card.ts` | `/detalle/vitamina-d` |
-| Nail trimming | `cards/nail-trimming-card.ts` | `/detalle/cortar-unas` |
-| Bath | `cards/bath-card.ts` | `/detalle/bano` |
-| Breast pump | `cards/breast-pump-card.ts` | `/detalle/extractor-de-leche` |
-| Medical visit | `cards/medical-visit-card.ts` | `/detalle/visita-medica` |
+| Feature       | Existing placeholder          | Link already set              |
+| ------------- | ----------------------------- | ----------------------------- |
+| Bottle        | `cards/bottle-card.ts`        | `/detalle/biberon`            |
+| Diaper        | `cards/diaper-card.ts`        | `/detalle/panal`              |
+| Sleep         | `cards/sleep-card.ts`         | `/detalle/sueno`              |
+| Vitamin D     | `cards/vitamin-d-card.ts`     | `/detalle/vitamina-d`         |
+| Nail trimming | `cards/nail-trimming-card.ts` | `/detalle/cortar-unas`        |
+| Bath          | `cards/bath-card.ts`          | `/detalle/bano`               |
+| Breast pump   | `cards/breast-pump-card.ts`   | `/detalle/extractor-de-leche` |
+| Medical visit | `cards/medical-visit-card.ts` | `/detalle/visita-medica`      |
 
 If the user did not name a feature, ask which one. Always confirm with the user: English identifier (folder/class names), Spanish route slug for the creation modal (e.g. `biberon`) and the history URL (keep the existing link unless they say otherwise).
 
 ## Workflow
 
 ### Phase 0: context
+
 If `.github/features/<feature>.md` exists, read it first: it holds the decisions already made for that feature. Then read the breastfeeding reference (card, dialog, `features/breastfeeding`, `breastfeeding-history`, `core/mocks`) and the five instruction files, so you can brief the subagents.
 
 ### Phase 1: discovery (subagents in `MODE: discover`, read-only)
+
 Subagents cannot ask the user; they return proposals and questions to you.
+
 1. Run `feature-data` first (domain model, endpoints, mock data). Its contract feeds the others.
 2. Run `feature-card`, `feature-dialog` and `feature-history` in parallel, passing them the `feature-data` result.
 3. Do not run `feature-style-harmonizer` in discovery.
 
 Every subagent prompt must start with:
+
 ```
 MODE: discover | implement
 FEATURE: <english name>, ROUTE_SLUG: <spanish slug>, HISTORY_URL: <url>
@@ -59,21 +57,25 @@ UPSTREAM_CONTRACT: <summary of feature-data output, when relevant>
 ```
 
 ### Phase 2: consolidated plan and approval
+
 1. Merge all proposals, **doubts** and **optional ideas**. Ask the user **one question at a time** (see golden rule 5), with a recommendation as the default. As soon as the user answers, ask the next one. Group questions by topic in order (identifiers, data model, card, modal, history, shared refactors, optional ideas), but never more than one question per turn.
 2. Show the card data summary table, the modal fields, the history sections/charts and the data model.
 3. List the shared/common elements to reuse or create, and any shared files you will touch (`app.routes.ts`, `home.ts`/`home.html`, `shared/index.ts`).
 4. Ask for explicit **OK** before implementing. If the user changes something, iterate from step 1.
 
 ### Phase 3: implementation (subagents in `MODE: implement`)
+
 1. `feature-data` first.
 2. Then `feature-card`, `feature-dialog`, `feature-history` in parallel.
-3. You alone edit the shared files: `src/app/app.routes.ts` (creation route before `**`; history route **before** `detalle/:category`; history child route `:sessionId` with `returnTo`), `src/app/pages/home/home.ts` / `home.html`, and the `src/app/shared/index.ts` barrel (add exports for any new common element a subagent reports). Never export Chart.js code from the barrel.
+3. You alone edit the shared files: `src/app/app.routes.ts` (creation route before `**`; history route **before** `detalle/:category`; history child route `:recordId` with `returnTo`; the Home route of the latest record is `<slug>/:recordId`), `src/app/pages/home/home.ts` / `home.html`, and the `src/app/shared/index.ts` barrel (add exports for any new common element a subagent reports). Never export Chart.js code from the barrel.
 4. Finally `feature-style-harmonizer` (styles/markup only, no logic). Relay any logic concern it reports to the user.
 5. Run `npm run build` and fix or report failures.
 
 ### Phase 4: report
+
 1. Write or update the decision record `.github/features/<feature>.md` (English): identifiers and routes, approved decisions, declined or deferred ideas, open points, common elements created and a file map. Use `.github/features/sleep.md` as the model. Keep it updated whenever the user later changes, confirms or discards a decision.
 2. Summarize in Spanish: files created/changed, common elements created, pending suggestions the user declined or deferred.
 
 ## Dependency order
+
 `feature-data` -> (`feature-card` | `feature-dialog` | `feature-history`) -> orchestrator shared edits -> `feature-style-harmonizer` -> build.

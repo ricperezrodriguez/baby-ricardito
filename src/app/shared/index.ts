@@ -13,7 +13,11 @@ export { resourceStatus } from '@app/shared/async-state/load-status';
 export type { LoadStatus } from '@app/shared/async-state/load-status';
 export { ConfirmationDialog } from '@app/shared/confirmation-dialog/confirmation-dialog';
 export type { ConfirmationDialogData } from '@app/shared/confirmation-dialog/confirmation-dialog';
-export { DialogRouteEvents, DialogRouteHost } from '@app/shared/dialog-route/dialog-route';
+export {
+  DialogRouteEvents,
+  DialogRouteHost,
+  RECORD_DIALOG_ROUTE,
+} from '@app/shared/dialog-route/dialog-route';
 export type { DialogRouteContext, DialogRouteData } from '@app/shared/dialog-route/dialog-route';
 export { DiaperTypeIcon } from '@app/shared/diaper-type-icon/diaper-type-icon';
 export { EditableTime } from '@app/shared/editable-time/editable-time';

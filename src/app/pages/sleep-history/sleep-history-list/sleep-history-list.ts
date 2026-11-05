@@ -11,11 +11,9 @@ import {
   HistoryList,
   HistoryRow,
   localDateKey,
+  RECORD_DIALOG_ROUTE,
   RecordFlags,
 } from '@shared';
-
-/** Path of the child route that opens a sleep; its modal closing refreshes the list. */
-const SLEEP_DIALOG_ROUTE = ':sessionId';
 
 interface SleepRow {
   id: string;
@@ -77,6 +75,6 @@ export class SleepHistoryList {
     toRow,
     timeOf: ({ startMs }) => startMs,
     summaryOf,
-    dialogRoute: SLEEP_DIALOG_ROUTE,
+    dialogRoute: RECORD_DIALOG_ROUTE,
   });
 }

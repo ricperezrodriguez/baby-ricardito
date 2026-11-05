@@ -5,8 +5,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { firstValueFrom, switchMap, tap } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
+import {
+  DIAPER_TYPE_LABELS,
+  STOOL_COLOR_LABELS,
+  STOOL_CONSISTENCY_LABELS,
+} from '@app/features/diaper/diaper.labels';
 import {
   CreateDiaperChangeDto,
   DIAPER_NOTES_MAX_LENGTH,
@@ -19,11 +23,6 @@ import {
   StoolColor,
   StoolConsistency,
 } from '@app/features/diaper/diaper.models';
-import {
-  DIAPER_TYPE_LABELS,
-  STOOL_COLOR_LABELS,
-  STOOL_CONSISTENCY_LABELS,
-} from '@app/features/diaper/diaper.labels';
 import { DiaperService } from '@app/features/diaper/diaper.service';
 import {
   createClock,
@@ -38,6 +37,7 @@ import {
   toIsoString,
   TrackingDialogLayout,
 } from '@shared';
+import { firstValueFrom, switchMap, tap } from 'rxjs';
 import { ChoiceGroup, ChoiceOption } from './choice-group';
 
 const UNSPECIFIED_LABEL = 'Sin indicar';
@@ -139,13 +139,12 @@ export class DiaperDialog {
 
   /**
    * View/edit/delete flows shared by the record dialogs. A change opened from the history
-   * (`/detalle/panal/:changeId`) is shown read-only until the user chooses to edit it.
+   * (`/detalle/panal/:recordId`) is shown read-only until the user chooses to edit it.
    */
   protected readonly record = new RecordDialogController<DiaperChange>({
     noun: 'pañal',
     gender: 'masculine',
     creationTitle: 'Añadir pañal',
-    idParam: 'changeId',
     snapshot: () => this.snapshot(),
   });
   protected readonly form = form(this.formModel, (path) => {
@@ -263,7 +262,9 @@ export class DiaperDialog {
             .pipe(tap((change) => (this.changeId = change.id)))
         : this.diaperService.update(CURRENT_BABY_ID, this.changeId, payload);
 
-    return firstValueFrom(stored$.pipe(switchMap((change) => this.photo.sync(change, this.photoApi))));
+    return firstValueFrom(
+      stored$.pipe(switchMap((change) => this.photo.sync(change, this.photoApi))),
+    );
   }
 
   private payload(): DiaperPayload {

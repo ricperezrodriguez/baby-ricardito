@@ -1,5 +1,5 @@
 ---
-applyTo: "src/app/**/*dialog*/**,src/app/shared/dialog-route/**,src/app/shared/tracking-dialog/**,src/app/shared/confirmation-dialog/**,src/app/shared/tracking-card/**,src/app/app.routes.ts,src/app/core/notification.service.ts"
+applyTo: 'src/app/**/*dialog*/**,src/app/shared/dialog-route/**,src/app/shared/tracking-dialog/**,src/app/shared/confirmation-dialog/**,src/app/shared/tracking-card/**,src/app/app.routes.ts,src/app/core/notification.service.ts'
 ---
 
 # Creation modals, closing rules and snackbars
@@ -17,6 +17,14 @@ Record modals open from a child route of Home, so the URL is the source of truth
 - **Home** must contain `<router-outlet />` for the child routes to activate. `Home` is not recreated when a modal opens or closes.
 - **Adding a new modal:** (1) create the dialog component with `TrackingDialogLayout`; (2) add its child route; (3) set `dialogRoute` on its card. Routes are Spanish and without accents (`lactancia`, `biberon`, `panal`, `sueno`). An unknown URL falls into `**` and redirects to Home.
 - **Exception:** `ConfirmationDialog` has no route (it is ephemeral and depends on the state of the modal that opens it).
+
+## Latest record from the card
+
+When a card is not active (no record in progress) and its latest record is loaded, tapping the card content opens that record in history mode (view, `Editar`, delete) over Home, using the same dialog as the history page.
+
+- **Route:** a child route of Home per tracker with the record id: `lactancia/:recordId`, `panal/:recordId`, `sueno/:recordId` (the id param is always `recordId`; see `dialogs-feedback.instructions.md`); same `DialogRouteHost`, same dialog, no `returnTo` (closing goes back to Home). `DialogRouteHost` notifies only the first path segment (`lactancia`), so the card and Home alerts refresh like with the creation route.
+- **Card:** `TrackingCard` takes `recordRoute` (e.g. `['panal', id]`, `null` when there is no finished record) and `recordLabel`. The content becomes a button (keyboard, `aria-label`, chevron). `contentOpensDialog` (record in progress) takes priority and keeps opening the creation modal.
+- **New tracker:** add the child route and pass `recordRoute` computed from its latest finished record.
 
 ## Closing and cancelling creation modals
 

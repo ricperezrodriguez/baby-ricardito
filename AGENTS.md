@@ -21,7 +21,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 ## Language
 
-- **Code is in English:** file and folder names, components, classes, services, variables, route params (`:sessionId`, `:category`), CSS classes, selectors, comments and docs under `.github/` (e.g. `Home`, `BreastfeedingHistory`, `pages/home/`).
+- **Code is in English:** file and folder names, components, classes, services, variables, route params (`:recordId`, `:category`), CSS classes, selectors, comments and docs under `.github/` (e.g. `Home`, `BreastfeedingHistory`, `pages/home/`).
 - **The application is in Spanish** (the audience is Spanish): visible copy, page titles, `aria-label`s, snackbar and dialog texts, and **URL paths** (`/lactancia`, `/detalle/pecho`, `/detalle/panal`; lowercase, no accents or `ñ`).
 - Keep the two apart: a Spanish URL segment or UI string never leaks into identifiers, and English never leaks into visible copy or URLs.
 - `README.md` stays in Spanish.

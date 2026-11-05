@@ -1,5 +1,4 @@
 import { Component, computed, inject } from '@angular/core';
-import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import { DIAPER_TYPE_LABELS } from '@app/features/diaper/diaper.labels';
 import { DiaperChange } from '@app/features/diaper/diaper.models';
@@ -16,6 +15,7 @@ import {
   TRACKING_CARD_ICON_SIZE,
   TrackingCard,
 } from '@shared';
+import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 
 interface DiaperSummary {
   readonly latest: DiaperChange;
@@ -81,6 +81,11 @@ export class DiaperCard {
   });
 
   protected readonly secondaryLines = computed(() => [this.todayText(), this.stoolText()]);
+
+  protected readonly recordRoute = computed(() => {
+    const summary = this.summary();
+    return summary === null ? null : ['panal', summary.latest.id];
+  });
 
   reload(): void {
     this.latest.reload();

@@ -4,25 +4,24 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { of, switchMap, tap } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
+import {
+  activeBreastOf,
+  durationsByBreast,
+  TimedSegment,
+  toggleSegment,
+  toSegmentDtos,
+  toTimedSegments,
+  withEnd,
+  withStart,
+  withTotalPause,
+} from '@app/features/breastfeeding/breastfeeding-timer';
 import {
   Breast,
   BREAST_SIDE,
   BreastfeedingSession,
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { BreastfeedingService } from '@app/features/breastfeeding/breastfeeding.service';
-import {
-  activeBreastOf,
-  durationsByBreast,
-  TimedSegment,
-  toSegmentDtos,
-  toggleSegment,
-  toTimedSegments,
-  withEnd,
-  withStart,
-  withTotalPause,
-} from '@app/features/breastfeeding/breastfeeding-timer';
 import {
   createClock,
   createWriteQueue,
@@ -38,6 +37,7 @@ import {
   totalGaps,
   TrackingDialogLayout,
 } from '@shared';
+import { of, switchMap, tap } from 'rxjs';
 
 const SIDES: readonly { breast: Breast; label: string }[] = [
   { breast: BREAST_SIDE.LEFT, label: 'Teta izquierda' },
@@ -92,13 +92,12 @@ export class BreastfeedingDialog {
 
   /**
    * View/edit/delete flows shared by the record dialogs. A feed opened from the history
-   * (`/detalle/pecho/:sessionId`) is a finished one; otherwise the dialog logs a new or running feed.
+   * (`/detalle/pecho/:recordId`) is a finished one; otherwise the dialog logs a new or running feed.
    */
   protected readonly record = new RecordDialogController<BreastfeedingSession>({
     noun: 'toma',
     gender: 'feminine',
     creationTitle: 'Añadir lactancia',
-    idParam: 'sessionId',
     snapshot: () => this.currentState(),
     startLoading: true,
   });

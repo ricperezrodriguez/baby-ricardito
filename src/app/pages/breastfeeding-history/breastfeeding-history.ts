@@ -20,10 +20,7 @@ import {
   HistoryPageContent,
 } from '@app/shared/history/history-page/history-page';
 import { createHistoryStats } from '@app/shared/history/history-stats';
-import { formatDurationText } from '@shared';
-
-/** Path of the child route that opens a feed; its modal closing reloads the page. */
-const FEED_DIALOG_ROUTE = ':sessionId';
+import { formatDurationText, RECORD_DIALOG_ROUTE } from '@shared';
 
 const CHART_TITLES: Record<HistoryChartId, string> = {
   feedsPerDay: 'Tomas por día',
@@ -94,7 +91,7 @@ export class BreastfeedingHistory {
     getPreferences: () => this.service.getHistoryPreferences(CURRENT_BABY_ID),
     savePreferences: (hiddenCharts) =>
       this.service.saveHistoryPreferences(CURRENT_BABY_ID, { hiddenCharts }),
-    dialogRoute: FEED_DIALOG_ROUTE,
+    dialogRoute: RECORD_DIALOG_ROUTE,
   });
 
   protected readonly content = computed(() => {

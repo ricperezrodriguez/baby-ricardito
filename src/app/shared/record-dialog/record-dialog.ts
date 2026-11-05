@@ -1,12 +1,13 @@
 import { computed, inject, signal, WritableSignal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { firstValueFrom, Observable } from 'rxjs';
 import { NotificationService } from '@app/core/notification.service';
 import {
   ConfirmationDialog,
   ConfirmationDialogData,
 } from '@app/shared/confirmation-dialog/confirmation-dialog';
 import type { DialogRouteContext } from '@app/shared/dialog-route/dialog-route';
+import { RECORD_ID_PARAM } from '@app/shared/dialog-route/dialog-route';
+import { firstValueFrom, Observable } from 'rxjs';
 
 /** Grammatical gender of the record noun, needed to build the Spanish texts (`la toma`, `el pañal`). */
 export type RecordGender = 'feminine' | 'masculine';
@@ -77,8 +78,6 @@ export interface RecordDialogOptions {
   gender: RecordGender;
   /** Title of the dialog when it creates a record. */
   creationTitle: string;
-  /** Route param with the id of the record opened from the history (e.g. `sessionId`). */
-  idParam: string;
   /** Serialized editable state; compared with the one captured after loading to detect unsaved changes. */
   snapshot: () => string;
   /** Starts with `loading` on even when the dialog is not opened from the history. */
@@ -135,7 +134,7 @@ export class RecordDialogController<TResult> {
     this.texts = createRecordTexts(options.noun, options.gender);
     this.requestedId =
       inject<DialogRouteContext | null>(MAT_DIALOG_DATA, { optional: true })?.params[
-        options.idParam
+        RECORD_ID_PARAM
       ] ?? null;
     this.historyMode = signal(this.requestedId !== null);
     this.loading = signal(options.startLoading ?? this.requestedId !== null);

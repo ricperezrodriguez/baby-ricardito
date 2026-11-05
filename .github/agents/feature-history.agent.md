@@ -36,7 +36,7 @@ Create `src/app/pages/<feature>-history/` implementing exactly `APPROVED_DECISIO
 - Copy in Spanish, identifiers in English; layout works from 360 px with no horizontal scroll.
 - Reuse common elements; if a generic piece is needed, reuse the existing one or create it in a shared location (when approved) and report the barrel export needed. Do not export Chart.js code from the barrel.
 
-Finish with the files changed, the exported page class name and the route configuration for the orchestrator (history route declared **before** `detalle/:category`, plus its `:sessionId` child route using the dialog from `feature-dialog`).
+Finish with the files changed, the exported page class name and the route configuration for the orchestrator (history route declared **before** `detalle/:category`, plus its `:recordId` child route using the dialog from `feature-dialog`; the param is always `recordId`, and the list/stats `dialogRoute` is `RECORD_DIALOG_ROUTE` from `@shared`).
 
 ## Rules
 

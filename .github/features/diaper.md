@@ -2,7 +2,7 @@
 
 Decision record of the diaper tracker. Read it before touching any diaper code and update it in the same change whenever the user changes, confirms or discards a decision (see `AGENTS.md`).
 
-- English identifier: `diaper`. Creation modal route: `/panal`. History: `/detalle/panal`. History row modal: `/detalle/panal/:changeId`.
+- English identifier: `diaper`. Creation modal route: `/panal`. History: `/detalle/panal`. History row modal: `/detalle/panal/:recordId`.
 - User-facing copy says "pañal" (not "cambio"): "Pañal guardado", "Detalle del pañal", "¿Eliminar pañal?". The types are "Pis", "Caca" and "Mixto".
 - Status: implemented, `npm run build` passes. Not yet validated by the user in the browser.
 
@@ -33,6 +33,7 @@ Decision record of the diaper tracker. Read it before touching any diaper code a
 - Not shown on purpose: exact time, today's breakdown, rash badge, average interval.
 - States through `app-async-state`: loading, empty ("Todavía no hay cambios de pañal registrados."), error ("No se pudo cargar el último pañal."). If only the stats fail, the rest of the card stays. It reloads only on the `closed` event of the tracking card.
 - The breastfeeding card was migrated to the same shared elements and now also shows its error message.
+- Tapping the card content opens the latest change in history mode over Home (`/panal/:recordId`, `recordRoute`); the card reloads when it closes.
 
 ### Creation modal (`diaper-card/diaper-dialog/`)
 
@@ -40,7 +41,7 @@ Decision record of the diaper tracker. Read it before touching any diaper code a
 - "Irritación en la piel" toggle, "Fecha y hora" (`EditableTime`, starts at now, editable, `max` = now), notes with a counter (500) and an optional photo.
 - Nothing is stored on open. "Guardar" is disabled until a type is chosen and creates the record with one call (then uploads the photo). If the photo upload fails, the next "Guardar" updates the already created record instead of duplicating it.
 - X, backdrop, Escape and "Cancelar" close silently unless something was entered, in which case they ask "¿Descartar cambios?".
-- History mode (`:changeId`): view, edit (one `PATCH` after "¿Modificar pañal?") and delete with confirmations.
+- History mode (`:recordId`): view, edit (one `PATCH` after "¿Modificar pañal?") and delete with confirmations.
 - Creation title is "Añadir pañal" (chosen by the agent, not explicitly approved).
 
 ### History page (`pages/diaper-history/`)

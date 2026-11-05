@@ -91,6 +91,37 @@
   cursor: pointer;
 }
 
+.card-content[role='button'] {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.card-content[role='button']:focus-visible {
+  outline: 3px solid var(--app-focus);
+  outline-offset: -3px;
+}
+
+.card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-chevron {
+  color: var(--app-muted);
+  flex: 0 0 auto;
+  font-size: 1.75rem;
+  line-height: 1;
+  transition:
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.card-content[role='button']:hover .card-chevron {
+  color: var(--card-accent);
+  transform: translateX(0.15rem);
+}
+
 .tracking-card-actions {
   padding: 0.25rem 0.75rem 0.5rem;
 }
@@ -157,7 +188,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .tracking-card,
-  .add-button {
+  .add-button,
+  .card-chevron {
     transition: none;
   }
 

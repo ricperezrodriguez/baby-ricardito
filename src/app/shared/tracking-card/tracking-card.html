@@ -6,7 +6,9 @@
       </span>
       <h3 class="card-title">{{ title() }}</h3>
       @if (active()) {
-        <span class="active-badge"><span class="active-dot" aria-hidden="true"></span>En curso</span>
+        <span class="active-badge"
+          ><span class="active-dot" aria-hidden="true"></span>En curso</span
+        >
       }
     </div>
     <button
@@ -20,14 +22,28 @@
   </div>
   <div
     class="card-content"
-    [class.actionable]="contentOpensDialog()"
-    (click)="contentOpensDialog() && openDialog()"
+    [class.actionable]="contentOpensDialog() || opensLatestRecord()"
+    [attr.role]="opensLatestRecord() ? 'button' : null"
+    [attr.tabindex]="opensLatestRecord() ? 0 : null"
+    [attr.aria-label]="opensLatestRecord() ? recordLabel() : null"
+    (click)="openContent()"
+    (keydown.enter)="openContentWithKey($event)"
+    (keydown.space)="openContentWithKey($event)"
   >
-    <ng-content />
+    <div class="card-body">
+      <ng-content />
+    </div>
+    @if (opensLatestRecord()) {
+      <span class="card-chevron" aria-hidden="true">›</span>
+    }
   </div>
   <mat-divider />
   <mat-card-actions class="tracking-card-actions" align="end">
-    <a matButton [routerLink]="link()" [attr.aria-label]="ariaLabel() ?? 'Ver historial de ' + title()">
+    <a
+      matButton
+      [routerLink]="link()"
+      [attr.aria-label]="ariaLabel() ?? 'Ver historial de ' + title()"
+    >
       Ver historial
     </a>
   </mat-card-actions>

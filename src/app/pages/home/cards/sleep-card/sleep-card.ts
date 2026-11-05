@@ -1,11 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { catchError, finalize, forkJoin, map, Observable, of } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import { NotificationService } from '@app/core/notification.service';
 import { SleepSession } from '@app/features/sleep/sleep.models';
-import { sleepSpan } from '@app/features/sleep/sleep.span';
 import { SleepService } from '@app/features/sleep/sleep.service';
+import { sleepSpan } from '@app/features/sleep/sleep.span';
 import { AsyncState } from '@app/shared/async-state/async-state';
 import { LastRecordSummary } from '@app/shared/last-record-summary/last-record-summary';
 import { createLatestRecord } from '@app/shared/latest-record/latest-record';
@@ -21,6 +20,7 @@ import {
   TRACKING_CARD_ICON_SIZE,
   TrackingCard,
 } from '@shared';
+import { catchError, finalize, forkJoin, map, Observable, of } from 'rxjs';
 
 interface SleepSummary {
   readonly latest: SleepSession;
@@ -52,6 +52,11 @@ export class SleepCard {
 
   protected readonly isSleeping = computed(() => this.summary()?.latest.status === 'in_progress');
 
+  protected readonly recordRoute = computed(() => {
+    const latest = this.summary()?.latest;
+    return latest?.status === 'finished' ? ['sueno', latest.id] : null;
+  });
+
   protected readonly title = computed(() => {
     const latest = this.summary()?.latest;
     if (!latest) {
@@ -70,7 +75,9 @@ export class SleepCard {
   private readonly ongoingText = computed(() => {
     const latest = this.summary()?.latest;
     const span = latest?.status === 'in_progress' ? sleepSpan(latest) : null;
-    return span === null ? null : `Duración ${formatDuration(spanDuration(span, this.clock.now()))}`;
+    return span === null
+      ? null
+      : `Duración ${formatDuration(spanDuration(span, this.clock.now()))}`;
   });
 
   private readonly lastSleepText = computed(() => {

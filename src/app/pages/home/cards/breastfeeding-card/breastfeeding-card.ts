@@ -1,28 +1,28 @@
 import { Component, computed, inject } from '@angular/core';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
-  BREAST_SIDE,
-  Breast,
-  BreastSegment,
-  BreastfeedingSession,
-} from '@app/features/breastfeeding/breastfeeding.models';
-import { BreastfeedingService } from '@app/features/breastfeeding/breastfeeding.service';
-import {
   activeBreastOf,
   durationsByBreast,
   toTimedSegments,
   totalDuration,
 } from '@app/features/breastfeeding/breastfeeding-timer';
 import {
+  BREAST_SIDE,
+  Breast,
+  BreastSegment,
+  BreastfeedingSession,
+} from '@app/features/breastfeeding/breastfeeding.models';
+import { BreastfeedingService } from '@app/features/breastfeeding/breastfeeding.service';
+import { AsyncState } from '@app/shared/async-state/async-state';
+import { LastRecordSummary } from '@app/shared/last-record-summary/last-record-summary';
+import { createLatestRecord } from '@app/shared/latest-record/latest-record';
+import {
+  TRACKING_CARD_ICON_SIZE,
+  TrackingCard,
   createClock,
   formatDuration,
   formatElapsedSince,
-  TRACKING_CARD_ICON_SIZE,
-  TrackingCard,
 } from '@shared';
-import { AsyncState } from '@app/shared/async-state/async-state';
-import { createLatestRecord } from '@app/shared/latest-record/latest-record';
-import { LastRecordSummary } from '@app/shared/last-record-summary/last-record-summary';
 
 function getLastBreast(session: BreastfeedingSession): Breast | null {
   let lastSegment: BreastSegment | undefined;
@@ -67,6 +67,14 @@ export class BreastfeedingCard {
   });
 
   readonly isFeedOpen = computed(() => this.openFeedSegments() !== null);
+
+  /** Route that opens the latest feed in history mode; `null` while it is still open or missing. */
+  protected readonly recordRoute = computed(() => {
+    const state = this.latestState();
+    return state.status === 'loaded' && state.data.status === 'finished'
+      ? ['lactancia', state.data.id]
+      : null;
+  });
 
   readonly feedStatus = computed(() => {
     const segments = this.openFeedSegments();
@@ -115,6 +123,10 @@ export class BreastfeedingCard {
 
   readonly lastBreastLabel = computed(() => {
     const breast = this.lastBreast();
-    return breast === BREAST_SIDE.LEFT ? 'Izquierdo' : breast === BREAST_SIDE.RIGHT ? 'Derecho' : 'Sin dato';
+    return breast === BREAST_SIDE.LEFT
+      ? 'Izquierdo'
+      : breast === BREAST_SIDE.RIGHT
+        ? 'Derecho'
+        : 'Sin dato';
   });
 }

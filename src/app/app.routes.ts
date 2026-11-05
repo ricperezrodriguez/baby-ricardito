@@ -17,6 +17,16 @@ export const routes: Routes = [
         } satisfies DialogRouteData,
       },
       {
+        path: 'lactancia/:recordId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/breastfeeding-card/breastfeeding-dialog/breastfeeding-dialog').then(
+              (m) => m.BreastfeedingDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
         path: 'panal',
         component: DialogRouteHost,
         data: {
@@ -27,7 +37,27 @@ export const routes: Routes = [
         } satisfies DialogRouteData,
       },
       {
+        path: 'panal/:recordId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/diaper-card/diaper-dialog/diaper-dialog').then(
+              (m) => m.DiaperDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
         path: 'sueno',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/sleep-card/sleep-dialog/sleep-dialog').then(
+              (m) => m.SleepDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
+        path: 'sueno/:recordId',
         component: DialogRouteHost,
         data: {
           dialog: () =>
@@ -56,7 +86,7 @@ export const routes: Routes = [
       ),
     children: [
       {
-        path: ':sessionId',
+        path: ':recordId',
         component: DialogRouteHost,
         data: {
           dialog: () =>
@@ -74,7 +104,7 @@ export const routes: Routes = [
       import('@app/pages/diaper-history/diaper-history').then((m) => m.DiaperHistory),
     children: [
       {
-        path: ':changeId',
+        path: ':recordId',
         component: DialogRouteHost,
         data: {
           dialog: () =>
@@ -92,7 +122,7 @@ export const routes: Routes = [
       import('@app/pages/sleep-history/sleep-history').then((m) => m.SleepHistory),
     children: [
       {
-        path: ':sessionId',
+        path: ':recordId',
         component: DialogRouteHost,
         data: {
           dialog: () =>

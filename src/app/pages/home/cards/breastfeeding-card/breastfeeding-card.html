@@ -6,6 +6,8 @@
   accent="var(--app-card-breastfeeding)"
   headerColor="var(--app-card-breastfeeding)"
   [contentOpensDialog]="isFeedOpen()"
+  [recordRoute]="recordRoute()"
+  recordLabel="Ver la última toma"
   [active]="isFeedOpen()"
 >
   <svg
@@ -40,12 +42,7 @@
           @if (breastDurations() === null) {
             <span class="last-breast-caption">{{ lastBreastCaption() }}</span>
           }
-          <svg
-            class="breast-icon"
-            viewBox="2 10 36 24"
-            fill="none"
-            aria-hidden="true"
-          >
+          <svg class="breast-icon" viewBox="2 10 36 24" fill="none" aria-hidden="true">
             <path
               class="breast-lobe"
               [class.highlighted]="lastBreast() === breastSide.LEFT"
@@ -61,10 +58,20 @@
           </svg>
           @if (breastDurations(); as durations) {
             <div class="breast-durations">
-              <div class="breast-duration" role="group" aria-label="Izquierdo" [class.active]="lastBreast() === breastSide.LEFT">
+              <div
+                class="breast-duration"
+                role="group"
+                aria-label="Izquierdo"
+                [class.active]="lastBreast() === breastSide.LEFT"
+              >
                 <span class="breast-duration-time">{{ durations.left }}</span>
               </div>
-              <div class="breast-duration" role="group" aria-label="Derecho" [class.active]="lastBreast() === breastSide.RIGHT">
+              <div
+                class="breast-duration"
+                role="group"
+                aria-label="Derecho"
+                [class.active]="lastBreast() === breastSide.RIGHT"
+              >
                 <span class="breast-duration-time">{{ durations.right }}</span>
               </div>
             </div>

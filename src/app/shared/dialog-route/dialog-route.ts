@@ -4,6 +4,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TrackingDialogData } from '@app/shared/tracking-dialog/tracking-dialog';
 import { Observable, Subject } from 'rxjs';
 
+/** Route param with the id of the record a modal opens in history mode; the same for every tracker. */
+export const RECORD_ID_PARAM = 'recordId';
+
+/** Path of the child route that opens a record modal; closing it reloads the history page and list. */
+export const RECORD_DIALOG_ROUTE = `:${RECORD_ID_PARAM}`;
+
 /** Data a child route declares in `data` to open its modal. */
 export interface DialogRouteData {
   dialog: () => Promise<Type<unknown>>;
@@ -12,7 +18,7 @@ export interface DialogRouteData {
   returnTo?: string;
 }
 
-/** Data the modal receives: the `dialogData` ones plus its route params (e.g. `sessionId`). */
+/** Data the modal receives: the `dialogData` ones plus its route params (e.g. `recordId`). */
 export interface DialogRouteContext extends TrackingDialogData {
   params: Record<string, string>;
 }
@@ -57,7 +63,8 @@ export class DialogRouteHost {
 
   private async open(): Promise<void> {
     const { dialog, dialogData, returnTo } = this.route.snapshot.data as DialogRouteData;
-    const path = this.route.snapshot.routeConfig?.path ?? '';
+    // `lactancia/:sessionId` reports `lactancia`, so the Home card and alerts refresh like with the creation route.
+    const path = (this.route.snapshot.routeConfig?.path ?? '').split('/')[0];
     const component = await dialog();
 
     if (this.destroyed) {
