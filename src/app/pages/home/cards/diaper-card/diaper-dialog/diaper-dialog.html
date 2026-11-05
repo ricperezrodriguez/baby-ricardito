@@ -116,20 +116,11 @@
         (removeRequested)="photo.remove()"
       />
 
-      @if (!record.readOnly() || form.notes().value()) {
-        <mat-form-field class="notes-field" appearance="outline">
-          <mat-label>Notas</mat-label>
-          <textarea matInput rows="3" [formField]="form.notes"></textarea>
-          @if (!record.readOnly()) {
-            <mat-hint align="end" [class.over-limit]="form.notes().invalid()">
-              {{ form.notes().value().length }}/{{ notesMaxLength }}
-              @if (form.notes().invalid()) {
-                · Máximo superado
-              }
-            </mat-hint>
-          }
-        </mat-form-field>
-      }
+      <app-record-notes-field
+        [field]="form.notes"
+        [maxLength]="notesMaxLength"
+        [readOnly]="record.readOnly()"
+      />
     </section>
   }
 </app-tracking-dialog-layout>

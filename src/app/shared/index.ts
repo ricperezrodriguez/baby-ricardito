@@ -8,6 +8,8 @@ export type { AlertTone } from '@app/shared/alerts/alert-banner';
 export { createAlertDismissal } from '@app/shared/alerts/alert-dismissal';
 export type { AlertDismissal } from '@app/shared/alerts/alert-dismissal';
 export { AsyncState } from '@app/shared/async-state/async-state';
+export { ChoiceGroup } from '@app/shared/choice-group/choice-group';
+export type { ChoiceOption } from '@app/shared/choice-group/choice-group';
 export { ErrorState } from '@app/shared/async-state/error-state';
 export { resourceStatus } from '@app/shared/async-state/load-status';
 export type { LoadStatus } from '@app/shared/async-state/load-status';
@@ -44,6 +46,7 @@ export type {
   RecordDialogTexts,
   RecordGender,
 } from '@app/shared/record-dialog/record-dialog';
+export { RecordNotesField } from '@app/shared/record-dialog/record-notes-field';
 export { RecordPhoto } from '@app/shared/record-dialog/record-photo';
 export type { PhotoApi, PhotoRecord } from '@app/shared/record-dialog/record-photo';
 export { RecordPhotoField } from '@app/shared/record-dialog/record-photo-field';

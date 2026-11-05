@@ -47,6 +47,26 @@ export const routes: Routes = [
         } satisfies DialogRouteData,
       },
       {
+        path: 'biberon',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/bottle-card/bottle-dialog/bottle-dialog').then(
+              (m) => m.BottleDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
+        path: 'biberon/:recordId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/bottle-card/bottle-dialog/bottle-dialog').then(
+              (m) => m.BottleDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
         path: 'sueno',
         component: DialogRouteHost,
         data: {
@@ -112,6 +132,24 @@ export const routes: Routes = [
               (m) => m.DiaperDialog,
             ),
           returnTo: '/detalle/panal',
+        } satisfies DialogRouteData,
+      },
+    ],
+  },
+  {
+    path: 'detalle/biberon',
+    loadComponent: () =>
+      import('@app/pages/bottle-history/bottle-history').then((m) => m.BottleHistory),
+    children: [
+      {
+        path: ':recordId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/bottle-card/bottle-dialog/bottle-dialog').then(
+              (m) => m.BottleDialog,
+            ),
+          returnTo: '/detalle/biberon',
         } satisfies DialogRouteData,
       },
     ],

@@ -1,4 +1,4 @@
-@use '../../../../../shared/record-dialog/record-dialog' as record;
+@use 'shared/record-dialog/record-dialog' as record;
 
 :host {
   display: block;
@@ -7,18 +7,8 @@
 // Nothing above the summary, unlike the dialogs that start with their own controls.
 @include record.summary(0);
 @include record.delete-button;
-@include record.notes-field;
-@include record.over-limit;
-
-.field-group {
-  margin-bottom: 1rem;
-}
+@include record.field-group;
 
 .type-group {
   --diaper-type-icon-size: 1.75rem;
-}
-
-.group-title {
-  font-size: 1rem;
-  margin: 0 0 0.5rem;
 }

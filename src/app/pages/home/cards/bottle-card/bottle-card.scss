@@ -1,0 +1,24 @@
+// Same aside layout as the diaper and breastfeeding cards: centered column, label capped so it wraps from 360 px.
+.last-feed {
+  align-items: center;
+  color: var(--app-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 4rem;
+}
+
+.last-feed-amount {
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.last-feed-type {
+  color: var(--app-muted);
+  font-size: 0.94rem;
+  line-height: 1.25;
+  max-width: 6rem;
+  text-align: center;
+}

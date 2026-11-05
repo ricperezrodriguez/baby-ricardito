@@ -1,0 +1,47 @@
+<app-tracking-card
+  link="/detalle/biberon"
+  title="Biberón"
+  dialogRoute="biberon"
+  [recordRoute]="recordRoute()"
+  recordLabel="Ver la última toma de biberón"
+  (closed)="reload()"
+  accent="var(--app-card-bottle)"
+  headerColor="var(--app-card-bottle)"
+>
+  <svg
+    cardIcon
+    viewBox="0 0 32 32"
+    fill="currentColor"
+    [attr.width]="iconSize"
+    [attr.height]="iconSize"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="1.6"
+  >
+    <path d="M12 6h8v4l2 2v13a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2V12l2-2V6Z" />
+    <path d="M15 6V4h2v2" />
+    <path
+      d="M12 10h8M12 19h8"
+      fill="none"
+      stroke="var(--card-header-color)"
+      stroke-width="1.2"
+    />
+  </svg>
+  <app-async-state
+    [status]="latestState().status"
+    loadingLabel="Cargando la última toma"
+    emptyMessage="Todavía no hay tomas de biberón registradas."
+    errorMessage="No se pudo cargar la última toma."
+    (retry)="reload()"
+  >
+    @if (lastFeed(); as feed) {
+      <app-last-record-summary [title]="feed.elapsed" [secondaryLines]="secondaryLines()">
+        <div summaryAside class="last-feed">
+          <span class="last-feed-amount">{{ feed.amount }}</span>
+          <span class="last-feed-type">{{ feed.milkTypeLabel }}</span>
+        </div>
+      </app-last-record-summary>
+    }
+  </app-async-state>
+</app-tracking-card>

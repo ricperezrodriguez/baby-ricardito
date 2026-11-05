@@ -16,6 +16,19 @@ import { MockDiaperStore } from '@app/core/mocks/mock-backend.diaper.store';
 import { computeDiaperReply } from '@app/core/mocks/mock-backend.diaper.routes';
 import { MockSleepStore } from '@app/core/mocks/mock-backend.sleep.store';
 import { computeSleepReply } from '@app/core/mocks/mock-backend.sleep.routes';
+import { MockBottleStore } from '@app/core/mocks/mock-backend.bottle.store';
+import { computeBottleReply } from '@app/core/mocks/mock-backend.bottle.routes';
+import { MockFeedingStore } from '@app/core/mocks/mock-backend.feeding.store';
+import { computeFeedingReply } from '@app/core/mocks/mock-backend.feeding.routes';
+
+/** Every in-memory store of the mock backend. */
+interface MockStores {
+  breastfeeding: MockBackendStore;
+  diaper: MockDiaperStore;
+  sleep: MockSleepStore;
+  bottle: MockBottleStore;
+  feeding: MockFeedingStore;
+}
 
 const SESSIONS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/sessions(?:\/([^/]+)(\/photo)?)?\/?$/;
 const STATS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/stats\/?$/;
@@ -29,20 +42,26 @@ function isApiUrl(url: string): boolean {
   return next === '' || next === '/' || next === '?';
 }
 
-function computeReply(
-  req: HttpRequest<unknown>,
-  store: MockBackendStore,
-  diaperStore: MockDiaperStore,
-  sleepStore: MockSleepStore,
-): MockReply {
-  const diaperReply = computeDiaperReply(req, diaperStore);
+function computeReply(req: HttpRequest<unknown>, stores: MockStores): MockReply {
+  const { breastfeeding: store } = stores;
+  const diaperReply = computeDiaperReply(req, stores.diaper);
   if (diaperReply !== null) {
     return diaperReply;
   }
 
-  const sleepReply = computeSleepReply(req, sleepStore);
+  const sleepReply = computeSleepReply(req, stores.sleep);
   if (sleepReply !== null) {
     return sleepReply;
+  }
+
+  const bottleReply = computeBottleReply(req, stores.bottle);
+  if (bottleReply !== null) {
+    return bottleReply;
+  }
+
+  const feedingReply = computeFeedingReply(req, stores.feeding);
+  if (feedingReply !== null) {
+    return feedingReply;
   }
 
   const statsBabyId = matchBabyRoute(req.url, STATS_ROUTE_PATTERN);
@@ -113,14 +132,9 @@ function logMock(req: HttpRequest<unknown>, status: number, detail: unknown): vo
   console.log(`[MOCK] ${req.method} ${req.urlWithParams} -> ${status}`, { requestBody: req.body, response: detail });
 }
 
-function resolveOutcome(
-  req: HttpRequest<unknown>,
-  store: MockBackendStore,
-  diaperStore: MockDiaperStore,
-  sleepStore: MockSleepStore,
-): HttpEvent<unknown> | HttpErrorResponse {
+function resolveOutcome(req: HttpRequest<unknown>, stores: MockStores): HttpEvent<unknown> | HttpErrorResponse {
   try {
-    const reply = computeReply(req, store, diaperStore, sleepStore);
+    const reply = computeReply(req, stores);
     logMock(req, reply.status, reply.body);
     return new HttpResponse({
       status: reply.status,
@@ -150,12 +164,16 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req, next): Observable
     return next(req);
   }
 
-  const store = inject(MockBackendStore);
-  const diaperStore = inject(MockDiaperStore);
-  const sleepStore = inject(MockSleepStore);
+  const stores: MockStores = {
+    breastfeeding: inject(MockBackendStore),
+    diaper: inject(MockDiaperStore),
+    sleep: inject(MockSleepStore),
+    bottle: inject(MockBottleStore),
+    feeding: inject(MockFeedingStore),
+  };
 
   // The delay is applied to errors too, so they are materialized as values first.
-  return defer(() => of(resolveOutcome(req, store, diaperStore, sleepStore))).pipe(
+  return defer(() => of(resolveOutcome(req, stores))).pipe(
     delay(randomDelayMs()),
     mergeMap((outcome) => (outcome instanceof HttpErrorResponse ? throwError(() => outcome) : of(outcome))),
   );

@@ -6,6 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
+  FEEDING_OVERDUE_ALERT_THRESHOLDS,
+  FeedingOverdueAlertSettings,
+  FeedingOverdueAlertThreshold,
+} from '@app/features/feeding/feeding.models';
+import { FeedingService } from '@app/features/feeding/feeding.service';
+import {
   DIAPER_POOP_ALERT_THRESHOLDS,
   DiaperPoopAlertSettings,
   DiaperPoopAlertThreshold,
@@ -40,6 +46,13 @@ const THRESHOLD_LABELS: Record<DiaperPoopAlertThreshold, string> = {
   48: '2 días',
   72: '3 días',
 };
+
+const FEEDING_THRESHOLD_OPTIONS = FEEDING_OVERDUE_ALERT_THRESHOLDS.map(
+  (hours: FeedingOverdueAlertThreshold) => ({
+    hours,
+    label: `${hours.toLocaleString('es')} h`,
+  }),
+);
 
 const POOP_THRESHOLD_OPTIONS = DIAPER_POOP_ALERT_THRESHOLDS.map((hours) => ({
   hours,
@@ -146,6 +159,15 @@ const EXAMPLES: readonly NotificationExample[] = [
     </div>
     <mat-dialog-content>
       <app-alert-settings-section
+        heading="Alimentación"
+        description="Avisar si pasa mucho tiempo desde la última toma (pecho o biberón)"
+        loadingLabel="Cargando el aviso de alimentación"
+        errorMessage="No se pudo cargar el aviso de alimentación."
+        [options]="feedingOptions"
+        [load]="loadFeedingSettings"
+        [save]="saveFeedingSettings"
+      />
+      <app-alert-settings-section
         heading="Pañal"
         description="Avisar si pasa mucho tiempo sin hacer caca"
         loadingLabel="Cargando los avisos de pañal"
@@ -200,12 +222,17 @@ const EXAMPLES: readonly NotificationExample[] = [
 export class NotificationsDialog {
   private readonly clock = createClock();
   private readonly diaperService = inject(DiaperService);
+  private readonly feedingService = inject(FeedingService);
   private readonly sleepService = inject(SleepService);
 
+  protected readonly feedingOptions = FEEDING_THRESHOLD_OPTIONS;
   protected readonly poopOptions = POOP_THRESHOLD_OPTIONS;
   protected readonly awakeOptions = AWAKE_THRESHOLD_OPTIONS;
   protected readonly longNapOptions = LONG_NAP_THRESHOLD_OPTIONS;
 
+  protected readonly loadFeedingSettings = () => this.feedingService.getOverdueAlertSettings(CURRENT_BABY_ID);
+  protected readonly saveFeedingSettings = (settings: FeedingOverdueAlertSettings) =>
+    this.feedingService.saveOverdueAlertSettings(CURRENT_BABY_ID, settings);
   protected readonly loadPoopSettings = () => this.diaperService.getPoopAlertSettings(CURRENT_BABY_ID);
   protected readonly savePoopSettings = (settings: DiaperPoopAlertSettings) =>
     this.diaperService.savePoopAlertSettings(CURRENT_BABY_ID, settings);

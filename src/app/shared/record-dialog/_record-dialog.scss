@@ -1,5 +1,5 @@
 // Styles shared by the record dialogs (creation and history mode). Include them in the dialog stylesheet:
-//   @use '<relative path>/shared/record-dialog/record-dialog' as record;
+//   @use 'shared/record-dialog/record-dialog' as record;
 //   @include record.summary;
 
 /// Titled summary block with `dl` rows (label on the left, value on the right).
@@ -45,6 +45,19 @@
   .delete-button {
     color: var(--app-coral);
     margin-inline-end: auto;
+  }
+}
+
+/// Form control block of a creation dialog: `.field-group` wraps a `.group-title` heading and its control
+/// (`app-choice-group`, input, toggle...).
+@mixin field-group {
+  .field-group {
+    margin-bottom: 1rem;
+  }
+
+  .group-title {
+    font-size: 1rem;
+    margin: 0 0 0.5rem;
   }
 }
 

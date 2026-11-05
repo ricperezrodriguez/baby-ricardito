@@ -1,0 +1,14 @@
+@use 'shared/record-dialog/record-dialog' as record;
+
+:host {
+  display: block;
+}
+
+// Nothing above the summary, unlike the dialogs that start with their own controls.
+@include record.summary(0);
+@include record.delete-button;
+@include record.field-group;
+
+.amount-field {
+  width: 100%;
+}

@@ -1,9 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { disabled, form, FormField, maxLength } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
@@ -24,6 +22,8 @@ import {
   StoolConsistency,
 } from '@app/features/diaper/diaper.models';
 import { DiaperService } from '@app/features/diaper/diaper.service';
+import { ChoiceGroup, ChoiceOption } from '@app/shared/choice-group/choice-group';
+import { RecordNotesField } from '@app/shared/record-dialog/record-notes-field';
 import {
   createClock,
   DiaperTypeIcon,
@@ -38,7 +38,6 @@ import {
   TrackingDialogLayout,
 } from '@shared';
 import { firstValueFrom, switchMap, tap } from 'rxjs';
-import { ChoiceGroup, ChoiceOption } from './choice-group';
 
 const UNSPECIFIED_LABEL = 'Sin indicar';
 
@@ -94,10 +93,9 @@ type DiaperPayload = Required<Omit<CreateDiaperChangeDto, 'babyId'>>;
     FormField,
     LoadingSpinner,
     MatButtonModule,
-    MatFormFieldModule,
     MatIconModule,
-    MatInputModule,
     MatSlideToggleModule,
+    RecordNotesField,
     RecordPhotoField,
     TrackingDialogLayout,
   ],
