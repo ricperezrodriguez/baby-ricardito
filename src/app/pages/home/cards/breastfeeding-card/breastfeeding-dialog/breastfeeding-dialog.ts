@@ -12,6 +12,7 @@ import {
   toggleSegment,
   toSegmentDtos,
   toTimedSegments,
+  withBreastDuration,
   withEnd,
   withStart,
   withTotalPause,
@@ -116,12 +117,22 @@ export class BreastfeedingDialog {
   }
 
   protected readonly sideControls = computed(() =>
-    SIDES.map(({ breast, label }) => ({
-      breast,
-      label,
-      active: this.activeBreast() === breast,
-      duration: formatDuration(this.durationsMs()[breast]),
-    })),
+    SIDES.map(({ breast, label }) => {
+      const durations = this.durationsMs();
+      const other = SIDES.find((side) => side.breast !== breast)?.breast ?? breast;
+      const last = this.segments().at(-1);
+      return {
+        breast,
+        label,
+        active: this.activeBreast() === breast,
+        duration: formatDuration(durations[breast]),
+        durationMs: durations[breast],
+        // A feed must keep at least one second on some breast.
+        minMs: durations[other] > 0 ? 0 : 1_000,
+        // The feed cannot end later than now.
+        maxMs: durations[breast] + Math.max(0, this.clock.now() - (last?.end ?? last?.start ?? 0)),
+      };
+    }),
   );
 
   protected readonly totalText = computed(() =>
@@ -167,6 +178,10 @@ export class BreastfeedingDialog {
 
   protected changeEnd(end: number): void {
     this.applyEdit(withEnd(this.segments(), end));
+  }
+
+  protected changeBreastDuration(breast: Breast, duration: number): void {
+    this.applyEdit(withBreastDuration(this.segments(), breast, duration));
   }
 
   protected toggle(breast: Breast): void {

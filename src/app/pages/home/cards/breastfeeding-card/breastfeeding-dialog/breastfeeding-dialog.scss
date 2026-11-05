@@ -14,6 +14,11 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* The inline editor does not fit in half the width, so the sides stack while one is edited. */
+.side-controls:has(.side-time input) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .side-control {
   align-items: center;
   display: flex;
@@ -48,6 +53,8 @@
 }
 
 .side-time {
+  --mat-button-text-label-text-size: 1.75rem;
+  --mat-button-text-container-height: 3rem;
   color: var(--app-ink);
   font-size: 1.75rem;
   font-variant-numeric: tabular-nums;

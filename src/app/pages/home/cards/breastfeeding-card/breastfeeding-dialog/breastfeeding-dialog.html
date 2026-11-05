@@ -49,10 +49,24 @@
           }
           <span
             class="side-time"
-            role="timer"
-            [attr.aria-label]="'Tiempo de ' + side.label.toLowerCase()"
+            [attr.role]="record.historyMode() ? null : 'timer'"
+            [attr.aria-label]="
+              record.historyMode() ? null : 'Tiempo de ' + side.label.toLowerCase()
+            "
           >
-            {{ side.duration }}
+            @if (record.historyMode()) {
+              <app-editable-time
+                [label]="'Tiempo de ' + side.label.toLowerCase()"
+                kind="duration"
+                [value]="side.durationMs"
+                [min]="side.minMs"
+                [max]="side.maxMs"
+                [disabled]="timesDisabled()"
+                (committed)="changeBreastDuration(side.breast, $event)"
+              />
+            } @else {
+              {{ side.duration }}
+            }
           </span>
         </div>
       }
