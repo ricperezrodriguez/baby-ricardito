@@ -79,5 +79,6 @@ export {
   toDateTimeLocal,
   toIsoString,
   totalGaps,
+  weekdayOfDay,
 } from '@app/shared/utils/time.utils';
 export type { TimeSpan } from '@app/shared/utils/time.utils';

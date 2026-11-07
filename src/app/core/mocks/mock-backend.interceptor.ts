@@ -20,6 +20,8 @@ import { MockBottleStore } from '@app/core/mocks/mock-backend.bottle.store';
 import { computeBottleReply } from '@app/core/mocks/mock-backend.bottle.routes';
 import { MockFeedingStore } from '@app/core/mocks/mock-backend.feeding.store';
 import { computeFeedingReply } from '@app/core/mocks/mock-backend.feeding.routes';
+import { MockVitaminDStore } from '@app/core/mocks/mock-backend.vitamin-d.store';
+import { computeVitaminDReply } from '@app/core/mocks/mock-backend.vitamin-d.routes';
 
 /** Every in-memory store of the mock backend. */
 interface MockStores {
@@ -28,6 +30,7 @@ interface MockStores {
   sleep: MockSleepStore;
   bottle: MockBottleStore;
   feeding: MockFeedingStore;
+  vitaminD: MockVitaminDStore;
 }
 
 const SESSIONS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/sessions(?:\/([^/]+)(\/photo)?)?\/?$/;
@@ -62,6 +65,11 @@ function computeReply(req: HttpRequest<unknown>, stores: MockStores): MockReply 
   const feedingReply = computeFeedingReply(req, stores.feeding);
   if (feedingReply !== null) {
     return feedingReply;
+  }
+
+  const vitaminDReply = computeVitaminDReply(req, stores.vitaminD);
+  if (vitaminDReply !== null) {
+    return vitaminDReply;
   }
 
   const statsBabyId = matchBabyRoute(req.url, STATS_ROUTE_PATTERN);
@@ -170,6 +178,7 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req, next): Observable
     sleep: inject(MockSleepStore),
     bottle: inject(MockBottleStore),
     feeding: inject(MockFeedingStore),
+    vitaminD: inject(MockVitaminDStore),
   };
 
   // The delay is applied to errors too, so they are materialized as values first.

@@ -26,6 +26,11 @@ import {
   SleepLongNapAlertThreshold,
 } from '@app/features/sleep/sleep.models';
 import { SleepService } from '@app/features/sleep/sleep.service';
+import {
+  VITAMIN_D_MISSED_ALERT_THRESHOLDS,
+  VitaminDMissedAlertSettings,
+} from '@app/features/vitamin-d/vitamin-d.models';
+import { VitaminDService } from '@app/features/vitamin-d/vitamin-d.service';
 import { AlertSettingsSection } from '@app/shared/alert-settings-section/alert-settings-section';
 import { createClock, formatElapsedSince, toIsoString } from '@shared';
 
@@ -69,6 +74,11 @@ const LONG_NAP_THRESHOLD_OPTIONS = SLEEP_LONG_NAP_ALERT_THRESHOLDS.map((hours: S
   label: `${hours} h`,
 }));
 
+const VITAMIN_D_THRESHOLD_OPTIONS = VITAMIN_D_MISSED_ALERT_THRESHOLDS.map((hours) => ({
+  hours,
+  label: `${String(hours).padStart(2, '0')}:00`,
+}));
+
 // Ejemplos de contenido; las notificaciones reales aún no existen.
 const EXAMPLES: readonly NotificationExample[] = [
   {
@@ -76,13 +86,6 @@ const EXAMPLES: readonly NotificationExample[] = [
     title: 'Hora de la toma',
     message: 'Han pasado 3 h desde la última toma de pecho.',
     minutesAgo: 4,
-    unread: true,
-  },
-  {
-    icon: 'vaccines',
-    title: 'Vitamina D',
-    message: 'Todavía no has registrado la vitamina D de hoy.',
-    minutesAgo: 45,
     unread: true,
   },
   {
@@ -194,6 +197,15 @@ const EXAMPLES: readonly NotificationExample[] = [
         [load]="loadLongNapSettings"
         [save]="saveLongNapSettings"
       />
+      <app-alert-settings-section
+        heading="Vitamina D"
+        description="Avisar si todavía no se ha registrado la vitamina D de hoy"
+        loadingLabel="Cargando el aviso de vitamina D"
+        errorMessage="No se pudo cargar el aviso de vitamina D."
+        [options]="vitaminDOptions"
+        [load]="loadVitaminDSettings"
+        [save]="saveVitaminDSettings"
+      />
       <mat-divider />
       <p class="note">Ejemplos de avisos que podrás recibir. Todavía no están activos.</p>
       <mat-list>
@@ -224,11 +236,13 @@ export class NotificationsDialog {
   private readonly diaperService = inject(DiaperService);
   private readonly feedingService = inject(FeedingService);
   private readonly sleepService = inject(SleepService);
+  private readonly vitaminDService = inject(VitaminDService);
 
   protected readonly feedingOptions = FEEDING_THRESHOLD_OPTIONS;
   protected readonly poopOptions = POOP_THRESHOLD_OPTIONS;
   protected readonly awakeOptions = AWAKE_THRESHOLD_OPTIONS;
   protected readonly longNapOptions = LONG_NAP_THRESHOLD_OPTIONS;
+  protected readonly vitaminDOptions = VITAMIN_D_THRESHOLD_OPTIONS;
 
   protected readonly loadFeedingSettings = () => this.feedingService.getOverdueAlertSettings(CURRENT_BABY_ID);
   protected readonly saveFeedingSettings = (settings: FeedingOverdueAlertSettings) =>
@@ -242,6 +256,9 @@ export class NotificationsDialog {
   protected readonly loadLongNapSettings = () => this.sleepService.getLongNapAlertSettings(CURRENT_BABY_ID);
   protected readonly saveLongNapSettings = (settings: SleepLongNapAlertSettings) =>
     this.sleepService.saveLongNapAlertSettings(CURRENT_BABY_ID, settings);
+  protected readonly loadVitaminDSettings = () => this.vitaminDService.getMissedAlertSettings(CURRENT_BABY_ID);
+  protected readonly saveVitaminDSettings = (settings: VitaminDMissedAlertSettings) =>
+    this.vitaminDService.saveMissedAlertSettings(CURRENT_BABY_ID, settings);
 
   protected readonly items = computed(() => {
     const now = this.clock.now();

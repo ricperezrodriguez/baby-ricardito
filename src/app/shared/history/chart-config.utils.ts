@@ -33,6 +33,7 @@ export function lineConfig(
   days: readonly DayLike[],
   label: string,
   values: (number | null)[],
+  color: string = LINE_COLOR,
 ): ChartConfiguration {
   return {
     type: 'line',
@@ -42,8 +43,8 @@ export function lineConfig(
         {
           label,
           data: values,
-          borderColor: LINE_COLOR,
-          backgroundColor: LINE_COLOR,
+          borderColor: color,
+          backgroundColor: color,
           spanGaps: true,
           tension: 0.25,
         },

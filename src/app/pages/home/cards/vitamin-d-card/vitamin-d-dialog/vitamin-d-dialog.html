@@ -1,0 +1,81 @@
+<app-tracking-dialog-layout
+  [title]="record.dialogTitle()"
+  [saveLabel]="record.saveLabel()"
+  [saveDisabled]="saveDisabled()"
+  [saving]="record.saving()"
+  [busy]="record.busy()"
+  [confirmBeforeDiscard]="false"
+  (save)="onSave()"
+  (dismiss)="close()"
+  (discard)="close()"
+>
+  @if (record.historyMode()) {
+    <button
+      dialogActionsStart
+      matIconButton
+      type="button"
+      class="delete-button"
+      [attr.aria-label]="record.texts.deleteLabel"
+      [disabled]="record.busy() || record.saving()"
+      (click)="deleteDose()"
+    >
+      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
+    </button>
+  }
+  @if (record.loading()) {
+    <app-loading-spinner [label]="record.texts.loadingLabel" />
+  } @else {
+    <section class="summary" aria-labelledby="summary-title">
+      <h3 id="summary-title" class="summary-title">Datos de la dosis</h3>
+      <dl class="summary-list">
+        <div class="summary-row">
+          <dt>Fecha y hora</dt>
+          <dd>
+            <app-editable-time
+              label="Fecha y hora"
+              kind="datetime"
+              [value]="givenAt()"
+              [max]="maxGivenAt()"
+              [disabled]="record.editsDisabled()"
+              (committed)="givenAt.set($event)"
+            />
+          </dd>
+        </div>
+        @if (record.readOnly() && dropsText()) {
+          <div class="summary-row">
+            <dt>Gotas</dt>
+            <dd>{{ dropsText() }}</dd>
+          </div>
+        }
+      </dl>
+
+      @if (!record.historyMode()) {
+        <div class="today-hint" role="status">
+          @if (todayDoseAt(); as doseAt) {
+            <p class="hint">Hoy ya se registró una dosis a las {{ doseAt | date: 'HH:mm' }}.</p>
+          }
+        </div>
+      }
+
+      @if (!record.readOnly()) {
+        <div class="field-group">
+          <app-quick-value-field
+            label="Cantidad (gotas)"
+            suffix="gotas"
+            quickLabel="Gotas habituales"
+            [field]="form.drops"
+            [quickValues]="quickDrops"
+            [formatQuick]="formatDrops"
+            [errorMessage]="dropsError()"
+          />
+        </div>
+      }
+
+      <app-record-notes-field
+        [field]="form.notes"
+        [maxLength]="notesMaxLength"
+        [readOnly]="record.readOnly()"
+      />
+    </section>
+  }
+</app-tracking-dialog-layout>

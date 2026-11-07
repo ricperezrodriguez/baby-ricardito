@@ -39,6 +39,7 @@ All time calculations live in `src/app/shared/utils/` and are imported from `@sh
 | `localTimeZone()` | IANA time zone of the device (e.g. `Europe/Madrid`). |
 | `formatDayHeading(dayKey, now)` | Spanish day heading: "Hoy", "Ayer" or "Lunes, 2 de noviembre". |
 | `formatDayLabel(dayKey)` | Short day label for chart axes, such as "2 nov". |
+| `weekdayOfDay(dayKey)` | Weekday of a local day (`yyyy-MM-dd`), Monday = 0 ... Sunday = 6 (same order as the heatmap rows). |
 
 Type: `TimeSpan { start: number; end: number | null }` (`end: null` = still in progress).
 

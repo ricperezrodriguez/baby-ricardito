@@ -149,6 +149,12 @@ export function formatDayLabel(dayKey: string): string {
   return DAY_LABEL_FORMAT.format(new Date(year, month - 1, day)).replace('.', '');
 }
 
+/** Weekday of a local day (`yyyy-MM-dd`), Monday = 0 ... Sunday = 6. */
+export function weekdayOfDay(dayKey: string): number {
+  const [year, month, day] = dayKey.split('-').map(Number);
+  return (new Date(year, month - 1, day).getDay() + 6) % 7;
+}
+
 const HOUR_MS = 3_600_000;
 const DAYS_FROM_HOURS = 48;
 

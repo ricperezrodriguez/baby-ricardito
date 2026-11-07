@@ -1,0 +1,17 @@
+@use 'shared/record-dialog/record-dialog' as record;
+
+:host {
+  display: block;
+}
+
+// Nothing above the summary, unlike the dialogs that start with their own controls.
+@include record.summary(0);
+@include record.delete-button;
+@include record.field-group;
+
+// Non-blocking notice under the date: same look as a `mat-hint`, with AA contrast.
+.hint {
+  color: var(--app-muted);
+  font-size: 0.875rem;
+  margin: 0 0 1rem;
+}

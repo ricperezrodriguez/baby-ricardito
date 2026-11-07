@@ -66,25 +66,15 @@
         </div>
 
         <div class="field-group">
-          <mat-form-field class="amount-field" appearance="outline">
-            <mat-label>Cantidad (ml)</mat-label>
-            <input matInput type="number" inputmode="numeric" [formField]="form.amount" />
-            <span matTextSuffix>ml</span>
-            @if (amountError(); as message) {
-              <mat-error>{{ message }}</mat-error>
-            }
-          </mat-form-field>
-          <mat-chip-listbox
-            class="quick-amounts"
-            aria-label="Cantidades habituales"
-            [value]="selectedQuickAmount()"
-            [disabled]="record.editsDisabled()"
-            (change)="selectQuickAmount($event)"
-          >
-            @for (quick of quickAmounts; track quick.value) {
-              <mat-chip-option [value]="quick.value">{{ quick.label }}</mat-chip-option>
-            }
-          </mat-chip-listbox>
+          <app-quick-value-field
+            label="Cantidad (ml)"
+            suffix="ml"
+            quickLabel="Cantidades habituales"
+            [field]="form.amount"
+            [quickValues]="quickAmounts"
+            [formatQuick]="formatMl"
+            [errorMessage]="amountError()"
+          />
         </div>
       }
 

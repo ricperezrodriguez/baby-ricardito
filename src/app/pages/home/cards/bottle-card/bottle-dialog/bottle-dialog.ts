@@ -1,11 +1,8 @@
-import { Component, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { disabled, form, FormField, max, maxLength, min, required, validate } from '@angular/forms/signals';
+import { disabled, form, max, maxLength, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
-import { MatChipListbox, MatChipListboxChange, MatChipsModule } from '@angular/material/chips';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import { BOTTLE_MILK_TYPE_LABELS, formatMl } from '@app/features/bottle/bottle.labels';
 import {
@@ -21,6 +18,7 @@ import {
 } from '@app/features/bottle/bottle.models';
 import { BottleService } from '@app/features/bottle/bottle.service';
 import { ChoiceGroup, ChoiceOption } from '@app/shared/choice-group/choice-group';
+import { QuickValueField } from '@app/shared/quick-value-field/quick-value-field';
 import { RecordNotesField } from '@app/shared/record-dialog/record-notes-field';
 import {
   createClock,
@@ -38,8 +36,6 @@ const MILK_TYPE_OPTIONS: readonly ChoiceOption<BottleMilkType>[] = BOTTLE_MILK_T
   label: BOTTLE_MILK_TYPE_LABELS[value],
 }));
 
-const QUICK_AMOUNTS = BOTTLE_QUICK_AMOUNTS_ML.map((value) => ({ value, label: formatMl(value) }));
-
 const AMOUNT_REQUIRED_MESSAGE = 'Indica la cantidad';
 const AMOUNT_RANGE_MESSAGE = `Entre ${BOTTLE_AMOUNT_MIN_ML} y ${BOTTLE_AMOUNT_MAX_ML} ml`;
 const AMOUNT_INTEGER_MESSAGE = 'Solo números enteros';
@@ -51,13 +47,10 @@ type BottlePayload = Required<UpdateBottleFeedDto>;
   imports: [
     ChoiceGroup,
     EditableTime,
-    FormField,
     LoadingSpinner,
     MatButtonModule,
-    MatChipsModule,
-    MatFormFieldModule,
     MatIconModule,
-    MatInputModule,
+    QuickValueField,
     RecordNotesField,
     TrackingDialogLayout,
   ],
@@ -67,10 +60,10 @@ type BottlePayload = Required<UpdateBottleFeedDto>;
 export class BottleDialog {
   private readonly bottleService = inject(BottleService);
   private readonly clock = createClock();
-  private readonly quickAmountList = viewChild(MatChipListbox);
 
   protected readonly milkTypeOptions = MILK_TYPE_OPTIONS;
-  protected readonly quickAmounts = QUICK_AMOUNTS;
+  protected readonly quickAmounts = BOTTLE_QUICK_AMOUNTS_ML;
+  protected readonly formatMl = formatMl;
   protected readonly notesMaxLength = BOTTLE_NOTES_MAX_LENGTH;
 
   /** The feed happened now unless the user says otherwise. */
@@ -127,11 +120,6 @@ export class BottleDialog {
     const error = this.form.amount().errors()[0];
     return error === undefined ? null : (error.message ?? AMOUNT_REQUIRED_MESSAGE);
   });
-  /** The quick amount equal to the current value, if any. */
-  protected readonly selectedQuickAmount = computed(() => {
-    const amount = this.formModel().amount;
-    return amount !== null && BOTTLE_QUICK_AMOUNTS_ML.includes(amount) ? amount : null;
-  });
 
   // Texts of the read-only view.
   protected readonly milkTypeText = computed(() => {
@@ -156,19 +144,6 @@ export class BottleDialog {
   protected selectMilkType(milkType: BottleMilkType | null): void {
     if (milkType !== null) {
       this.milkType.set(milkType);
-    }
-  }
-
-  protected selectQuickAmount(event: MatChipListboxChange): void {
-    const amount: unknown = event.value;
-    if (typeof amount === 'number') {
-      this.formModel.update((model) => ({ ...model, amount }));
-    } else {
-      // Pressing the selected chip must not clear the amount: select it again.
-      const list = this.quickAmountList();
-      if (list) {
-        list.value = this.selectedQuickAmount();
-      }
     }
   }
 

@@ -5,6 +5,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { AsyncState } from '@app/shared/async-state/async-state';
+import { DayCalendar, DayCalendarData } from '@app/shared/history/day-calendar/day-calendar';
 import { HistoryChart } from '@app/shared/history/history-chart/history-chart';
 import { HistoryPageState } from '@app/shared/history/history-stats';
 import { HeatmapUnit, HourHeatmap } from '@app/shared/history/hour-heatmap/hour-heatmap';
@@ -33,6 +34,8 @@ export interface HistoryPageContent<Id extends string> {
   charts: Partial<Record<Id, ChartConfiguration>>;
   /** Text shown in a chart card instead of the chart (e.g. nothing to plot). */
   notices?: Partial<Record<Id, string>>;
+  /** Chart cards that show a day calendar (`app-day-calendar`) instead of a chart. */
+  calendars?: Partial<Record<Id, DayCalendarData>>;
 }
 
 /**
@@ -44,6 +47,7 @@ export interface HistoryPageContent<Id extends string> {
   selector: 'app-history-page',
   imports: [
     AsyncState,
+    DayCalendar,
     HistoryChart,
     HourHeatmap,
     MatButtonModule,

@@ -87,6 +87,26 @@ export const routes: Routes = [
         } satisfies DialogRouteData,
       },
       {
+        path: 'vitamina-d',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/vitamin-d-card/vitamin-d-dialog/vitamin-d-dialog').then(
+              (m) => m.VitaminDDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
+        path: 'vitamina-d/:recordId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/vitamin-d-card/vitamin-d-dialog/vitamin-d-dialog').then(
+              (m) => m.VitaminDDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
         path: 'notificaciones',
         component: DialogRouteHost,
         data: {
@@ -168,6 +188,24 @@ export const routes: Routes = [
               (m) => m.SleepDialog,
             ),
           returnTo: '/detalle/sueno',
+        } satisfies DialogRouteData,
+      },
+    ],
+  },
+  {
+    path: 'detalle/vitamina-d',
+    loadComponent: () =>
+      import('@app/pages/vitamin-d-history/vitamin-d-history').then((m) => m.VitaminDHistory),
+    children: [
+      {
+        path: ':recordId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/vitamin-d-card/vitamin-d-dialog/vitamin-d-dialog').then(
+              (m) => m.VitaminDDialog,
+            ),
+          returnTo: '/detalle/vitamina-d',
         } satisfies DialogRouteData,
       },
     ],

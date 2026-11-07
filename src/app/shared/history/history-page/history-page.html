@@ -86,6 +86,12 @@
                     [hourMap]="data.hourMap"
                     [unit]="heatmap().unit"
                   />
+                } @else if (data.calendars?.[id]; as calendar) {
+                  <app-day-calendar
+                    [days]="calendar.days"
+                    [color]="calendar.color"
+                    [caption]="calendar.caption"
+                  />
                 } @else if (data.notices?.[id]; as notice) {
                   <p class="empty">{{ notice }}</p>
                 } @else if (data.charts[id]; as config) {

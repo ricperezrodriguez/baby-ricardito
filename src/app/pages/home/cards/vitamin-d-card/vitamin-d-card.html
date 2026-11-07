@@ -1,0 +1,48 @@
+<app-tracking-card
+  link="/detalle/vitamina-d"
+  title="Vitamina D"
+  dialogRoute="vitamina-d"
+  [recordRoute]="recordRoute()"
+  recordLabel="Ver la última toma de vitamina D"
+  (closed)="reload()"
+  accent="var(--app-card-vitamin-d)"
+  headerColor="var(--app-card-vitamin-d)"
+>
+  <svg
+    cardIcon
+    viewBox="0 0 32 32"
+    fill="currentColor"
+    [attr.width]="iconSize"
+    [attr.height]="iconSize"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="1.6"
+  >
+    <path d="M16 3C13 8 7 14 7 19a9 9 0 0 0 18 0c0-5-6-11-9-16Z" />
+    <path
+      d="M11 19c0 2.8 2.2 5 5 5"
+      fill="none"
+      stroke="var(--card-header-color)"
+      stroke-width="1.5"
+    />
+  </svg>
+  <app-async-state
+    [status]="latestState().status"
+    loadingLabel="Cargando la última toma de vitamina D"
+    emptyMessage="Todavía no hay tomas de vitamina D registradas."
+    errorMessage="No se pudo cargar la última toma de vitamina D."
+    (retry)="reload()"
+  >
+    @if (elapsed(); as elapsedText) {
+      <app-last-record-summary [title]="elapsedText" [secondaryLines]="secondaryLines()">
+        <div summaryAside class="today-status" [class.given]="givenToday()">
+          <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">{{
+            givenToday() ? 'check_circle' : 'radio_button_unchecked'
+          }}</mat-icon>
+          <span class="today-status-label">{{ givenToday() ? 'Dada hoy' : 'Pendiente hoy' }}</span>
+        </div>
+      </app-last-record-summary>
+    }
+  </app-async-state>
+</app-tracking-card>
