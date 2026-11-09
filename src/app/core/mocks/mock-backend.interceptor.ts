@@ -1,10 +1,18 @@
-import { HttpErrorResponse, HttpEvent, HttpInterceptorFn, HttpRequest, HttpResponse } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpEvent,
+  HttpInterceptorFn,
+  HttpRequest,
+  HttpResponse,
+} from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Observable, defer, delay, mergeMap, of, throwError } from 'rxjs';
-import { environment } from '@environments/environment';
+import { computeBottleReply } from '@app/core/mocks/mock-backend.bottle.routes';
+import { MockBottleStore } from '@app/core/mocks/mock-backend.bottle.store';
+import { computeDiaperReply } from '@app/core/mocks/mock-backend.diaper.routes';
+import { MockDiaperStore } from '@app/core/mocks/mock-backend.diaper.store';
 import { MockApiError, notFound } from '@app/core/mocks/mock-backend.errors';
-import { MockBackendStore } from '@app/core/mocks/mock-backend.store';
-import { parseStatsRequest } from '@app/core/mocks/mock-backend.time';
+import { computeFeedingReply } from '@app/core/mocks/mock-backend.feeding.routes';
+import { MockFeedingStore } from '@app/core/mocks/mock-backend.feeding.store';
 import {
   MockReply,
   STATUS_TEXTS,
@@ -12,16 +20,17 @@ import {
   parsePageParameter,
   parseRecordRoute,
 } from '@app/core/mocks/mock-backend.routing';
-import { MockDiaperStore } from '@app/core/mocks/mock-backend.diaper.store';
-import { computeDiaperReply } from '@app/core/mocks/mock-backend.diaper.routes';
-import { MockSleepStore } from '@app/core/mocks/mock-backend.sleep.store';
 import { computeSleepReply } from '@app/core/mocks/mock-backend.sleep.routes';
-import { MockBottleStore } from '@app/core/mocks/mock-backend.bottle.store';
-import { computeBottleReply } from '@app/core/mocks/mock-backend.bottle.routes';
-import { MockFeedingStore } from '@app/core/mocks/mock-backend.feeding.store';
-import { computeFeedingReply } from '@app/core/mocks/mock-backend.feeding.routes';
-import { MockVitaminDStore } from '@app/core/mocks/mock-backend.vitamin-d.store';
+import { MockSleepStore } from '@app/core/mocks/mock-backend.sleep.store';
+import { MockBackendStore } from '@app/core/mocks/mock-backend.store';
+import { parseStatsRequest } from '@app/core/mocks/mock-backend.time';
+import { environment } from '@environments/environment';
+import { Observable, defer, delay, mergeMap, of, throwError } from 'rxjs';
+
+import { computeNailTrimmingReply } from '@app/core/mocks/mock-backend.nail-trimming.routes';
+import { MockNailTrimmingStore } from '@app/core/mocks/mock-backend.nail-trimming.store';
 import { computeVitaminDReply } from '@app/core/mocks/mock-backend.vitamin-d.routes';
+import { MockVitaminDStore } from '@app/core/mocks/mock-backend.vitamin-d.store';
 
 /** Every in-memory store of the mock backend. */
 interface MockStores {
@@ -31,11 +40,14 @@ interface MockStores {
   bottle: MockBottleStore;
   feeding: MockFeedingStore;
   vitaminD: MockVitaminDStore;
+  nailTrimming: MockNailTrimmingStore;
 }
 
-const SESSIONS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/sessions(?:\/([^/]+)(\/photo)?)?\/?$/;
+const SESSIONS_ROUTE_PATTERN =
+  /^\/babies\/([^/]+)\/breastfeeding\/sessions(?:\/([^/]+)(\/photo)?)?\/?$/;
 const STATS_ROUTE_PATTERN = /^\/babies\/([^/]+)\/breastfeeding\/stats\/?$/;
-const HISTORY_PREFERENCES_ROUTE_PATTERN = /^\/babies\/([^/]+)\/preferences\/breastfeeding-history\/?$/;
+const HISTORY_PREFERENCES_ROUTE_PATTERN =
+  /^\/babies\/([^/]+)\/preferences\/breastfeeding-history\/?$/;
 
 function isApiUrl(url: string): boolean {
   if (!url.startsWith(environment.apiUrl)) {
@@ -70,6 +82,11 @@ function computeReply(req: HttpRequest<unknown>, stores: MockStores): MockReply 
   const vitaminDReply = computeVitaminDReply(req, stores.vitaminD);
   if (vitaminDReply !== null) {
     return vitaminDReply;
+  }
+
+  const nailTrimmingReply = computeNailTrimmingReply(req, stores.nailTrimming);
+  if (nailTrimmingReply !== null) {
+    return nailTrimmingReply;
   }
 
   const statsBabyId = matchBabyRoute(req.url, STATS_ROUTE_PATTERN);
@@ -137,10 +154,16 @@ function toError(error: unknown): MockApiError {
 }
 
 function logMock(req: HttpRequest<unknown>, status: number, detail: unknown): void {
-  console.log(`[MOCK] ${req.method} ${req.urlWithParams} -> ${status}`, { requestBody: req.body, response: detail });
+  console.log(`[MOCK] ${req.method} ${req.urlWithParams} -> ${status}`, {
+    requestBody: req.body,
+    response: detail,
+  });
 }
 
-function resolveOutcome(req: HttpRequest<unknown>, stores: MockStores): HttpEvent<unknown> | HttpErrorResponse {
+function resolveOutcome(
+  req: HttpRequest<unknown>,
+  stores: MockStores,
+): HttpEvent<unknown> | HttpErrorResponse {
   try {
     const reply = computeReply(req, stores);
     logMock(req, reply.status, reply.body);
@@ -167,7 +190,10 @@ function randomDelayMs(): number {
   return Math.round(min + Math.random() * Math.max(0, max - min));
 }
 
-export const mockBackendInterceptor: HttpInterceptorFn = (req, next): Observable<HttpEvent<unknown>> => {
+export const mockBackendInterceptor: HttpInterceptorFn = (
+  req,
+  next,
+): Observable<HttpEvent<unknown>> => {
   if (!environment.useMock || !isApiUrl(req.url)) {
     return next(req);
   }
@@ -179,11 +205,14 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req, next): Observable
     bottle: inject(MockBottleStore),
     feeding: inject(MockFeedingStore),
     vitaminD: inject(MockVitaminDStore),
+    nailTrimming: inject(MockNailTrimmingStore),
   };
 
   // The delay is applied to errors too, so they are materialized as values first.
   return defer(() => of(resolveOutcome(req, stores))).pipe(
     delay(randomDelayMs()),
-    mergeMap((outcome) => (outcome instanceof HttpErrorResponse ? throwError(() => outcome) : of(outcome))),
+    mergeMap((outcome) =>
+      outcome instanceof HttpErrorResponse ? throwError(() => outcome) : of(outcome),
+    ),
   );
 };

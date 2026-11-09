@@ -1,0 +1,82 @@
+<app-tracking-dialog-layout
+  [title]="record.dialogTitle()"
+  [saveLabel]="record.saveLabel()"
+  [saveDisabled]="saveDisabled()"
+  [saving]="record.saving()"
+  [busy]="record.busy()"
+  [confirmBeforeDiscard]="false"
+  (save)="onSave()"
+  (dismiss)="close()"
+  (discard)="close()"
+>
+  @if (record.historyMode()) {
+    <button
+      dialogActionsStart
+      matIconButton
+      type="button"
+      class="delete-button"
+      [attr.aria-label]="record.texts.deleteLabel"
+      [disabled]="record.busy() || record.saving()"
+      (click)="deleteTrim()"
+    >
+      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
+    </button>
+  }
+  @if (record.loading()) {
+    <app-loading-spinner [label]="record.texts.loadingLabel" />
+  } @else {
+    <section class="summary" aria-labelledby="summary-title">
+      <h3 id="summary-title" class="summary-title">Datos del corte</h3>
+      <dl class="summary-list">
+        <div class="summary-row">
+          <dt>Fecha y hora</dt>
+          <dd>
+            <app-editable-time
+              label="Fecha y hora"
+              kind="datetime"
+              [value]="trimmedAt()"
+              [max]="maxTrimmedAt()"
+              [disabled]="record.editsDisabled()"
+              (committed)="trimmedAt.set($event)"
+            />
+          </dd>
+        </div>
+        @if (record.readOnly()) {
+          <div class="summary-row">
+            <dt>Zonas</dt>
+            <dd>{{ areasText() }}</dd>
+          </div>
+        }
+      </dl>
+
+      @if (!record.historyMode()) {
+        <div class="today-hint" role="status">
+          @if (todayTrimAt(); as trimAt) {
+            <p class="hint">
+              Hoy ya se registró un corte de uñas a las {{ trimAt | date: 'HH:mm' }}.
+            </p>
+          }
+        </div>
+      }
+
+      @if (!record.readOnly()) {
+        <div class="field-group">
+          <h4 class="group-title">Zonas</h4>
+          <app-choice-group
+            label="Zonas"
+            [multiple]="true"
+            [options]="areasOptions"
+            [disabled]="record.editsDisabled()"
+            [(values)]="areas"
+          />
+        </div>
+      }
+
+      <app-record-notes-field
+        [field]="form.notes"
+        [maxLength]="notesMaxLength"
+        [readOnly]="record.readOnly()"
+      />
+    </section>
+  }
+</app-tracking-dialog-layout>

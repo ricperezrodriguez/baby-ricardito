@@ -101,6 +101,16 @@ export function localDateKey(epochMilliseconds: number): string {
   return toDateTimeLocal(epochMilliseconds).slice(0, 10);
 }
 
+/** Whole local calendar days from the day of `from` to the day of `to`. Never negative. */
+export function localDaysBetween(from: number, to: number): number {
+  const [fromYear, fromMonth, fromDay] = localDateKey(from).split('-').map(Number);
+  const [toYear, toMonth, toDay] = localDateKey(to).split('-').map(Number);
+  const days =
+    (Date.UTC(toYear, toMonth - 1, toDay) - Date.UTC(fromYear, fromMonth - 1, fromDay)) /
+    86_400_000;
+  return Math.max(0, Math.round(days));
+}
+
 /** Local hour of the day (0-23) of an instant. */
 export function localHour(epochMilliseconds: number): number {
   return new Date(epochMilliseconds).getHours();

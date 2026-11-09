@@ -42,6 +42,8 @@ export interface HistoryStatsOptions<Stats, Id extends string> {
   savePreferences: (hiddenCharts: Id[]) => Observable<unknown>;
   /** Path of the child route that opens a record; its modal closing reloads the stats. */
   dialogRoute: string;
+  /** Selectable periods in days; the first one is the initial period. Defaults to `HISTORY_PERIOD_OPTIONS`. */
+  periodOptions?: readonly number[];
 }
 
 /**
@@ -54,7 +56,8 @@ export function createHistoryStats<Stats, Id extends string>(
 ): HistoryStats<Stats, Id> {
   const clock = createClock(CLOCK_TICK_MS);
   const reloadCount = signal(0);
-  const period = signal<number>(HISTORY_PERIOD_OPTIONS[0]);
+  const periodOptions = options.periodOptions ?? HISTORY_PERIOD_OPTIONS;
+  const period = signal<number>(periodOptions[0]);
 
   // Stable while the clock ticks, so the resource is not requested again.
   const range = computed(() => localDateRange(clock.now(), period()), {
@@ -87,7 +90,7 @@ export function createHistoryStats<Stats, Id extends string>(
 
   return {
     chartIds: options.chartIds,
-    periodOptions: HISTORY_PERIOD_OPTIONS,
+    periodOptions,
     period,
     shownStats,
     status: computed(() => resourceStatus(shownStats(), stats.error())),

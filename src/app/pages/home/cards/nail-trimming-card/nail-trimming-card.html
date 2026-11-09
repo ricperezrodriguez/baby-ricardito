@@ -1,0 +1,49 @@
+<app-tracking-card
+  link="/detalle/cortar-unas"
+  title="Corte de uñas"
+  dialogRoute="cortar-unas"
+  [recordRoute]="recordRoute()"
+  recordLabel="Ver el último corte de uñas"
+  (closed)="reload()"
+  accent="var(--app-card-nail-trimming)"
+  headerColor="var(--app-card-nail-trimming)"
+>
+  <svg
+    cardIcon
+    viewBox="0 0 32 32"
+    fill="none"
+    [attr.width]="iconSize"
+    [attr.height]="iconSize"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="1.6"
+  >
+    <circle cx="7" cy="9" r="3" />
+    <circle cx="7" cy="23" r="3" />
+    <path d="M9.5 10.7 26 23M9.5 21.3 26 9" />
+  </svg>
+  <app-async-state
+    [status]="latestState().status"
+    loadingLabel="Cargando el último corte de uñas"
+    emptyMessage="Todavía no hay cortes de uñas registrados."
+    errorMessage="No se pudo cargar el último corte de uñas."
+    (retry)="reload()"
+  >
+    @if (elapsed(); as elapsedText) {
+      <app-last-record-summary [title]="elapsedText" [secondaryLines]="secondaryLines()">
+        <div summaryAside class="areas-status">
+          <span class="areas-icons">
+            @if (hasHands()) {
+              <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">back_hand</mat-icon>
+            }
+            @if (hasFeet()) {
+              <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">footprint</mat-icon>
+            }
+          </span>
+          <span class="areas-label">{{ areasText() }}</span>
+        </div>
+      </app-last-record-summary>
+    }
+  </app-async-state>
+</app-tracking-card>

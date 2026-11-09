@@ -1,0 +1,30 @@
+// Same aside layout as the vitamin D, bottle and diaper cards: centered column, label capped so it wraps from 360 px.
+.areas-status {
+  align-items: center;
+  color: var(--app-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 4rem;
+}
+
+.areas-icons {
+  display: flex;
+  gap: 0.15rem;
+
+  // Same size as the diaper type icon (`--diaper-type-icon-size` default) so the asides look alike.
+  mat-icon {
+    font-size: 2.25rem;
+    height: 2.25rem;
+    line-height: 2.25rem;
+    width: 2.25rem;
+  }
+}
+
+.areas-label {
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.25;
+  max-width: 6rem;
+  text-align: center;
+}

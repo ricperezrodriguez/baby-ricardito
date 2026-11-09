@@ -8,11 +8,11 @@ export type { AlertTone } from '@app/shared/alerts/alert-banner';
 export { createAlertDismissal } from '@app/shared/alerts/alert-dismissal';
 export type { AlertDismissal } from '@app/shared/alerts/alert-dismissal';
 export { AsyncState } from '@app/shared/async-state/async-state';
-export { ChoiceGroup } from '@app/shared/choice-group/choice-group';
-export type { ChoiceOption } from '@app/shared/choice-group/choice-group';
 export { ErrorState } from '@app/shared/async-state/error-state';
 export { resourceStatus } from '@app/shared/async-state/load-status';
 export type { LoadStatus } from '@app/shared/async-state/load-status';
+export { ChoiceGroup } from '@app/shared/choice-group/choice-group';
+export type { ChoiceOption } from '@app/shared/choice-group/choice-group';
 export { ConfirmationDialog } from '@app/shared/confirmation-dialog/confirmation-dialog';
 export type { ConfirmationDialogData } from '@app/shared/confirmation-dialog/confirmation-dialog';
 export {
@@ -69,6 +69,7 @@ export {
   isTimerFinished,
   localDateKey,
   localDateRange,
+  localDaysBetween,
   localHour,
   localTimeZone,
   parseDateTimeLocal,

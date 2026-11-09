@@ -6,11 +6,12 @@ import { BreastPumpCard } from '@app/pages/home/cards/breast-pump-card';
 import { BreastfeedingCard } from '@app/pages/home/cards/breastfeeding-card/breastfeeding-card';
 import { DiaperCard } from '@app/pages/home/cards/diaper-card/diaper-card';
 import { MedicalVisitCard } from '@app/pages/home/cards/medical-visit-card';
-import { NailTrimmingCard } from '@app/pages/home/cards/nail-trimming-card';
+import { NailTrimmingCard } from '@app/pages/home/cards/nail-trimming-card/nail-trimming-card';
 import { SleepCard } from '@app/pages/home/cards/sleep-card/sleep-card';
 import { VitaminDCard } from '@app/pages/home/cards/vitamin-d-card/vitamin-d-card';
 import { DiaperPoopAlert } from '@app/pages/home/diaper-poop-alert/diaper-poop-alert';
 import { FeedingOverdueAlert } from '@app/pages/home/feeding-overdue-alert/feeding-overdue-alert';
+import { NailTrimmingOverdueAlert } from '@app/pages/home/nail-trimming-overdue-alert/nail-trimming-overdue-alert';
 import { SleepAwakeAlert } from '@app/pages/home/sleep-awake-alert/sleep-awake-alert';
 import { SleepLongNapAlert } from '@app/pages/home/sleep-long-nap-alert/sleep-long-nap-alert';
 import { VitaminDMissedAlert } from '@app/pages/home/vitamin-d-missed-alert/vitamin-d-missed-alert';
@@ -22,6 +23,7 @@ import { VitaminDMissedAlert } from '@app/pages/home/vitamin-d-missed-alert/vita
     SleepAwakeAlert,
     SleepLongNapAlert,
     VitaminDMissedAlert,
+    NailTrimmingOverdueAlert,
     BreastfeedingCard,
     BottleCard,
     DiaperCard,

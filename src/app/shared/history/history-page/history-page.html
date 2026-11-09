@@ -80,17 +80,20 @@
                   </button>
                 </header>
                 @if (id === 'hourMap') {
-                  <app-hour-heatmap
-                    [color]="heatmap().color"
-                    [caption]="heatmap().caption"
-                    [hourMap]="data.hourMap"
-                    [unit]="heatmap().unit"
-                  />
+                  @if (data.hourMap && heatmap(); as options) {
+                    <app-hour-heatmap
+                      [color]="options.color"
+                      [caption]="options.caption"
+                      [hourMap]="data.hourMap"
+                      [unit]="options.unit"
+                    />
+                  }
                 } @else if (data.calendars?.[id]; as calendar) {
                   <app-day-calendar
                     [days]="calendar.days"
                     [color]="calendar.color"
                     [caption]="calendar.caption"
+                    [texts]="calendar.texts"
                   />
                 } @else if (data.notices?.[id]; as notice) {
                   <p class="empty">{{ notice }}</p>

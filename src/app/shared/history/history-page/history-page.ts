@@ -28,8 +28,8 @@ export interface HistoryPageContent<Id extends string> {
   summary: HistorySummaryItem[];
   /** False when the period has no records: the charts are replaced by `emptyMessage`. */
   hasData: boolean;
-  /** Records per weekday (0 = Monday) and hour (0-23), for the `hourMap` chart. */
-  hourMap: number[][];
+  /** Records per weekday (0 = Monday) and hour (0-23), for the `hourMap` chart. Only pages that have that chart. */
+  hourMap?: number[][];
   /** Configuration of every chart but `hourMap`. */
   charts: Partial<Record<Id, ChartConfiguration>>;
   /** Text shown in a chart card instead of the chart (e.g. nothing to plot). */
@@ -41,7 +41,7 @@ export interface HistoryPageContent<Id extends string> {
 /**
  * Common layout of a history page: header with period, summary, charts with their visibility chips
  * and the records section (projected content). Must live in the lazy page chunk: it pulls Chart.js,
- * so it is never exported from the `@shared` barrel. Chart ids must include `hourMap`.
+ * so it is never exported from the `@shared` barrel. The `hourMap` chart id is optional.
  */
 @Component({
   selector: 'app-history-page',
@@ -67,7 +67,8 @@ export class HistoryPage<Id extends string> {
   readonly heading = input.required<string>();
   readonly chartTitles = input.required<Record<Id, string>>();
   readonly emptyMessage = input.required<string>();
-  readonly heatmap = input.required<HistoryHeatmapOptions>();
+  /** Only needed by pages with the `hourMap` chart. */
+  readonly heatmap = input<HistoryHeatmapOptions>();
   /** Heading of the records section, whose list is projected. */
   readonly recordsTitle = input.required<string>();
 }

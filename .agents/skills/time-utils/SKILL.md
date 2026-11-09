@@ -18,28 +18,29 @@ All time calculations live in `src/app/shared/utils/` and are imported from `@sh
 
 ## Catalog (`time.utils.ts`)
 
-| Helper | Purpose |
-|---|---|
-| `formatDuration(ms)` | Formats milliseconds as `mm:ss` (or `h:mm:ss` from 1 hour onward). Never negative. |
-| `spanDuration(span, now)` | Milliseconds in a `TimeSpan`. If `end` is `null`, measures up to `now`. |
-| `totalGaps(spans)` | Milliseconds of gaps between consecutive spans sorted by start time. Open spans do not contribute a gap. |
-| `remainingTime(start, durationMs, now)` | Milliseconds remaining in a countdown. Never negative. |
-| `isTimerFinished(start, durationMs, now)` | Whether the countdown has finished. |
-| `parseTimestamp(iso)` | Converts ISO to epoch milliseconds, or returns `null` if invalid. |
-| `toIsoString(ms)` | Converts epoch milliseconds to ISO. |
-| `parseDuration(text)` | Converts `m:ss` or `h:mm:ss` to milliseconds (the inverse of `formatDuration`), or returns `null` if invalid. |
-| `toDateTimeLocal(ms)` | Converts epoch milliseconds to local `yyyy-MM-ddTHH:mm:ss`, the value for an `<input type="datetime-local">`. |
-| `parseDateTimeLocal(text)` | Converts a local `datetime-local` value to epoch milliseconds, or returns `null` if empty or invalid. |
-| `formatElapsedSince(iso, now)` | Spanish text, such as "Hace 5 min", "Hace 2 h 10 min", or "Hace menos de 1 min". |
-| `formatElapsedHoursOrDays(ms)` | Whole hours ("36 h"), or whole days from 48 h on ("2 días"). Never negative. |
-| `formatDurationText(ms)` | Short Spanish duration such as "45 s", "8 min" or "1 h 05 min". Never negative. |
-| `localDateKey(ms)` | Local calendar day of an instant as `yyyy-MM-dd` (grouping by day). |
-| `localHour(ms)` | Local hour of the day (0-23) of an instant. |
-| `localDateRange(now, days)` | Inclusive local-day range `{ from, to }` of `days` days ending on the day of `now`. |
-| `localTimeZone()` | IANA time zone of the device (e.g. `Europe/Madrid`). |
-| `formatDayHeading(dayKey, now)` | Spanish day heading: "Hoy", "Ayer" or "Lunes, 2 de noviembre". |
-| `formatDayLabel(dayKey)` | Short day label for chart axes, such as "2 nov". |
-| `weekdayOfDay(dayKey)` | Weekday of a local day (`yyyy-MM-dd`), Monday = 0 ... Sunday = 6 (same order as the heatmap rows). |
+| Helper                                    | Purpose                                                                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `formatDuration(ms)`                      | Formats milliseconds as `mm:ss` (or `h:mm:ss` from 1 hour onward). Never negative.                                  |
+| `spanDuration(span, now)`                 | Milliseconds in a `TimeSpan`. If `end` is `null`, measures up to `now`.                                             |
+| `totalGaps(spans)`                        | Milliseconds of gaps between consecutive spans sorted by start time. Open spans do not contribute a gap.            |
+| `remainingTime(start, durationMs, now)`   | Milliseconds remaining in a countdown. Never negative.                                                              |
+| `isTimerFinished(start, durationMs, now)` | Whether the countdown has finished.                                                                                 |
+| `parseTimestamp(iso)`                     | Converts ISO to epoch milliseconds, or returns `null` if invalid.                                                   |
+| `toIsoString(ms)`                         | Converts epoch milliseconds to ISO.                                                                                 |
+| `parseDuration(text)`                     | Converts `m:ss` or `h:mm:ss` to milliseconds (the inverse of `formatDuration`), or returns `null` if invalid.       |
+| `toDateTimeLocal(ms)`                     | Converts epoch milliseconds to local `yyyy-MM-ddTHH:mm:ss`, the value for an `<input type="datetime-local">`.       |
+| `parseDateTimeLocal(text)`                | Converts a local `datetime-local` value to epoch milliseconds, or returns `null` if empty or invalid.               |
+| `formatElapsedSince(iso, now)`            | Spanish text, such as "Hace 5 min", "Hace 2 h 10 min", or "Hace menos de 1 min".                                    |
+| `formatElapsedHoursOrDays(ms)`            | Whole hours ("36 h"), or whole days from 48 h on ("2 días"). Never negative.                                        |
+| `formatDurationText(ms)`                  | Short Spanish duration such as "45 s", "8 min" or "1 h 05 min". Never negative.                                     |
+| `localDateKey(ms)`                        | Local calendar day of an instant as `yyyy-MM-dd` (grouping by day).                                                 |
+| `localDaysBetween(from, to)`              | Whole local calendar days between the days of two instants (midnight to midnight, not 24 h blocks). Never negative. |
+| `localHour(ms)`                           | Local hour of the day (0-23) of an instant.                                                                         |
+| `localDateRange(now, days)`               | Inclusive local-day range `{ from, to }` of `days` days ending on the day of `now`.                                 |
+| `localTimeZone()`                         | IANA time zone of the device (e.g. `Europe/Madrid`).                                                                |
+| `formatDayHeading(dayKey, now)`           | Spanish day heading: "Hoy", "Ayer" or "Lunes, 2 de noviembre".                                                      |
+| `formatDayLabel(dayKey)`                  | Short day label for chart axes, such as "2 nov".                                                                    |
+| `weekdayOfDay(dayKey)`                    | Weekday of a local day (`yyyy-MM-dd`), Monday = 0 ... Sunday = 6 (same order as the heatmap rows).                  |
 
 Type: `TimeSpan { start: number; end: number | null }` (`end: null` = still in progress).
 

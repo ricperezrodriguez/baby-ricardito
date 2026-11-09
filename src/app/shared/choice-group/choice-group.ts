@@ -21,17 +21,18 @@ export interface ChoiceIconContext<T extends string> {
 let nextGroupId = 0;
 
 /**
- * Exclusive choice shown as large buttons with an icon (or color swatch) and a visible text.
+ * Choice shown as large buttons with an icon (or color swatch) and a visible text.
  *
- * Built on native radio inputs, so the browser provides the radiogroup keyboard behavior
- * (arrows move and select, Tab enters and leaves the group). Nothing is selected while `value` is `null`
- * unless an option has `value: null`.
+ * Exclusive by default, built on native radio inputs, so the browser provides the radiogroup keyboard
+ * behavior (arrows move and select, Tab enters and leaves the group). Nothing is selected while `value`
+ * is `null` unless an option has `value: null`. With `multiple` it uses checkboxes and the selection
+ * is `values` (options with `value: null` are not allowed).
  */
 @Component({
   selector: 'app-choice-group',
   imports: [MatIconModule, NgTemplateOutlet],
   host: {
-    role: 'radiogroup',
+    '[attr.role]': "multiple() ? 'group' : 'radiogroup'",
     '[attr.aria-label]': 'label()',
   },
   styles: `
@@ -98,25 +99,23 @@ let nextGroupId = 0;
   `,
   template: `
     @for (option of options(); track option.value) {
-      <label
-        class="choice"
-        [class.selected]="option.value === value()"
-        [class.disabled]="disabled()"
-      >
+      <label class="choice" [class.selected]="isSelected(option)" [class.disabled]="disabled()">
         <input
           class="choice-input"
-          type="radio"
+          [type]="multiple() ? 'checkbox' : 'radio'"
           [name]="name"
-          [checked]="option.value === value()"
+          [checked]="isSelected(option)"
           [disabled]="disabled()"
-          (change)="value.set(option.value)"
+          (change)="select(option)"
         />
         @if (option.color) {
           <span class="swatch" aria-hidden="true" [style.background-color]="option.color"></span>
         } @else if (iconTemplate(); as template) {
           <ng-container *ngTemplateOutlet="template; context: { $implicit: option }" />
         } @else if (option.icon) {
-          <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">{{ option.icon }}</mat-icon>
+          <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">{{
+            option.icon
+          }}</mat-icon>
         }
         <span>{{ option.label }}</span>
       </label>
@@ -132,5 +131,28 @@ export class ChoiceGroup<T extends string> {
   readonly label = input.required<string>();
   readonly options = input.required<readonly ChoiceOption<T>[]>();
   readonly value = model<T | null>(null);
+  /** Selected values when `multiple` is on. */
+  readonly values = model<readonly T[]>([]);
+  /** Lets the user check several options at once (checkboxes) instead of exactly one. */
+  readonly multiple = input(false);
   readonly disabled = input(false);
+
+  protected isSelected(option: ChoiceOption<T>): boolean {
+    return this.multiple()
+      ? option.value !== null && this.values().includes(option.value)
+      : option.value === this.value();
+  }
+
+  protected select(option: ChoiceOption<T>): void {
+    if (!this.multiple()) {
+      this.value.set(option.value);
+    } else if (option.value !== null) {
+      const selected = option.value;
+      this.values.update((values) =>
+        values.includes(selected)
+          ? values.filter((value) => value !== selected)
+          : [...values, selected],
+      );
+    }
+  }
 }

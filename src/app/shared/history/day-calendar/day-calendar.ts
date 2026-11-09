@@ -4,10 +4,27 @@ import { formatDayLabel, weekdayOfDay } from '@app/shared/utils/time.utils';
 
 /**
  * Status of a local day:
- * `given` (done), `missed` (not done), `pending` (today, still open) and
- * `notStarted` (before the tracking began; shown empty).
+ * `given` (done), `missed` (not done), `pending` (today, still open),
+ * `notStarted` (before the tracking began; shown empty) and `empty` (nothing expected: day number only).
  */
-export type DayCalendarStatus = 'given' | 'missed' | 'pending' | 'notStarted';
+export type DayCalendarStatus = 'given' | 'missed' | 'pending' | 'notStarted' | 'empty';
+
+/** Texts of a tracker; without them the calendar uses the vitamin D wording. */
+export interface DayCalendarTexts {
+  /** Hidden text and tooltip of a given day. */
+  given: string;
+  /** Legend entries, in order. */
+  legend: readonly { status: 'given' | 'missed' | 'pending'; label: string }[];
+}
+
+const DEFAULT_TEXTS: DayCalendarTexts = {
+  given: 'toma dada',
+  legend: [
+    { status: 'given', label: 'Toma dada' },
+    { status: 'missed', label: 'Sin toma' },
+    { status: 'pending', label: 'Pendiente (hoy)' },
+  ],
+};
 
 export interface DayCalendarDay {
   /** Local day, `yyyy-MM-dd` */
@@ -23,6 +40,7 @@ export interface DayCalendarData {
   color: string;
   /** Accessible table caption. */
   caption: string;
+  texts?: DayCalendarTexts;
 }
 
 interface CalendarCell {
@@ -47,12 +65,9 @@ const WEEKDAYS = [
   { initial: 'D', name: 'Domingo' },
 ];
 
-const STATUS_TEXTS: Record<DayCalendarStatus, string | null> = {
-  given: 'toma dada',
-  missed: 'sin toma',
-  pending: 'pendiente',
-  notStarted: null,
-};
+function statusTexts(given: string): Record<DayCalendarStatus, string | null> {
+  return { given, missed: 'sin toma', pending: 'pendiente', notStarted: null, empty: null };
+}
 
 /** The state is never colour-only: each one has its own icon or outline plus hidden text. */
 const STATUS_ICONS: Record<DayCalendarStatus, string | null> = {
@@ -60,10 +75,14 @@ const STATUS_ICONS: Record<DayCalendarStatus, string | null> = {
   missed: 'close',
   pending: null,
   notStarted: null,
+  empty: null,
 };
 
-function toCell({ date, status }: DayCalendarDay): CalendarCell {
-  const statusText = STATUS_TEXTS[status];
+function toCell(
+  { date, status }: DayCalendarDay,
+  texts: Record<DayCalendarStatus, string | null>,
+): CalendarCell {
+  const statusText = texts[status];
   const label = formatDayLabel(date);
   return {
     key: date,
@@ -175,7 +194,9 @@ function paddingCell(key: string): CalendarCell {
   template: `
     <table>
       <caption class="visually-hidden">
-        {{ caption() }}
+        {{
+          caption()
+        }}
       </caption>
       <thead>
         <tr>
@@ -196,7 +217,9 @@ function paddingCell(key: string): CalendarCell {
                   <div class="cell" [class]="cell.status">
                     <span aria-hidden="true">{{ cell.dayNumber }}</span>
                     @if (cell.icon; as icon) {
-                      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">{{ icon }}</mat-icon>
+                      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">{{
+                        icon
+                      }}</mat-icon>
                     }
                     @if (cell.statusText !== null) {
                       <span class="visually-hidden">{{ cell.title }}</span>
@@ -210,18 +233,16 @@ function paddingCell(key: string): CalendarCell {
       </tbody>
     </table>
     <ul class="legend">
-      <li>
-        <span class="cell given"><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">check</mat-icon></span>
-        Toma dada
-      </li>
-      <li>
-        <span class="cell missed"><mat-icon fontSet="material-symbols-outlined" aria-hidden="true">close</mat-icon></span>
-        Sin toma
-      </li>
-      <li>
-        <span class="cell pending"></span>
-        Pendiente (hoy)
-      </li>
+      @for (item of legend(); track item.status) {
+        <li>
+          <span class="cell" [class]="item.status">
+            @if (legendIcon(item.status); as icon) {
+              <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">{{ icon }}</mat-icon>
+            }
+          </span>
+          {{ item.label }}
+        </li>
+      }
     </ul>
   `,
 })
@@ -230,8 +251,15 @@ export class DayCalendar {
   /** Any CSS color of the tracker. */
   readonly color = input.required<string>();
   readonly caption = input.required<string>();
+  /** Wording of the tracker; vitamin D's when omitted. */
+  readonly texts = input<DayCalendarTexts>();
 
   protected readonly weekdays = WEEKDAYS;
+  protected readonly legend = computed(() => (this.texts() ?? DEFAULT_TEXTS).legend);
+
+  protected legendIcon(status: DayCalendarStatus): string | null {
+    return STATUS_ICONS[status];
+  }
 
   /** Weeks of 7 cells; the first and last week are padded with empty cells. */
   protected readonly weeks = computed(() => {
@@ -239,10 +267,13 @@ export class DayCalendar {
     if (days.length === 0) {
       return [];
     }
+    const texts = statusTexts((this.texts() ?? DEFAULT_TEXTS).given);
 
     const cells: CalendarCell[] = [
-      ...Array.from({ length: weekdayOfDay(days[0].date) }, (_, index) => paddingCell(`before-${index}`)),
-      ...days.map(toCell),
+      ...Array.from({ length: weekdayOfDay(days[0].date) }, (_, index) =>
+        paddingCell(`before-${index}`),
+      ),
+      ...days.map((day) => toCell(day, texts)),
     ];
     const trailing = (WEEKDAYS.length - (cells.length % WEEKDAYS.length)) % WEEKDAYS.length;
     for (let index = 0; index < trailing; index++) {

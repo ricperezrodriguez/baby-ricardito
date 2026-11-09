@@ -107,6 +107,26 @@ export const routes: Routes = [
         } satisfies DialogRouteData,
       },
       {
+        path: 'cortar-unas',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/nail-trimming-card/nail-trimming-dialog/nail-trimming-dialog').then(
+              (m) => m.NailTrimmingDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
+        path: 'cortar-unas/:recordId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/nail-trimming-card/nail-trimming-dialog/nail-trimming-dialog').then(
+              (m) => m.NailTrimmingDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
         path: 'notificaciones',
         component: DialogRouteHost,
         data: {
@@ -206,6 +226,26 @@ export const routes: Routes = [
               (m) => m.VitaminDDialog,
             ),
           returnTo: '/detalle/vitamina-d',
+        } satisfies DialogRouteData,
+      },
+    ],
+  },
+  {
+    path: 'detalle/cortar-unas',
+    loadComponent: () =>
+      import('@app/pages/nail-trimming-history/nail-trimming-history').then(
+        (m) => m.NailTrimmingHistory,
+      ),
+    children: [
+      {
+        path: ':recordId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/nail-trimming-card/nail-trimming-dialog/nail-trimming-dialog').then(
+              (m) => m.NailTrimmingDialog,
+            ),
+          returnTo: '/detalle/cortar-unas',
         } satisfies DialogRouteData,
       },
     ],

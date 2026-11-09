@@ -6,17 +6,22 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
+  DIAPER_POOP_ALERT_THRESHOLDS,
+  DiaperPoopAlertSettings,
+  DiaperPoopAlertThreshold,
+} from '@app/features/diaper/diaper.models';
+import { DiaperService } from '@app/features/diaper/diaper.service';
+import {
   FEEDING_OVERDUE_ALERT_THRESHOLDS,
   FeedingOverdueAlertSettings,
   FeedingOverdueAlertThreshold,
 } from '@app/features/feeding/feeding.models';
 import { FeedingService } from '@app/features/feeding/feeding.service';
 import {
-  DIAPER_POOP_ALERT_THRESHOLDS,
-  DiaperPoopAlertSettings,
-  DiaperPoopAlertThreshold,
-} from '@app/features/diaper/diaper.models';
-import { DiaperService } from '@app/features/diaper/diaper.service';
+  NAIL_TRIM_OVERDUE_ALERT_THRESHOLDS,
+  NailTrimOverdueAlertThreshold,
+} from '@app/features/nail-trimming/nail-trimming.models';
+import { NailTrimmingService } from '@app/features/nail-trimming/nail-trimming.service';
 import {
   SLEEP_AWAKE_ALERT_THRESHOLDS,
   SLEEP_LONG_NAP_ALERT_THRESHOLDS,
@@ -31,8 +36,12 @@ import {
   VitaminDMissedAlertSettings,
 } from '@app/features/vitamin-d/vitamin-d.models';
 import { VitaminDService } from '@app/features/vitamin-d/vitamin-d.service';
-import { AlertSettingsSection } from '@app/shared/alert-settings-section/alert-settings-section';
+import {
+  AlertSettings,
+  AlertSettingsSection,
+} from '@app/shared/alert-settings-section/alert-settings-section';
 import { createClock, formatElapsedSince, toIsoString } from '@shared';
+import { map } from 'rxjs';
 
 interface NotificationExample {
   readonly icon: string;
@@ -64,30 +73,32 @@ const POOP_THRESHOLD_OPTIONS = DIAPER_POOP_ALERT_THRESHOLDS.map((hours) => ({
   label: THRESHOLD_LABELS[hours],
 }));
 
-const AWAKE_THRESHOLD_OPTIONS = SLEEP_AWAKE_ALERT_THRESHOLDS.map((hours: SleepAwakeAlertThreshold) => ({
-  hours,
-  label: `${hours} h`,
-}));
+const AWAKE_THRESHOLD_OPTIONS = SLEEP_AWAKE_ALERT_THRESHOLDS.map(
+  (hours: SleepAwakeAlertThreshold) => ({
+    hours,
+    label: `${hours} h`,
+  }),
+);
 
-const LONG_NAP_THRESHOLD_OPTIONS = SLEEP_LONG_NAP_ALERT_THRESHOLDS.map((hours: SleepLongNapAlertThreshold) => ({
-  hours,
-  label: `${hours} h`,
-}));
+const LONG_NAP_THRESHOLD_OPTIONS = SLEEP_LONG_NAP_ALERT_THRESHOLDS.map(
+  (hours: SleepLongNapAlertThreshold) => ({
+    hours,
+    label: `${hours} h`,
+  }),
+);
 
 const VITAMIN_D_THRESHOLD_OPTIONS = VITAMIN_D_MISSED_ALERT_THRESHOLDS.map((hours) => ({
   hours,
   label: `${String(hours).padStart(2, '0')}:00`,
 }));
 
-// Ejemplos de contenido; las notificaciones reales aún no existen.
+// The threshold of this alert is in days, but the section's option contract names it `hours`.
+const NAIL_TRIM_THRESHOLD_OPTIONS = NAIL_TRIM_OVERDUE_ALERT_THRESHOLDS.map(
+  (days: NailTrimOverdueAlertThreshold) => ({ hours: days, label: `${days} días` }),
+);
+
+// Sample content; real notifications do not exist yet.
 const EXAMPLES: readonly NotificationExample[] = [
-  {
-    icon: 'schedule',
-    title: 'Hora de la toma',
-    message: 'Han pasado 3 h desde la última toma de pecho.',
-    minutesAgo: 4,
-    unread: true,
-  },
   {
     icon: 'stethoscope',
     title: 'Cita con el pediatra',
@@ -107,13 +118,6 @@ const EXAMPLES: readonly NotificationExample[] = [
     title: 'Actividad de un cuidador',
     message: 'Ana ha registrado un baño.',
     minutesAgo: 24 * 60,
-    unread: false,
-  },
-  {
-    icon: 'content_cut',
-    title: 'Corte de uñas',
-    message: 'Hace una semana del último corte de uñas.',
-    minutesAgo: 2 * 24 * 60,
     unread: false,
   },
 ];
@@ -206,6 +210,15 @@ const EXAMPLES: readonly NotificationExample[] = [
         [load]="loadVitaminDSettings"
         [save]="saveVitaminDSettings"
       />
+      <app-alert-settings-section
+        heading="Corte de uñas"
+        description="Avisar si pasa mucho tiempo desde el último corte de uñas"
+        loadingLabel="Cargando el aviso de corte de uñas"
+        errorMessage="No se pudo cargar el aviso de corte de uñas."
+        [options]="nailTrimmingOptions"
+        [load]="loadNailTrimmingSettings"
+        [save]="saveNailTrimmingSettings"
+      />
       <mat-divider />
       <p class="note">Ejemplos de avisos que podrás recibir. Todavía no están activos.</p>
       <mat-list>
@@ -235,6 +248,7 @@ export class NotificationsDialog {
   private readonly clock = createClock();
   private readonly diaperService = inject(DiaperService);
   private readonly feedingService = inject(FeedingService);
+  private readonly nailTrimmingService = inject(NailTrimmingService);
   private readonly sleepService = inject(SleepService);
   private readonly vitaminDService = inject(VitaminDService);
 
@@ -243,22 +257,40 @@ export class NotificationsDialog {
   protected readonly awakeOptions = AWAKE_THRESHOLD_OPTIONS;
   protected readonly longNapOptions = LONG_NAP_THRESHOLD_OPTIONS;
   protected readonly vitaminDOptions = VITAMIN_D_THRESHOLD_OPTIONS;
+  protected readonly nailTrimmingOptions = NAIL_TRIM_THRESHOLD_OPTIONS;
 
-  protected readonly loadFeedingSettings = () => this.feedingService.getOverdueAlertSettings(CURRENT_BABY_ID);
+  protected readonly loadFeedingSettings = () =>
+    this.feedingService.getOverdueAlertSettings(CURRENT_BABY_ID);
   protected readonly saveFeedingSettings = (settings: FeedingOverdueAlertSettings) =>
     this.feedingService.saveOverdueAlertSettings(CURRENT_BABY_ID, settings);
-  protected readonly loadPoopSettings = () => this.diaperService.getPoopAlertSettings(CURRENT_BABY_ID);
+  protected readonly loadPoopSettings = () =>
+    this.diaperService.getPoopAlertSettings(CURRENT_BABY_ID);
   protected readonly savePoopSettings = (settings: DiaperPoopAlertSettings) =>
     this.diaperService.savePoopAlertSettings(CURRENT_BABY_ID, settings);
-  protected readonly loadAwakeSettings = () => this.sleepService.getAwakeAlertSettings(CURRENT_BABY_ID);
+  protected readonly loadAwakeSettings = () =>
+    this.sleepService.getAwakeAlertSettings(CURRENT_BABY_ID);
   protected readonly saveAwakeSettings = (settings: SleepAwakeAlertSettings) =>
     this.sleepService.saveAwakeAlertSettings(CURRENT_BABY_ID, settings);
-  protected readonly loadLongNapSettings = () => this.sleepService.getLongNapAlertSettings(CURRENT_BABY_ID);
+  protected readonly loadLongNapSettings = () =>
+    this.sleepService.getLongNapAlertSettings(CURRENT_BABY_ID);
   protected readonly saveLongNapSettings = (settings: SleepLongNapAlertSettings) =>
     this.sleepService.saveLongNapAlertSettings(CURRENT_BABY_ID, settings);
-  protected readonly loadVitaminDSettings = () => this.vitaminDService.getMissedAlertSettings(CURRENT_BABY_ID);
+  protected readonly loadVitaminDSettings = () =>
+    this.vitaminDService.getMissedAlertSettings(CURRENT_BABY_ID);
   protected readonly saveVitaminDSettings = (settings: VitaminDMissedAlertSettings) =>
     this.vitaminDService.saveMissedAlertSettings(CURRENT_BABY_ID, settings);
+  // `AlertSettingsSection` speaks `thresholdHours`; here the threshold is in days.
+  protected readonly loadNailTrimmingSettings = () =>
+    this.nailTrimmingService
+      .getOverdueAlertSettings(CURRENT_BABY_ID)
+      .pipe(map(({ enabled, thresholdDays }) => ({ enabled, thresholdHours: thresholdDays })));
+  protected readonly saveNailTrimmingSettings = (settings: AlertSettings) =>
+    this.nailTrimmingService
+      .saveOverdueAlertSettings(CURRENT_BABY_ID, {
+        enabled: settings.enabled,
+        thresholdDays: settings.thresholdHours as NailTrimOverdueAlertThreshold,
+      })
+      .pipe(map(({ enabled, thresholdDays }) => ({ enabled, thresholdHours: thresholdDays })));
 
   protected readonly items = computed(() => {
     const now = this.clock.now();
