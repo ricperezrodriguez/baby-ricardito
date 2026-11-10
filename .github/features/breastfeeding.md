@@ -7,6 +7,7 @@
 - History-mode timer changes remain local until the user confirms `Modificar`. Cancelling or dismissing follows the existing unsaved-change discard confirmation.
 - Confirming with a running segment reopens the feed (`endTime: null`); confirming with all segments stopped keeps it finished.
 - Manual per-breast duration editing is disabled while a segment is running.
+- In creation mode, `Guardar` preserves any running segment and keeps the feed in progress (`endTime: null`) after closing. If all segments are stopped, it finishes the feed as before. The success notice distinguishes both outcomes.
 
 ## File Map
 

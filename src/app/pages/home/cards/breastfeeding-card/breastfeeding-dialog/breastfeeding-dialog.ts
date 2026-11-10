@@ -206,15 +206,13 @@ export class BreastfeedingDialog {
       return;
     }
 
-    const timestamp = this.clock.refresh();
-    const segments = this.segments().map((segment) =>
-      segment.end === null ? { ...segment, end: timestamp } : segment,
-    );
+    const running = this.activeBreast() !== null;
+    const endTime = running ? null : toIsoString(this.clock.refresh());
 
     await this.record.finish(
       'saving',
-      () => this.persist(segments, toIsoString(timestamp)),
-      'Toma guardada',
+      () => this.persist(this.segments(), endTime),
+      running ? 'Toma en curso. Puedes continuarla desde la tarjeta.' : 'Toma guardada',
     );
   }
 
