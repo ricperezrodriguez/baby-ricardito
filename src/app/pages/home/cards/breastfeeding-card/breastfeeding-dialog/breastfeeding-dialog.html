@@ -30,7 +30,7 @@
     <div class="side-controls">
       @for (side of sideControls(); track side.breast) {
         <div class="side-control">
-          @if (record.historyMode()) {
+          @if (record.readOnly()) {
             <span class="side-label">{{ side.label }}</span>
           } @else {
             <button
@@ -61,7 +61,7 @@
                 [value]="side.durationMs"
                 [min]="side.minMs"
                 [max]="side.maxMs"
-                [disabled]="timesDisabled()"
+                [disabled]="timesDisabled() || activeBreast() !== null"
                 (committed)="changeBreastDuration(side.breast, $event)"
               />
             } @else {

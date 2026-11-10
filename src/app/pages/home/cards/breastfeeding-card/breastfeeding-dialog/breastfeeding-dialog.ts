@@ -71,7 +71,7 @@ export class BreastfeedingDialog {
   private readonly segments = signal<TimedSegment[]>([]);
   private readonly notesModel = signal({ notes: '' });
   protected readonly photo = new RecordPhoto();
-  private readonly activeBreast = computed(() => activeBreastOf(this.segments()));
+  protected readonly activeBreast = computed(() => activeBreastOf(this.segments()));
   private readonly durationsMs = computed(() =>
     durationsByBreast(this.segments(), this.clock.now()),
   );
@@ -185,11 +185,12 @@ export class BreastfeedingDialog {
   }
 
   protected toggle(breast: Breast): void {
+    if (this.record.editsDisabled()) {
+      return;
+    }
     const timestamp = this.clock.refresh();
     const segments = toggleSegment(this.segments(), breast, timestamp);
-    this.segments.set(segments);
-    // Failures are reported by the HTTP error interceptor; the next change re-sends the full state.
-    this.persist(segments).catch(() => undefined);
+    this.applyEdit(segments);
   }
 
   /** Main button: starts editing a feed from the history, confirms its changes, or saves a new feed. */
@@ -221,7 +222,7 @@ export class BreastfeedingDialog {
   private async saveChanges(): Promise<void> {
     await this.record.saveChanges(() => {
       const segments = this.segments();
-      const end = segments.at(-1)?.end ?? this.sessionEnd();
+      const end = this.endTime();
       return this.persist(segments, end === null ? null : toIsoString(end));
     });
   }
