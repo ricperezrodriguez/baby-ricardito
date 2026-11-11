@@ -47,6 +47,8 @@ Details live in `.github/instructions/` (they load automatically for matching fi
 
 Always: confirm only irreversible or data-losing actions; report non-obvious results with `NotificationService`, never `MatSnackBar` directly.
 
+Push notifications (shown by the system at the top of the phone) always go through `PushNotificationService` (`src/app/core/push-notifications/`). A feature that needs one registers its type in `PUSH_NOTIFICATION_TYPES` (it then appears automatically in the side menu under `Notificaciones push`) and shows/closes it by that type; never call the Notification API or `SwPush` directly. Reference: `features/breastfeeding/breastfeeding-live-notification.service.ts`.
+
 ## Code quality and common elements
 
 - Follow good programming practices: small single-purpose units, no duplication, clear names, strict typing.

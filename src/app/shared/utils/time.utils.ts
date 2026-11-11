@@ -96,6 +96,11 @@ export function formatDurationText(milliseconds: number): string {
   return hours > 0 ? `${hours} h ${String(minutes).padStart(2, '0')} min` : `${minutes} min`;
 }
 
+/** Local time of day of an instant as `HH:mm`. */
+export function formatClockTime(epochMilliseconds: number): string {
+  return toDateTimeLocal(epochMilliseconds).slice(11, 16);
+}
+
 /** Local calendar day of an instant as `yyyy-MM-dd`. */
 export function localDateKey(epochMilliseconds: number): string {
   return toDateTimeLocal(epochMilliseconds).slice(0, 10);

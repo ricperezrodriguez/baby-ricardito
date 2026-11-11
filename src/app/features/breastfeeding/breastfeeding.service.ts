@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, Subject, map, tap } from 'rxjs';
 import { environment } from '@environments/environment';
 import {
   BREASTFEEDING_PHOTO_FIELD,
@@ -14,12 +14,27 @@ import {
   UpdateBreastfeedingSessionDto,
 } from '@app/features/breastfeeding/breastfeeding.models';
 
+/** Where a stored change was made: inside the app or from the system notification of the running feed. */
+export type BreastfeedingChangeOrigin = 'app' | 'notification';
+
+export interface BreastfeedingSessionChange {
+  readonly origin: BreastfeedingChangeOrigin;
+  /** Stored session after the change; `null` when it was deleted. */
+  readonly session: BreastfeedingSession | null;
+}
+
 @Service()
 export class BreastfeedingService {
   private readonly http = inject(HttpClient);
+  private readonly changesSubject = new Subject<BreastfeedingSessionChange>();
+
+  /** Every session created, updated or deleted, so the views showing the running feed stay in sync. */
+  readonly changes = this.changesSubject.asObservable();
 
   create(dto: CreateBreastfeedingSessionDto): Observable<BreastfeedingSession> {
-    return this.http.post<BreastfeedingSession>(this.sessionsUrl(dto.babyId), dto);
+    return this.http
+      .post<BreastfeedingSession>(this.sessionsUrl(dto.babyId), dto)
+      .pipe(tap((session) => this.emitChange('app', session)));
   }
 
   getPage(babyId: string, request: BreastfeedingSessionsPageRequest): Observable<BreastfeedingSessionsPage> {
@@ -54,12 +69,21 @@ export class BreastfeedingService {
     return this.http.put<BreastfeedingHistoryPreferences>(this.historyPreferencesUrl(babyId), preferences);
   }
 
-  update(babyId: string, sessionId: string, dto: UpdateBreastfeedingSessionDto): Observable<BreastfeedingSession> {
-    return this.http.patch<BreastfeedingSession>(this.sessionUrl(babyId, sessionId), dto);
+  update(
+    babyId: string,
+    sessionId: string,
+    dto: UpdateBreastfeedingSessionDto,
+    origin: BreastfeedingChangeOrigin = 'app',
+  ): Observable<BreastfeedingSession> {
+    return this.http
+      .patch<BreastfeedingSession>(this.sessionUrl(babyId, sessionId), dto)
+      .pipe(tap((session) => this.emitChange(origin, session)));
   }
 
   delete(babyId: string, sessionId: string): Observable<void> {
-    return this.http.delete<void>(this.sessionUrl(babyId, sessionId));
+    return this.http
+      .delete<void>(this.sessionUrl(babyId, sessionId))
+      .pipe(tap(() => this.emitChange('app', null)));
   }
 
   /** Uploads (or replaces) the photo of a session as multipart/form-data. */
@@ -71,6 +95,10 @@ export class BreastfeedingService {
 
   deletePhoto(babyId: string, sessionId: string): Observable<BreastfeedingSession> {
     return this.http.delete<BreastfeedingSession>(this.photoUrl(babyId, sessionId));
+  }
+
+  private emitChange(origin: BreastfeedingChangeOrigin, session: BreastfeedingSession | null): void {
+    this.changesSubject.next({ origin, session });
   }
 
   private photoUrl(babyId: string, sessionId: string): string {

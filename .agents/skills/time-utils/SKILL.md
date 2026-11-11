@@ -33,6 +33,7 @@ All time calculations live in `src/app/shared/utils/` and are imported from `@sh
 | `formatElapsedSince(iso, now)`            | Spanish text, such as "Hace 5 min", "Hace 2 h 10 min", or "Hace menos de 1 min".                                    |
 | `formatElapsedHoursOrDays(ms)`            | Whole hours ("36 h"), or whole days from 48 h on ("2 días"). Never negative.                                        |
 | `formatDurationText(ms)`                  | Short Spanish duration such as "45 s", "8 min" or "1 h 05 min". Never negative.                                     |
+| `formatClockTime(ms)`                     | Local time of day of an instant as `HH:mm`, such as "10:42".                                                        |
 | `localDateKey(ms)`                        | Local calendar day of an instant as `yyyy-MM-dd` (grouping by day).                                                 |
 | `localDaysBetween(from, to)`              | Whole local calendar days between the days of two instants (midnight to midnight, not 24 h blocks). Never negative. |
 | `localHour(ms)`                           | Local hour of the day (0-23) of an instant.                                                                         |

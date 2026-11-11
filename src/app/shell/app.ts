@@ -6,6 +6,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { InstallPrompt } from '@shared';
+import { NotificationSettings } from './notification-settings/notification-settings';
 
 interface SettingsItem {
   readonly icon: string;
@@ -16,6 +17,7 @@ interface SettingsItem {
 @Component({
   imports: [
     InstallPrompt,
+    NotificationSettings,
     RouterOutlet,
     RouterLink,
     MatButtonModule,

@@ -1,10 +1,13 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { disabled, form, FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
+import { NotificationService } from '@app/core/notification.service';
+import { PushNotificationService } from '@app/core/push-notifications/push-notification.service';
 import {
   activeBreastOf,
   durationsByBreast,
@@ -38,7 +41,7 @@ import {
   totalGaps,
   TrackingDialogLayout,
 } from '@shared';
-import { of, switchMap, tap } from 'rxjs';
+import { filter, of, switchMap, tap } from 'rxjs';
 
 const SIDES: readonly { breast: Breast; label: string }[] = [
   { breast: BREAST_SIDE.LEFT, label: 'Teta izquierda' },
@@ -62,6 +65,8 @@ const SIDES: readonly { breast: Breast; label: string }[] = [
 })
 export class BreastfeedingDialog {
   private readonly breastfeedingService = inject(BreastfeedingService);
+  private readonly push = inject(PushNotificationService);
+  private readonly notifications = inject(NotificationService);
   private readonly photoApi: PhotoApi<BreastfeedingSession> = {
     upload: (id, file) => this.breastfeedingService.uploadPhoto(CURRENT_BABY_ID, id, file),
     remove: (id) => this.breastfeedingService.deletePhoto(CURRENT_BABY_ID, id),
@@ -113,6 +118,30 @@ export class BreastfeedingDialog {
       this.restoreActiveSession();
     } else {
       this.loadSession(this.record.requestedId);
+    }
+
+    this.breastfeedingService.changes
+      .pipe(
+        filter(({ origin }) => origin === 'notification'),
+        takeUntilDestroyed(),
+      )
+      .subscribe(({ session }) => this.applyNotificationChange(session));
+  }
+
+  /** Play/stop/finish pressed on the system notification while this feed is open here. */
+  private applyNotificationChange(session: BreastfeedingSession | null): void {
+    if (session === null || session.id !== this.sessionId || this.record.historyMode()) {
+      return;
+    }
+
+    // Only the timer changed: the notes being typed are kept.
+    this.segments.set(toTimedSegments(session.segments));
+    this.sessionStart.set(parseTimestamp(session.startTime));
+    this.sessionEnd.set(session.endTime === null ? null : parseTimestamp(session.endTime));
+
+    if (session.status === 'finished' && !this.record.isBlocked()) {
+      this.notifications.success('Toma guardada');
+      this.record.close(session);
     }
   }
 
@@ -187,6 +216,10 @@ export class BreastfeedingDialog {
   protected toggle(breast: Breast): void {
     if (this.record.editsDisabled()) {
       return;
+    }
+    if (this.activeBreast() !== breast) {
+      // Asks for the notification permission inside the tap, as browsers require.
+      void this.push.offerOnFirstUse();
     }
     const timestamp = this.clock.refresh();
     const segments = toggleSegment(this.segments(), breast, timestamp);

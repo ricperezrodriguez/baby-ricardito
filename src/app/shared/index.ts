@@ -63,6 +63,7 @@ export {
   formatDayHeading,
   formatDayLabel,
   formatDuration,
+  formatClockTime,
   formatDurationText,
   formatElapsedHoursOrDays,
   formatElapsedSince,

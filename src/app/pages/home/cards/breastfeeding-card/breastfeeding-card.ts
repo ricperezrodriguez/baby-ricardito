@@ -1,4 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
   activeBreastOf,
@@ -53,6 +55,16 @@ export class BreastfeedingCard {
   );
 
   protected readonly latestState = this.latest.state;
+
+  constructor() {
+    // Changes made inside the app reload the card when the dialog closes.
+    this.breastfeedingService.changes
+      .pipe(
+        filter(({ origin }) => origin === 'notification'),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.reload());
+  }
 
   reload(): void {
     this.latest.reload();
