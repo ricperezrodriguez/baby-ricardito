@@ -57,6 +57,23 @@ export function parseOneOf<T extends string>(value: unknown, allowed: readonly T
   return found;
 }
 
+/** Validates the body of an "overdue N days" alert settings update: `{ enabled, thresholdDays }`. */
+export function parseDaysThresholdBody<T extends number>(
+  body: unknown,
+  thresholds: readonly T[],
+): { enabled: boolean; thresholdDays: T } {
+  const enabled = isRecord(body) ? body['enabled'] : null;
+  const thresholdDays = isRecord(body) ? body['thresholdDays'] : null;
+  const threshold = thresholds.find((allowed) => allowed === thresholdDays);
+  if (typeof enabled !== 'boolean' || threshold === undefined) {
+    throw badRequest(
+      'INVALID_PREFERENCES',
+      `"enabled" must be a boolean and "thresholdDays" one of: ${thresholds.join(', ')}.`,
+    );
+  }
+  return { enabled, thresholdDays: threshold };
+}
+
 /** Validates the body of a history-preferences update and removes duplicated charts. */
 export function parseHiddenChartsBody<T extends string>(body: unknown, validIds: readonly T[]): { hiddenCharts: T[] } {
   const hidden = isRecord(body) ? body['hiddenCharts'] : null;

@@ -26,6 +26,7 @@ import {
   BreastfeedingSession,
 } from '@app/features/breastfeeding/breastfeeding.models';
 import { BreastfeedingService } from '@app/features/breastfeeding/breastfeeding.service';
+import { RecordDeleteButton } from '@app/shared/record-dialog/record-delete-button';
 import {
   createClock,
   createWriteQueue,
@@ -57,6 +58,7 @@ const SIDES: readonly { breast: Breast; label: string }[] = [
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    RecordDeleteButton,
     RecordPhotoField,
     TrackingDialogLayout,
   ],

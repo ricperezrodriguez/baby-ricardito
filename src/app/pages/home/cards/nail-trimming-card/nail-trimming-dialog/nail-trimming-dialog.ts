@@ -1,9 +1,5 @@
-import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { disabled, form, maxLength } from '@angular/forms/signals';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
   formatNailAreas,
@@ -18,12 +14,16 @@ import {
 } from '@app/features/nail-trimming/nail-trimming.models';
 import { NailTrimmingService } from '@app/features/nail-trimming/nail-trimming.service';
 import { ChoiceGroup, ChoiceOption } from '@app/shared/choice-group/choice-group';
+import { RecordDeleteButton } from '@app/shared/record-dialog/record-delete-button';
 import { RecordNotesField } from '@app/shared/record-dialog/record-notes-field';
+import {
+  createTodayRecordHint,
+  RecordTodayHint,
+} from '@app/shared/record-dialog/record-today-hint';
 import {
   createClock,
   EditableTime,
   LoadingSpinner,
-  localDateKey,
   parseTimestamp,
   RecordDialogController,
   toIsoString,
@@ -46,12 +46,11 @@ type NailTrimPayload = Required<UpdateNailTrimDto>;
 @Component({
   imports: [
     ChoiceGroup,
-    DatePipe,
     EditableTime,
     LoadingSpinner,
-    MatButtonModule,
-    MatIconModule,
+    RecordDeleteButton,
     RecordNotesField,
+    RecordTodayHint,
     TrackingDialogLayout,
   ],
   styleUrl: './nail-trimming-dialog.scss',
@@ -68,8 +67,6 @@ export class NailTrimmingDialog {
   protected readonly trimmedAt = signal(this.clock.now());
   protected readonly areas = signal<readonly NailTrimArea[]>(['hands']);
   private readonly formModel = signal({ notes: '' });
-  /** Instant of the latest recorded trim, only known in creation mode (for the "already trimmed today" hint). */
-  private readonly latestTrimmedAt = signal<number | null>(null);
 
   private readonly snapshot = computed(() =>
     JSON.stringify({
@@ -103,19 +100,11 @@ export class NailTrimmingDialog {
   /** A trim cannot be in the future; it moves forward with the clock. */
   protected readonly maxTrimmedAt = computed(() => this.clock.now());
 
-  /**
-   * Instant of the trim already recorded today, when the chosen time is also today (creation only).
-   * It is a non-blocking notice and does not count as a change.
-   */
-  protected readonly todayTrimAt = computed(() => {
-    const latest = this.latestTrimmedAt();
-    if (this.record.historyMode() || latest === null) {
-      return null;
-    }
-    const today = localDateKey(this.clock.now());
-    return localDateKey(latest) === today && localDateKey(this.trimmedAt()) === today
-      ? latest
-      : null;
+  /** Non-blocking "already trimmed today" notice (creation only). */
+  protected readonly todayHint = createTodayRecordHint({
+    clock: this.clock,
+    chosenAt: () => this.trimmedAt(),
+    enabled: () => !this.record.historyMode(),
   });
 
   // Text of the read-only view.
@@ -125,7 +114,9 @@ export class NailTrimmingDialog {
     if (this.record.requestedId === null) {
       // The preselected zones are part of the baseline: closing an untouched dialog is silent.
       this.record.captureBaseline();
-      this.loadLatest();
+      this.todayHint.load(this.nailTrimmingService.getLatest(CURRENT_BABY_ID), (latest) =>
+        parseTimestamp(latest.trimmedAt),
+      );
     } else {
       this.loadTrim(this.record.requestedId);
     }
@@ -166,19 +157,6 @@ export class NailTrimmingDialog {
       return;
     }
     await this.record.leaveDiscarding(this.record.dirty());
-  }
-
-  /** Loads the latest trim in the background for the hint; a failure just means no hint. */
-  private loadLatest(): void {
-    this.nailTrimmingService
-      .getLatest(CURRENT_BABY_ID)
-      .pipe(takeUntilDestroyed())
-      .subscribe({
-        next: (latest) =>
-          this.latestTrimmedAt.set(latest === null ? null : parseTimestamp(latest.trimmedAt)),
-        // The HTTP error interceptor already reports the failure.
-        error: () => undefined,
-      });
   }
 
   private loadTrim(trimId: string): void {

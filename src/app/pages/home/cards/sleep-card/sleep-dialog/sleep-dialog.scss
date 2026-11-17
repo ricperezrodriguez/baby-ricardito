@@ -6,7 +6,6 @@
 
 // The large clock of the ongoing sleep (above the summary) brings its own spacing.
 @include record.summary(0);
-@include record.delete-button;
 @include record.notes-field;
 @include record.over-limit;
 

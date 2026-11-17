@@ -1,0 +1,97 @@
+<app-tracking-dialog-layout
+  [title]="record.dialogTitle()"
+  [saveLabel]="record.saveLabel()"
+  [saveDisabled]="saveDisabled()"
+  [saving]="record.saving()"
+  [busy]="record.busy()"
+  [confirmBeforeDiscard]="false"
+  (save)="onSave()"
+  (dismiss)="close()"
+  (discard)="close()"
+>
+  <app-record-delete-button dialogActionsStart [record]="record" (delete)="deleteBath()" />
+  @if (record.loading()) {
+    <app-loading-spinner [label]="record.texts.loadingLabel" />
+  } @else {
+    <section class="summary" aria-labelledby="summary-title">
+      <h3 id="summary-title" class="summary-title">Datos del baño</h3>
+      <dl class="summary-list">
+        <div class="summary-row">
+          <dt>Fecha y hora</dt>
+          <dd>
+            <app-editable-time
+              label="Fecha y hora"
+              kind="datetime"
+              [value]="bathedAt()"
+              [max]="maxBathedAt()"
+              [disabled]="record.editsDisabled()"
+              (committed)="bathedAt.set($event)"
+            />
+          </dd>
+        </div>
+        @if (record.readOnly()) {
+          <div class="summary-row">
+            <dt>Lavado de pelo</dt>
+            <dd>{{ hairWashed() ? 'Sí' : 'No' }}</dd>
+          </div>
+          <div class="summary-row">
+            <dt>Reacción</dt>
+            <dd>
+              @if (reaction(); as reaction) {
+                <app-bath-reaction-icon class="reaction-value" [reaction]="reaction" />
+              } @else {
+                —
+              }
+            </dd>
+          </div>
+        }
+      </dl>
+
+      <app-record-today-hint subject="un baño" [at]="todayHint.at()" />
+
+      @if (!record.readOnly()) {
+        <div class="field-group">
+          <button
+            matButton="outlined"
+            type="button"
+            class="hair-toggle"
+            [attr.aria-pressed]="hairWashed()"
+            [disabled]="record.editsDisabled()"
+            (click)="toggleHairWashed()"
+          >
+            <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">shower</mat-icon>
+            Lavado de pelo
+          </button>
+        </div>
+
+        <div class="field-group">
+          <h4 id="reaction-title" class="group-title">Reacción</h4>
+          <div class="reaction-group" role="group" aria-labelledby="reaction-title">
+            @for (option of reactionOptions; track option.value) {
+              <button
+                matButton="outlined"
+                type="button"
+                class="reaction-toggle"
+                [attr.data-reaction]="option.value"
+                [attr.aria-label]="option.label"
+                [attr.aria-pressed]="reaction() === option.value"
+                [disabled]="record.editsDisabled()"
+                (click)="toggleReaction(option.value)"
+              >
+                <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">{{
+                  option.icon
+                }}</mat-icon>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <app-record-notes-field
+        [field]="form.notes"
+        [maxLength]="notesMaxLength"
+        [readOnly]="record.readOnly()"
+      />
+    </section>
+  }
+</app-tracking-dialog-layout>

@@ -1,8 +1,6 @@
 import { Component, computed, inject, linkedSignal, signal, untracked } from '@angular/core';
 import { disabled, form, FormField, maxLength } from '@angular/forms/signals';
-import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
@@ -12,6 +10,7 @@ import {
   UpdateSleepSessionDto,
 } from '@app/features/sleep/sleep.models';
 import { SleepService } from '@app/features/sleep/sleep.service';
+import { RecordDeleteButton } from '@app/shared/record-dialog/record-delete-button';
 import {
   createClock,
   createWriteQueue,
@@ -32,10 +31,9 @@ import { firstValueFrom } from 'rxjs';
     FormField,
     LoadingSpinner,
     MatFormFieldModule,
-    MatIconModule,
-    MatButtonModule,
     MatInputModule,
     MatSlideToggleModule,
+    RecordDeleteButton,
     TrackingDialogLayout,
   ],
   styleUrl: './sleep-dialog.scss',

@@ -6,6 +6,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
+  BATH_OVERDUE_ALERT_THRESHOLDS,
+  BathOverdueAlertThreshold,
+} from '@app/features/bath/bath.models';
+import { BathService } from '@app/features/bath/bath.service';
+import {
   DIAPER_POOP_ALERT_THRESHOLDS,
   DiaperPoopAlertSettings,
   DiaperPoopAlertThreshold,
@@ -95,6 +100,11 @@ const VITAMIN_D_THRESHOLD_OPTIONS = VITAMIN_D_MISSED_ALERT_THRESHOLDS.map((hours
 // The threshold of this alert is in days, but the section's option contract names it `hours`.
 const NAIL_TRIM_THRESHOLD_OPTIONS = NAIL_TRIM_OVERDUE_ALERT_THRESHOLDS.map(
   (days: NailTrimOverdueAlertThreshold) => ({ hours: days, label: `${days} días` }),
+);
+
+// Same days-as-`hours` mapping as the nail-trimming alert.
+const BATH_THRESHOLD_OPTIONS = BATH_OVERDUE_ALERT_THRESHOLDS.map(
+  (days: BathOverdueAlertThreshold) => ({ hours: days, label: `${days} días` }),
 );
 
 // Sample content; real notifications do not exist yet.
@@ -219,6 +229,15 @@ const EXAMPLES: readonly NotificationExample[] = [
         [load]="loadNailTrimmingSettings"
         [save]="saveNailTrimmingSettings"
       />
+      <app-alert-settings-section
+        heading="Baño"
+        description="Avisar si pasa mucho tiempo desde el último baño"
+        loadingLabel="Cargando el aviso de baño"
+        errorMessage="No se pudo cargar el aviso de baño."
+        [options]="bathOptions"
+        [load]="loadBathSettings"
+        [save]="saveBathSettings"
+      />
       <mat-divider />
       <p class="note">Ejemplos de avisos que podrás recibir. Todavía no están activos.</p>
       <mat-list>
@@ -246,6 +265,7 @@ const EXAMPLES: readonly NotificationExample[] = [
 })
 export class NotificationsDialog {
   private readonly clock = createClock();
+  private readonly bathService = inject(BathService);
   private readonly diaperService = inject(DiaperService);
   private readonly feedingService = inject(FeedingService);
   private readonly nailTrimmingService = inject(NailTrimmingService);
@@ -258,6 +278,7 @@ export class NotificationsDialog {
   protected readonly longNapOptions = LONG_NAP_THRESHOLD_OPTIONS;
   protected readonly vitaminDOptions = VITAMIN_D_THRESHOLD_OPTIONS;
   protected readonly nailTrimmingOptions = NAIL_TRIM_THRESHOLD_OPTIONS;
+  protected readonly bathOptions = BATH_THRESHOLD_OPTIONS;
 
   protected readonly loadFeedingSettings = () =>
     this.feedingService.getOverdueAlertSettings(CURRENT_BABY_ID);
@@ -289,6 +310,18 @@ export class NotificationsDialog {
       .saveOverdueAlertSettings(CURRENT_BABY_ID, {
         enabled: settings.enabled,
         thresholdDays: settings.thresholdHours as NailTrimOverdueAlertThreshold,
+      })
+      .pipe(map(({ enabled, thresholdDays }) => ({ enabled, thresholdHours: thresholdDays })));
+  // Same days -> `thresholdHours` mapping as the nail-trimming alert.
+  protected readonly loadBathSettings = () =>
+    this.bathService
+      .getOverdueAlertSettings(CURRENT_BABY_ID)
+      .pipe(map(({ enabled, thresholdDays }) => ({ enabled, thresholdHours: thresholdDays })));
+  protected readonly saveBathSettings = (settings: AlertSettings) =>
+    this.bathService
+      .saveOverdueAlertSettings(CURRENT_BABY_ID, {
+        enabled: settings.enabled,
+        thresholdDays: settings.thresholdHours as BathOverdueAlertThreshold,
       })
       .pipe(map(({ enabled, thresholdDays }) => ({ enabled, thresholdHours: thresholdDays })));
 

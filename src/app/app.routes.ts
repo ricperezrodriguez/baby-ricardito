@@ -127,6 +127,26 @@ export const routes: Routes = [
         } satisfies DialogRouteData,
       },
       {
+        path: 'bano',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/bath-card/bath-dialog/bath-dialog').then(
+              (m) => m.BathDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
+        path: 'bano/:recordId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/bath-card/bath-dialog/bath-dialog').then(
+              (m) => m.BathDialog,
+            ),
+        } satisfies DialogRouteData,
+      },
+      {
         path: 'notificaciones',
         component: DialogRouteHost,
         data: {
@@ -246,6 +266,24 @@ export const routes: Routes = [
               (m) => m.NailTrimmingDialog,
             ),
           returnTo: '/detalle/cortar-unas',
+        } satisfies DialogRouteData,
+      },
+    ],
+  },
+  {
+    path: 'detalle/bano',
+    loadComponent: () =>
+      import('@app/pages/bath-history/bath-history').then((m) => m.BathHistory),
+    children: [
+      {
+        path: ':recordId',
+        component: DialogRouteHost,
+        data: {
+          dialog: () =>
+            import('@app/pages/home/cards/bath-card/bath-dialog/bath-dialog').then(
+              (m) => m.BathDialog,
+            ),
+          returnTo: '/detalle/bano',
         } satisfies DialogRouteData,
       },
     ],

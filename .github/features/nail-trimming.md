@@ -58,7 +58,7 @@ Decision record of the nail trimming tracker and its "overdue" alert. Read it be
 
 ## Declined or deferred
 
-- Refactors of duplicated code between dialogs/stores (save/close methods, delete button, "already today" hint), a shared `RecordAside`: deferred.
+- Refactors of duplicated code between dialogs/stores (save/close methods), a shared `RecordAside`: deferred. The delete button (`RecordDeleteButton`), the "already today" hint (`RecordTodayHint`) and the mock interval/threshold helpers were later made common with the bath feature (see `bath.md`).
 - Photo, injury/bleeding flag, tool used, per-zone alert thresholds, average interval line on the card: not included.
 
 ## Open points

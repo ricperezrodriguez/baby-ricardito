@@ -87,3 +87,37 @@ export function createEmptyHourMap(): HourMap {
 export function average(values: number[]): number | null {
   return values.length === 0 ? null : Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
+
+/** Whole calendar days between two local days (`yyyy-MM-dd`); negative when `laterDate` is earlier. */
+export function wholeDaysBetween(earlierDate: string, laterDate: string): number {
+  return Math.round((Date.parse(laterDate) - Date.parse(earlierDate)) / MS_PER_DAY);
+}
+
+/** Average with one decimal; null without values. */
+export function averageDays(values: number[]): number | null {
+  return values.length === 0
+    ? null
+    : Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 10) / 10;
+}
+
+/** Whole local days between two consecutive records, assigned to the local day of the later one. */
+export interface DayInterval {
+  /** Local day of the later record, `yyyy-MM-dd` */
+  date: string;
+  days: number;
+}
+
+/**
+ * Intervals of a single series of records sorted ascending by instant. Two records on the same
+ * local day make no interval; each one is assigned to the day of the most recent record.
+ */
+export function listDayIntervals(records: readonly { date: string }[]): DayInterval[] {
+  const intervals: DayInterval[] = [];
+  for (let index = 1; index < records.length; index += 1) {
+    const days = wholeDaysBetween(records[index - 1].date, records[index].date);
+    if (days > 0) {
+      intervals.push({ date: records[index].date, days });
+    }
+  }
+  return intervals;
+}

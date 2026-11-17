@@ -9,19 +9,7 @@
   (dismiss)="close()"
   (discard)="close()"
 >
-  @if (record.historyMode()) {
-    <button
-      dialogActionsStart
-      matIconButton
-      type="button"
-      class="delete-button"
-      [attr.aria-label]="record.texts.deleteLabel"
-      [disabled]="record.busy() || record.saving()"
-      (click)="deleteFeed()"
-    >
-      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
-    </button>
-  }
+  <app-record-delete-button dialogActionsStart [record]="record" (delete)="deleteFeed()" />
   @if (record.loading()) {
     <app-loading-spinner [label]="record.texts.loadingLabel" />
   } @else {

@@ -6,6 +6,8 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { computeBathReply } from '@app/core/mocks/mock-backend.bath.routes';
+import { MockBathStore } from '@app/core/mocks/mock-backend.bath.store';
 import { computeBottleReply } from '@app/core/mocks/mock-backend.bottle.routes';
 import { MockBottleStore } from '@app/core/mocks/mock-backend.bottle.store';
 import { computeDiaperReply } from '@app/core/mocks/mock-backend.diaper.routes';
@@ -41,6 +43,7 @@ interface MockStores {
   feeding: MockFeedingStore;
   vitaminD: MockVitaminDStore;
   nailTrimming: MockNailTrimmingStore;
+  bath: MockBathStore;
 }
 
 const SESSIONS_ROUTE_PATTERN =
@@ -87,6 +90,11 @@ function computeReply(req: HttpRequest<unknown>, stores: MockStores): MockReply 
   const nailTrimmingReply = computeNailTrimmingReply(req, stores.nailTrimming);
   if (nailTrimmingReply !== null) {
     return nailTrimmingReply;
+  }
+
+  const bathReply = computeBathReply(req, stores.bath);
+  if (bathReply !== null) {
+    return bathReply;
   }
 
   const statsBabyId = matchBabyRoute(req.url, STATS_ROUTE_PATTERN);
@@ -206,6 +214,7 @@ export const mockBackendInterceptor: HttpInterceptorFn = (
     feeding: inject(MockFeedingStore),
     vitaminD: inject(MockVitaminDStore),
     nailTrimming: inject(MockNailTrimmingStore),
+    bath: inject(MockBathStore),
   };
 
   // The delay is applied to errors too, so they are materialized as values first.

@@ -1,7 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { disabled, form, FormField, maxLength } from '@angular/forms/signals';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import {
@@ -23,6 +21,7 @@ import {
 } from '@app/features/diaper/diaper.models';
 import { DiaperService } from '@app/features/diaper/diaper.service';
 import { ChoiceGroup, ChoiceOption } from '@app/shared/choice-group/choice-group';
+import { RecordDeleteButton } from '@app/shared/record-dialog/record-delete-button';
 import { RecordNotesField } from '@app/shared/record-dialog/record-notes-field';
 import {
   createClock,
@@ -92,9 +91,8 @@ type DiaperPayload = Required<Omit<CreateDiaperChangeDto, 'babyId'>>;
     EditableTime,
     FormField,
     LoadingSpinner,
-    MatButtonModule,
-    MatIconModule,
     MatSlideToggleModule,
+    RecordDeleteButton,
     RecordNotesField,
     RecordPhotoField,
     TrackingDialogLayout,

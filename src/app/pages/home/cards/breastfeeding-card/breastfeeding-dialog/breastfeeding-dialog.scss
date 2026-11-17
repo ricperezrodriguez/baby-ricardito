@@ -5,7 +5,6 @@
 }
 
 @include record.summary;
-@include record.delete-button;
 @include record.notes-field;
 
 .side-controls {

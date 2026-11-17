@@ -1,4 +1,9 @@
-import { createLocalMomentReader, listDateKeys } from '@app/core/mocks/mock-backend.time';
+import {
+  averageDays,
+  createLocalMomentReader,
+  listDateKeys,
+  listDayIntervals,
+} from '@app/core/mocks/mock-backend.time';
 import {
   NAIL_AREAS,
   NailTrim,
@@ -10,8 +15,6 @@ import {
   NailTrimmingStatsTotals,
 } from '@app/features/nail-trimming/nail-trimming.models';
 
-const MS_PER_DAY = 86_400_000;
-
 interface LocalTrim {
   trim: NailTrim;
   at: number;
@@ -22,31 +25,14 @@ function includesArea({ trim }: LocalTrim, area: NailTrimArea): boolean {
   return trim.areas.includes(area);
 }
 
-function wholeDaysBetween(earlierDate: string, laterDate: string): number {
-  return Math.round((Date.parse(laterDate) - Date.parse(earlierDate)) / MS_PER_DAY);
-}
-
-/** Average with one decimal; null without values. */
-function averageDays(values: number[]): number | null {
-  return values.length === 0
-    ? null
-    : Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 10) / 10;
-}
-
 /**
  * Intervals of one zone over the whole history (ascending). Two trims on the same local day make no
  * interval; the result is assigned to the day of the most recent trim.
  */
 function listZoneIntervals(allTrims: LocalTrim[], area: NailTrimArea): NailTrimInterval[] {
-  const zoneTrims = allTrims.filter((entry) => includesArea(entry, area));
-  const intervals: NailTrimInterval[] = [];
-  for (let index = 1; index < zoneTrims.length; index += 1) {
-    const days = wholeDaysBetween(zoneTrims[index - 1].date, zoneTrims[index].date);
-    if (days > 0) {
-      intervals.push({ date: zoneTrims[index].date, area, days });
-    }
-  }
-  return intervals;
+  return listDayIntervals(allTrims.filter((entry) => includesArea(entry, area))).map(
+    ({ date, days }) => ({ date, area, days }),
+  );
 }
 
 function latestInstant(allTrims: LocalTrim[], area: NailTrimArea): string | null {

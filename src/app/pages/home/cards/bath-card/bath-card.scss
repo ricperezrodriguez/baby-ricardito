@@ -1,0 +1,41 @@
+// Same aside layout as the vitamin D and nail-trimming cards: centered column, label capped so it wraps from 360 px.
+.hair-status {
+  align-items: center;
+  color: var(--app-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 4rem;
+
+  // Same size as the diaper type icon (`--diaper-type-icon-size` default) so the asides look alike.
+  mat-icon {
+    font-size: 2.25rem;
+    height: 2.25rem;
+    line-height: 2.25rem;
+    width: 2.25rem;
+  }
+
+  // The text carries the meaning; the icon colour only reinforces it.
+  &.washed {
+    color: var(--app-ink);
+
+    mat-icon {
+      color: var(--app-card-bath);
+    }
+  }
+}
+
+// Latest bath reaction below the hair status: a bit smaller than the hair icon so it reads as secondary.
+// The icon is 1em and brings its own colours (not affected by `.washed`).
+.bath-reaction {
+  font-size: 1.75rem;
+  margin-top: 0.15rem;
+}
+
+.hair-status-label {
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.25;
+  max-width: 6rem;
+  text-align: center;
+}

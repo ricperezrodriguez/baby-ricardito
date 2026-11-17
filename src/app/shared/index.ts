@@ -47,6 +47,13 @@ export type {
   RecordGender,
 } from '@app/shared/record-dialog/record-dialog';
 export { RecordNotesField } from '@app/shared/record-dialog/record-notes-field';
+export { RecordDeleteButton } from '@app/shared/record-dialog/record-delete-button';
+export type { RecordDeleteState } from '@app/shared/record-dialog/record-delete-button';
+export { createTodayRecordHint, RecordTodayHint } from '@app/shared/record-dialog/record-today-hint';
+export type {
+  TodayRecordHint,
+  TodayRecordHintOptions,
+} from '@app/shared/record-dialog/record-today-hint';
 export { RecordPhoto } from '@app/shared/record-dialog/record-photo';
 export type { PhotoApi, PhotoRecord } from '@app/shared/record-dialog/record-photo';
 export { RecordPhotoField } from '@app/shared/record-dialog/record-photo-field';

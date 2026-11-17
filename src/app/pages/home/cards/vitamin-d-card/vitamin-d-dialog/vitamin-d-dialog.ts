@@ -1,9 +1,6 @@
-import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { disabled, form, max, maxLength, min, validate } from '@angular/forms/signals';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import { formatDrops } from '@app/features/vitamin-d/vitamin-d.labels';
 import {
@@ -16,12 +13,16 @@ import {
 } from '@app/features/vitamin-d/vitamin-d.models';
 import { VitaminDService } from '@app/features/vitamin-d/vitamin-d.service';
 import { QuickValueField } from '@app/shared/quick-value-field/quick-value-field';
+import { RecordDeleteButton } from '@app/shared/record-dialog/record-delete-button';
 import { RecordNotesField } from '@app/shared/record-dialog/record-notes-field';
+import {
+  createTodayRecordHint,
+  RecordTodayHint,
+} from '@app/shared/record-dialog/record-today-hint';
 import {
   createClock,
   EditableTime,
   LoadingSpinner,
-  localDateKey,
   parseTimestamp,
   RecordDialogController,
   toIsoString,
@@ -37,13 +38,12 @@ type VitaminDPayload = Required<UpdateVitaminDDoseDto>;
 
 @Component({
   imports: [
-    DatePipe,
     EditableTime,
     LoadingSpinner,
-    MatButtonModule,
-    MatIconModule,
     QuickValueField,
+    RecordDeleteButton,
     RecordNotesField,
+    RecordTodayHint,
     TrackingDialogLayout,
   ],
   styleUrl: './vitamin-d-dialog.scss',
@@ -63,8 +63,6 @@ export class VitaminDDialog {
     drops: null,
     notes: '',
   });
-  /** Instant of the latest recorded dose, only known in creation mode (for the "already given today" hint). */
-  private readonly latestGivenAt = signal<number | null>(null);
 
   private readonly snapshot = computed(() =>
     JSON.stringify({
@@ -113,17 +111,11 @@ export class VitaminDDialog {
   /** A dose cannot be in the future; it moves forward with the clock. */
   protected readonly maxGivenAt = computed(() => this.clock.now());
 
-  /**
-   * Instant of the dose already given today, when the chosen time is also today (creation only).
-   * It is a non-blocking notice: several doses per day are allowed and it does not count as a change.
-   */
-  protected readonly todayDoseAt = computed(() => {
-    const latest = this.latestGivenAt();
-    if (this.record.historyMode() || latest === null) {
-      return null;
-    }
-    const today = localDateKey(this.clock.now());
-    return localDateKey(latest) === today && localDateKey(this.givenAt()) === today ? latest : null;
+  /** Non-blocking "already given today" notice (creation only): several doses per day are allowed. */
+  protected readonly todayHint = createTodayRecordHint({
+    clock: this.clock,
+    chosenAt: () => this.givenAt(),
+    enabled: () => !this.record.historyMode(),
   });
 
   // Texts of the read-only view.
@@ -188,7 +180,7 @@ export class VitaminDDialog {
       .pipe(takeUntilDestroyed())
       .subscribe({
         next: (latest) => {
-          this.latestGivenAt.set(latest === null ? null : parseTimestamp(latest.givenAt));
+          this.todayHint.latestAt.set(latest === null ? null : parseTimestamp(latest.givenAt));
           this.finishPrefill(latest?.drops ?? null);
         },
         // The HTTP error interceptor already reports the failure; the drops just stay empty.

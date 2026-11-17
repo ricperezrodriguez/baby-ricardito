@@ -9,19 +9,7 @@
   (dismiss)="close()"
   (discard)="close()"
 >
-  @if (record.historyMode()) {
-    <button
-      dialogActionsStart
-      matIconButton
-      type="button"
-      class="delete-button"
-      [attr.aria-label]="record.texts.deleteLabel"
-      [disabled]="record.busy() || record.saving()"
-      (click)="deleteTrim()"
-    >
-      <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">delete</mat-icon>
-    </button>
-  }
+  <app-record-delete-button dialogActionsStart [record]="record" (delete)="deleteTrim()" />
   @if (record.loading()) {
     <app-loading-spinner [label]="record.texts.loadingLabel" />
   } @else {
@@ -49,15 +37,7 @@
         }
       </dl>
 
-      @if (!record.historyMode()) {
-        <div class="today-hint" role="status">
-          @if (todayTrimAt(); as trimAt) {
-            <p class="hint">
-              Hoy ya se registró un corte de uñas a las {{ trimAt | date: 'HH:mm' }}.
-            </p>
-          }
-        </div>
-      }
+      <app-record-today-hint subject="un corte de uñas" [at]="todayHint.at()" />
 
       @if (!record.readOnly()) {
         <div class="field-group">

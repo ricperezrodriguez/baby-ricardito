@@ -1,0 +1,47 @@
+<app-tracking-card
+  link="/detalle/bano"
+  title="Baño"
+  dialogRoute="bano"
+  [recordRoute]="recordRoute()"
+  recordLabel="Ver el último baño"
+  (closed)="reload()"
+  accent="var(--app-card-bath)"
+  headerColor="var(--app-card-bath)"
+>
+  <svg
+    cardIcon
+    viewBox="0 0 32 32"
+    fill="none"
+    [attr.width]="iconSize"
+    [attr.height]="iconSize"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="1.6"
+  >
+    <path
+      d="M5 16V9a3 3 0 0 1 6 0M3 16h26M5 16v4a6 6 0 0 0 6 6h10a6 6 0 0 0 6-6v-4M9 26l-1 2m15-2 1 2"
+    />
+    <circle cx="16" cy="11" r="1" />
+    <circle cx="21" cy="8" r="1.5" />
+  </svg>
+  <app-async-state
+    [status]="latestState().status"
+    loadingLabel="Cargando el último baño"
+    emptyMessage="Todavía no hay baños registrados."
+    errorMessage="No se pudo cargar el último baño."
+    (retry)="reload()"
+  >
+    @if (elapsed(); as elapsedText) {
+      <app-last-record-summary [title]="elapsedText" [secondaryLines]="secondaryLines()">
+        <div summaryAside class="hair-status" [class.washed]="hairWashed()">
+          <mat-icon fontSet="material-symbols-outlined" aria-hidden="true">shower</mat-icon>
+          <span class="hair-status-label">{{ hairText() }}</span>
+          @if (reaction(); as reaction) {
+            <app-bath-reaction-icon class="bath-reaction" [reaction]="reaction" />
+          }
+        </div>
+      </app-last-record-summary>
+    }
+  </app-async-state>
+</app-tracking-card>

@@ -1,0 +1,85 @@
+@use 'shared/record-dialog/record-dialog' as record;
+
+:host {
+  display: block;
+}
+
+// Nothing above the summary, unlike the dialogs that start with their own controls.
+@include record.summary(0);
+@include record.field-group;
+
+// On/off toggles (hair wash and reaction faces) with the look of a selected/unselected `app-choice-group`
+// option: filled vs outlined, so the state never relies on colour only (`aria-pressed` gives it to
+// assistive technologies). Focus ring and disabled look also mirror `app-choice-group`. `--toggle-color`
+// is the fill of the selected state (green by default, the reaction colour for the faces).
+.hair-toggle,
+.reaction-toggle {
+  --toggle-color: var(--app-green);
+  --mat-button-outlined-container-height: 3rem;
+  --mat-button-outlined-container-shape: 1.5rem;
+  --mat-button-outlined-outline-width: 2px;
+  --mat-button-outlined-outline-color: var(--app-muted);
+  --mat-button-outlined-label-text-color: var(--app-ink);
+  --mat-button-outlined-label-text-weight: 500;
+}
+
+.hair-toggle[aria-pressed='true'],
+.reaction-toggle[aria-pressed='true'] {
+  --mat-button-outlined-outline-color: var(--toggle-color);
+  --mat-button-outlined-label-text-color: var(--app-on-green);
+  --mat-button-outlined-state-layer-color: var(--app-on-green);
+  --mat-button-outlined-ripple-color: color-mix(in srgb, var(--app-on-green) 12%, transparent);
+  background-color: var(--toggle-color);
+}
+
+.hair-toggle:focus-visible,
+.reaction-toggle:focus-visible {
+  outline: 3px solid var(--app-focus);
+  outline-offset: 2px;
+}
+
+// Keep the on/off colours while saving instead of Material's grey disabled look, dimmed like `app-choice-group`.
+.hair-toggle:disabled,
+.reaction-toggle:disabled {
+  --mat-button-outlined-disabled-label-text-color: var(--mat-button-outlined-label-text-color);
+  --mat-button-outlined-disabled-outline-color: var(--mat-button-outlined-outline-color);
+  opacity: 0.6;
+}
+
+.reaction-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+// Icon-only faces: the face takes the reaction colour (same tokens as `app-bath-reaction-icon`, all with
+// at least 3:1 contrast on white) and turns light on the filled background once selected.
+button.reaction-toggle {
+  --mat-button-outlined-label-text-color: var(--toggle-color);
+  --mat-button-outlined-horizontal-padding: 0;
+  min-width: 4rem;
+
+  &[data-reaction='happy'] {
+    --toggle-color: var(--app-green);
+  }
+
+  &[data-reaction='neutral'] {
+    --toggle-color: var(--app-muted);
+  }
+
+  &[data-reaction='sad'] {
+    --toggle-color: var(--app-coral);
+  }
+
+  // utton outweighs Material's own icon sizing inside buttons.
+  > .mat-icon {
+    font-size: 1.75rem;
+    height: 1.75rem;
+    margin: 0;
+    width: 1.75rem;
+  }
+}
+
+.reaction-value {
+  font-size: 1.5rem;
+}

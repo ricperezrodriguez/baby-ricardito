@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { BathCard } from '@app/pages/home/cards/bath-card';
+import { BathOverdueAlert } from '@app/pages/home/bath-overdue-alert/bath-overdue-alert';
+import { BathCard } from '@app/pages/home/cards/bath-card/bath-card';
 import { BottleCard } from '@app/pages/home/cards/bottle-card/bottle-card';
 import { BreastPumpCard } from '@app/pages/home/cards/breast-pump-card';
 import { BreastfeedingCard } from '@app/pages/home/cards/breastfeeding-card/breastfeeding-card';
@@ -24,6 +25,7 @@ import { VitaminDMissedAlert } from '@app/pages/home/vitamin-d-missed-alert/vita
     SleepLongNapAlert,
     VitaminDMissedAlert,
     NailTrimmingOverdueAlert,
+    BathOverdueAlert,
     BreastfeedingCard,
     BottleCard,
     DiaperCard,

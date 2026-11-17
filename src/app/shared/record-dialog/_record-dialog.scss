@@ -40,14 +40,6 @@
   }
 }
 
-/// Trash button of the history mode, on the left of the footer.
-@mixin delete-button {
-  .delete-button {
-    color: var(--app-coral);
-    margin-inline-end: auto;
-  }
-}
-
 /// Form control block of a creation dialog: `.field-group` wraps a `.group-title` heading and its control
 /// (`app-choice-group`, input, toggle...).
 @mixin field-group {

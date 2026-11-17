@@ -1,7 +1,7 @@
 import { badRequest, unprocessableEntity } from '@app/core/mocks/mock-backend.errors';
 import {
-  isRecord,
   parseBody,
+  parseDaysThresholdBody,
   parseIsoDate,
   parseNotes,
 } from '@app/core/mocks/mock-backend.parsing';
@@ -96,14 +96,5 @@ export function assertValidTrim(input: NailTrimInput, now: number): void {
 
 /** Validates the body of the overdue alert update. */
 export function parseOverdueAlertBody(body: unknown): NailTrimOverdueAlertSettings {
-  const enabled = isRecord(body) ? body['enabled'] : null;
-  const thresholdDays = isRecord(body) ? body['thresholdDays'] : null;
-  const threshold = NAIL_TRIM_OVERDUE_ALERT_THRESHOLDS.find((allowed) => allowed === thresholdDays);
-  if (typeof enabled !== 'boolean' || threshold === undefined) {
-    throw badRequest(
-      'INVALID_PREFERENCES',
-      `"enabled" must be a boolean and "thresholdDays" one of: ${NAIL_TRIM_OVERDUE_ALERT_THRESHOLDS.join(', ')}.`,
-    );
-  }
-  return { enabled, thresholdDays: threshold };
+  return parseDaysThresholdBody(body, NAIL_TRIM_OVERDUE_ALERT_THRESHOLDS);
 }

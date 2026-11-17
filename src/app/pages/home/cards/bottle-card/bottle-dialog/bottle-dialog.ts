@@ -1,8 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { disabled, form, max, maxLength, min, required, validate } from '@angular/forms/signals';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { CURRENT_BABY_ID } from '@app/core/current-baby';
 import { BOTTLE_MILK_TYPE_LABELS, formatMl } from '@app/features/bottle/bottle.labels';
 import {
@@ -19,6 +17,7 @@ import {
 import { BottleService } from '@app/features/bottle/bottle.service';
 import { ChoiceGroup, ChoiceOption } from '@app/shared/choice-group/choice-group';
 import { QuickValueField } from '@app/shared/quick-value-field/quick-value-field';
+import { RecordDeleteButton } from '@app/shared/record-dialog/record-delete-button';
 import { RecordNotesField } from '@app/shared/record-dialog/record-notes-field';
 import {
   createClock,
@@ -48,9 +47,8 @@ type BottlePayload = Required<UpdateBottleFeedDto>;
     ChoiceGroup,
     EditableTime,
     LoadingSpinner,
-    MatButtonModule,
-    MatIconModule,
     QuickValueField,
+    RecordDeleteButton,
     RecordNotesField,
     TrackingDialogLayout,
   ],
