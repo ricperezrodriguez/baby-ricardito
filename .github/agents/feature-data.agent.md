@@ -19,7 +19,7 @@ Return:
 1. **Reference analysis**: what in breastfeeding is feature-specific vs. generic (candidates for common elements).
 2. **Proposed domain model**: table of fields (name, type, required, meaning). Include DTOs (create/update), pagination, stats and history preferences shapes.
 3. **Endpoints**: list under `/babies/:babyId/<feature>/...` mirroring breastfeeding (sessions/records, stats, preferences).
-4. **Mock plan**: new files `mock-backend.<feature>.*` registered in `mock-backend.interceptor.ts`, deterministic seed (~60 days), validation errors.
+4. **Mock plan**: new files `mock-backend.<feature>.*` registered in `mock-backend.handler.ts` (loaded on demand by the thin `mock-backend.interceptor.ts`; never import mock code from anywhere else), deterministic seed (~60 days), validation errors.
 5. **Common elements**: what can be reused or extracted (generic route matching, pagination, stats helpers, base types). Extracting from existing breastfeeding code needs user approval; flag it as a proposal.
 6. **Questions** (never assume) and **optional ideas**.
 

@@ -24,13 +24,14 @@ Decision record of the bath tracker and its "overdue" alert. Read it before touc
 ### Home card (`pages/home/cards/bath-card/`)
 
 - Title "Baño", placeholder SVG kept (stroke 1.6). Summary title "Hace X" since the latest bath.
-- Aside: `shower` icon + "Con pelo" / "Sin pelo" of the latest bath (icon muted when not washed; the text carries the meaning).
+- Aside: `shower` icon + "Con pelo" / "Sin pelo" of the latest bath (icon muted when not washed; the text carries the meaning). Below it, the latest bath's reaction face (`BathReactionIcon`, 1.75rem, no visible text); nothing when the latest bath has no reaction.
 - Secondary lines: "‹día› · HH:mm" of the latest bath, "Pelo · Hace X" ("Pelo · Sin registros" when never), "Media: cada N d" (stats of the last 30 days, hidden when `null`). If only the stats fail, the last two lines are hidden.
 - States through `app-async-state`. Reloads only on the `closed` event. Tapping the content opens the latest bath.
 
 ### Creation modal (`bath-card/bath-dialog/`)
 
-- Section "Datos del baño". Fields: date and time (`EditableTime`, starts now, `max` = now), "Lavado de pelo" icon toggle (`shower`, `aria-pressed`, **unchecked by default**, part of the baseline), notes (`RecordNotesField`, 500).
+- Section "Datos del baño". Fields: date and time (`EditableTime`, starts now, `max` = now), "Lavado de pelo" icon toggle (`shower`, `aria-pressed`, **unchecked by default**, part of the baseline), "Reacción" (three face-only toggle buttons in a `role="group"`, `aria-pressed`, accessible names "Contento" / "Neutro" / "Triste"; **optional, none selected on open**, tapping the selected face clears it; same look as the hair toggle), notes (`RecordNotesField`, 500).
+- Creation sends `reaction` only when chosen; every edit `PATCH` sends `reaction` (value or `null`). View mode shows a "Reacción" row with the face, or "—".
 - Non-blocking `RecordTodayHint` "Hoy ya se registró un baño a las HH:mm." (creation only).
 - Nothing is stored on open; one `POST` on save. History mode: view ("Lavado de pelo: Sí/No"), edit (one `PATCH`) and delete with confirmations.
 
@@ -39,7 +40,8 @@ Decision record of the bath tracker and its "overdue" alert. Read it before touc
 - Title "Historial de baños". Periods 30 / 90 / 180 days, default 30. No hour map.
 - Summary: Baños, Días con baño ("N de M"), Lavados de pelo, Intervalo medio, Intervalo más largo, Último baño, Último lavado de pelo.
 - Charts (all visible by default, hideable, in this order): "Calendario de baños" (`app-day-calendar`), "Días entre baños" (bars), "Con / sin lavado de pelo" (donut).
-- List grouped by day ("N baños"); rows with HH:mm, "Baño", `shower` icon + "Con pelo" when washed, and a notes flag.
+- List grouped by day ("N baños"); rows with HH:mm, "Baño", `shower` icon + "Con pelo" when washed, the reaction face (1.1rem, when present) and a notes flag.
+- The reaction has **no chart and no summary item** (declined: reaction donut, "Baños contentos" count).
 
 ### "Overdue" alert on Home (`pages/home/bath-overdue-alert/`)
 
@@ -65,6 +67,8 @@ Decision record of the bath tracker and its "overdue" alert. Read it before touc
 ## Open points
 
 - Not validated in the browser yet.
+- Reaction: in the card and list the face is announced only as "Contento" / "Neutro" / "Triste" (no "Reacción:" context); the three reaction buttons are separate Tab stops (no arrow-key navigation like `app-choice-group`). Both pending user decision.
+- The mock backend is now lazy-loaded (`mock-backend.interceptor.ts` is a thin wrapper that imports `mock-backend.handler.ts` on the first API request), approved to free the initial bundle budget (1000 kB -> 930 kB).
 - Wording of the hair state differs: card/list "Con pelo"/"Sin pelo", modal "Lavado de pelo: Sí/No", chart "Con/Sin lavado de pelo".
 - `formatBathIntervalDays` duplicates the private interval formatter of the nail-trimming history page; the card has its own short "N d" formatter.
 - The aside layout (`.hair-status`) repeats the vitamin D / nail trimming aside CSS (a shared aside mixin was proposed, not agreed).
@@ -74,8 +78,8 @@ Decision record of the bath tracker and its "overdue" alert. Read it before touc
 
 ## File map
 
-- Data: `features/bath/` (`bath.models.ts`, `bath.labels.ts`, `bath.service.ts`).
-- Mocks: `core/mocks/mock-backend.bath.{store,routes,validation,stats,seed}.ts`, `mock-backend.interceptor.ts`.
+- Data: `features/bath/` (`bath.models.ts`, `bath.labels.ts`, `bath.service.ts`, `bath-reaction-icon.ts`).
+- Mocks: `core/mocks/mock-backend.bath.{store,routes,validation,stats,seed}.ts`, `mock-backend.handler.ts`.
 - Card: `pages/home/cards/bath-card/`. Modal: `pages/home/cards/bath-card/bath-dialog/`.
 - History: `pages/bath-history/` (`bath-history.ts`, `bath-history-charts.ts`, `bath-history-list/`).
 - Alert: `pages/home/bath-overdue-alert/`; settings section in `shared/notifications-dialog/`.

@@ -8,7 +8,8 @@
   min-width: 4rem;
 
   // Same size as the diaper type icon (`--diaper-type-icon-size` default) so the asides look alike.
-  mat-icon {
+  // Direct child only, so it never reaches the reaction face (which sizes itself in `.bath-reaction`).
+  > mat-icon {
     font-size: 2.25rem;
     height: 2.25rem;
     line-height: 2.25rem;
@@ -19,7 +20,7 @@
   &.washed {
     color: var(--app-ink);
 
-    mat-icon {
+    > mat-icon {
       color: var(--app-card-bath);
     }
   }

@@ -70,7 +70,7 @@ Decision record of the vitamin D tracker and its "not given today" alert. Read i
 ## File map
 
 - Data: `features/vitamin-d/` (`vitamin-d.models.ts`, `vitamin-d.labels.ts`, `vitamin-d.service.ts`).
-- Mocks: `core/mocks/mock-backend.vitamin-d.{store,routes,validation,stats,seed}.ts`, `mock-backend.interceptor.ts`.
+- Mocks: `core/mocks/mock-backend.vitamin-d.{store,routes,validation,stats,seed}.ts`, `mock-backend.handler.ts`.
 - Card: `pages/home/cards/vitamin-d-card/`. Modal: `pages/home/cards/vitamin-d-card/vitamin-d-dialog/`.
 - History: `pages/vitamin-d-history/` (`vitamin-d-history.ts`, `vitamin-d-history-charts.ts`, `vitamin-d-history-list/`).
 - Alert: `pages/home/vitamin-d-missed-alert/`; settings section in `shared/notifications-dialog/`.

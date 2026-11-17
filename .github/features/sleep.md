@@ -79,6 +79,6 @@ Decision record of the sleep tracker. Read it before touching any sleep code and
 ## Map
 
 - Data: `features/sleep/` (`sleep.models.ts`, `sleep.service.ts`, `sleep.span.ts`).
-- Mocks: `core/mocks/mock-backend.sleep.*.ts`, wired in `mock-backend.interceptor.ts`. Seed: about 60 days, deterministic, no ongoing sleep.
+- Mocks: `core/mocks/mock-backend.sleep.*.ts`, wired in `mock-backend.handler.ts`. Seed: about 60 days, deterministic, no ongoing sleep.
 - Endpoints: `/babies/:babyId/sleep/sessions`, `/sleep/stats`, `/preferences/sleep-history`, `/preferences/sleep-awake-alert`, `/preferences/sleep-long-nap-alert`.
 - UI: `pages/home/cards/sleep-card/` (card and `sleep-dialog/`), `pages/sleep-history/`, `pages/home/sleep-awake-alert/`, `pages/home/sleep-long-nap-alert/`, `shared/alert-settings-section/`, `shared/notifications-dialog/`.

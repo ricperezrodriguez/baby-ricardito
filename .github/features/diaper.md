@@ -92,6 +92,6 @@ Decision record of the diaper tracker. Read it before touching any diaper code a
 ## Map
 
 - Data: `features/diaper/` (`diaper.models.ts`, `diaper.service.ts`, `diaper.labels.ts`).
-- Mocks: `core/mocks/mock-backend.diaper.*.ts`, wired in `mock-backend.interceptor.ts`. Seed: about 60 days, deterministic, with a recent poop so the alert does not fire by default.
+- Mocks: `core/mocks/mock-backend.diaper.*.ts`, wired in `mock-backend.handler.ts`. Seed: about 60 days, deterministic, with a recent poop so the alert does not fire by default.
 - Endpoints: `/babies/:babyId/diaper/changes` (list, create, read, update, delete, `/photo`), `/diaper/stats`, `/preferences/diaper-history`, `/preferences/diaper-poop-alert`.
 - UI: `pages/home/cards/diaper-card/` (card and `diaper-dialog/`), `pages/diaper-history/`, `pages/home/diaper-poop-alert/`, `shared/notifications-dialog/`, `shared/diaper-type-icon/`.

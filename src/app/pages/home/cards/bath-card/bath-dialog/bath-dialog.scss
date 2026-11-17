@@ -71,7 +71,7 @@ button.reaction-toggle {
     --toggle-color: var(--app-coral);
   }
 
-  // utton outweighs Material's own icon sizing inside buttons.
+  // The `button.` prefix outweighs Material's own icon sizing and spacing inside outlined buttons.
   > .mat-icon {
     font-size: 1.75rem;
     height: 1.75rem;

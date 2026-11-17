@@ -75,7 +75,7 @@ Decision record of the bottle tracker and of the combined feeding alert. Read it
 ## File map
 
 - Data: `features/bottle/` (`bottle.models.ts`, `bottle.labels.ts`, `bottle.service.ts`), `features/feeding/` (`feeding.models.ts`, `feeding.service.ts`).
-- Mocks: `core/mocks/mock-backend.bottle.{store,routes,validation,stats,seed}.ts`, `mock-backend.feeding.{store,routes,validation}.ts`, `mock-backend.interceptor.ts`.
+- Mocks: `core/mocks/mock-backend.bottle.{store,routes,validation,stats,seed}.ts`, `mock-backend.feeding.{store,routes,validation}.ts`, `mock-backend.handler.ts`.
 - Card: `pages/home/cards/bottle-card/`. Modal: `pages/home/cards/bottle-card/bottle-dialog/`.
 - History: `pages/bottle-history/` (`bottle-history.ts`, `bottle-history-charts.ts`, `bottle-history-list/`).
 - Alert: `pages/home/feeding-overdue-alert/`; settings section in `shared/notifications-dialog/`.

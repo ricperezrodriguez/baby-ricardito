@@ -68,7 +68,7 @@ The charts cannot depend on the paginated list, so the backend aggregates the da
 - Only **finished** feeds count.
 - Response (`BreastfeedingStats`): `days` (one entry per local day of the range, zeros included: `feeds`, `totalSeconds`, `leftSeconds`, `rightSeconds`, `averageDurationSeconds`, `averageIntervalSeconds`), `totals` (same fields for the whole range) and `hourMap` (`number[7][24]`, feeds started per weekday, **Monday = 0**, and hour).
 - Averages are `null` when there is no data. The interval is measured start-to-start against the previous feed, even if it was on the previous day, and is assigned to the day of the later feed.
-- The mock implementation is `src/app/core/mocks/mock-backend.stats.ts` (routing in `mock-backend.interceptor.ts`, state in `mock-backend.store.ts`). The mock seed generates ~60 days of feeds so the charts have content; keep it deterministic.
+- The mock implementation is `src/app/core/mocks/mock-backend.stats.ts` (routing in `mock-backend.handler.ts`, lazy-loaded by `mock-backend.interceptor.ts`; state in `mock-backend.store.ts`). The mock seed generates ~60 days of feeds so the charts have content; keep it deterministic.
 - Reload the stats (and the list) when the record modal closes (see "Refresh").
 
 ## Record list

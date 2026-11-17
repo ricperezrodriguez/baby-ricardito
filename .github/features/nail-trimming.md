@@ -71,7 +71,7 @@ Decision record of the nail trimming tracker and its "overdue" alert. Read it be
 ## File map
 
 - Data: `features/nail-trimming/` (`nail-trimming.models.ts`, `nail-trimming.labels.ts`, `nail-trimming.service.ts`).
-- Mocks: `core/mocks/mock-backend.nail-trimming.{store,routes,validation,stats,seed}.ts`, `mock-backend.interceptor.ts`. Seed: latest trim 7 days ago (hands, 17:00), so the alert shows with the default threshold.
+- Mocks: `core/mocks/mock-backend.nail-trimming.{store,routes,validation,stats,seed}.ts`, `mock-backend.handler.ts`. Seed: latest trim 7 days ago (hands, 17:00), so the alert shows with the default threshold.
 - Card: `pages/home/cards/nail-trimming-card/`. Modal: `pages/home/cards/nail-trimming-card/nail-trimming-dialog/`.
 - History: `pages/nail-trimming-history/` (`nail-trimming-history.ts`, `nail-trimming-history-charts.ts`, `nail-trimming-history-list/`).
 - Alert: `pages/home/nail-trimming-overdue-alert/`; settings section in `shared/notifications-dialog/`.
