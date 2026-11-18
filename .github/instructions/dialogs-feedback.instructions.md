@@ -1,5 +1,5 @@
 ---
-applyTo: 'src/app/**/*dialog*/**,src/app/shared/dialog-route/**,src/app/shared/tracking-dialog/**,src/app/shared/confirmation-dialog/**,src/app/app.routes.ts'
+applyTo: 'apps/web/src/app/**/*dialog*/**,apps/web/src/app/shared/dialog-route/**,apps/web/src/app/shared/tracking-dialog/**,apps/web/src/app/shared/confirmation-dialog/**,apps/web/src/app/app.routes.ts'
 ---
 
 # View / edit record modal

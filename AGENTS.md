@@ -30,10 +30,10 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 ## Project Architecture
 
-- Pages live in `src/app/pages/` (English folder names, e.g. `home`, `breastfeeding-history`) and are lazy-loaded in `src/app/app.routes.ts` with `loadComponent`; use `RouterLink` for navigation.
-- The persistent shell (Material nav + `RouterOutlet`) is in `src/app/shell/`; shell-specific styles go in `shell/app.scss`. Global Material 3 theme is in `src/styles.scss`.
+- Pages live in `apps/web/src/app/pages/` (English folder names, e.g. `home`, `breastfeeding-history`) and are lazy-loaded in `apps/web/src/app/app.routes.ts` with `loadComponent`; use `RouterLink` for navigation.
+- The persistent shell (Material nav + `RouterOutlet`) is in `apps/web/src/app/shell/`; shell-specific styles go in `shell/app.scss`. Global Material 3 theme is in `apps/web/src/styles.scss`.
 - Page titles and visible copy are in Spanish, as are the URL paths (see Language); component and file names are English.
-- Time logic (start/end, durations, gaps, countdowns, elapsed text, clocks, day grouping) must use the helpers in `src/app/shared/utils/` imported from `@shared`; never re-implement them or use ad-hoc `interval`/`Date.now()` in components. Load the `time-utils` skill (`.agents/skills/time-utils/SKILL.md`) first.
+- Time logic (start/end, durations, gaps, countdowns, elapsed text, clocks, day grouping) must use the helpers in `apps/web/src/app/shared/utils/` imported from `@shared`; never re-implement them or use ad-hoc `interval`/`Date.now()` in components. Load the `time-utils` skill (`.agents/skills/time-utils/SKILL.md`) first.
 
 ## Modals and history pages
 
@@ -47,12 +47,12 @@ Details live in `.github/instructions/` (they load automatically for matching fi
 
 Always: confirm only irreversible or data-losing actions; report non-obvious results with `NotificationService`, never `MatSnackBar` directly.
 
-Push notifications (shown by the system at the top of the phone) always go through `PushNotificationService` (`src/app/core/push-notifications/`). A feature that needs one registers its type in `PUSH_NOTIFICATION_TYPES` (it then appears automatically in the side menu under `Notificaciones push`) and shows/closes it by that type; never call the Notification API or `SwPush` directly. Reference: `features/breastfeeding/breastfeeding-live-notification.service.ts`.
+Push notifications (shown by the system at the top of the phone) always go through `PushNotificationService` (`apps/web/src/app/core/push-notifications/`). A feature that needs one registers its type in `PUSH_NOTIFICATION_TYPES` (it then appears automatically in the side menu under `Notificaciones push`) and shows/closes it by that type; never call the Notification API or `SwPush` directly. Reference: `features/breastfeeding/breastfeeding-live-notification.service.ts`.
 
 ## Code quality and common elements
 
 - Follow good programming practices: small single-purpose units, no duplication, clear names, strict typing.
-- Whenever something can be shared (component, util, type, SCSS mixin, service helper), reuse the existing common element or create one in `src/app/shared/` (or shared domain code under `src/app/features/`) instead of copying code between features. Refactoring existing features into a common element must be agreed with the user first.
+- Whenever something can be shared (component, util, type, SCSS mixin, service helper), reuse the existing common element or create one in `apps/web/src/app/shared/` (or shared domain code under `apps/web/src/app/features/`) instead of copying code between features. Refactoring existing features into a common element must be agreed with the user first.
 
 ## Agents
 
@@ -68,4 +68,4 @@ Each tracking feature has a decision record in `.github/features/<feature>.md` (
 ## Build and Test
 
 From the repo root: `npm run start` (dev server), `npm run build` (production build). There is no lint script.
-Do NOT run tests or create/extend specs (including the scaffolded `src/app/app.spec.ts`); this project does not maintain them.
+Do NOT run tests or create/extend specs (including the scaffolded `apps/web/src/app/app.spec.ts`); this project does not maintain them.

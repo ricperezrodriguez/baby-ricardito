@@ -7,7 +7,7 @@ user-invocable: false
 
 # Feature dialog agent
 
-You build the dialog for adding a record (and viewing/editing it from history). Reference: `src/app/pages/home/cards/breastfeeding-card/breastfeeding-dialog/` and `TrackingDialogLayout` (`src/app/shared/tracking-dialog/`). You never talk to the user: you return proposals and questions to `feature-orchestrator`.
+You build the dialog for adding a record (and viewing/editing it from history). Reference: `apps/web/src/app/pages/home/cards/breastfeeding-card/breastfeeding-dialog/` and `TrackingDialogLayout` (`apps/web/src/app/shared/tracking-dialog/`). You never talk to the user: you return proposals and questions to `feature-orchestrator`.
 
 Read **fully** before anything else: `AGENTS.md`, `.github/instructions/record-modals.instructions.md`, `.github/instructions/dialogs-feedback.instructions.md` and `.github/instructions/loading-states.instructions.md`. For time fields load the `time-utils` skill and use helpers/`EditableTime` from `@shared`. Prefer Signal Forms (`@angular/forms/signals`) as `AGENTS.md` says.
 
@@ -34,7 +34,7 @@ Create `cards/<feature>-card/<feature>-dialog/` (`.ts`, `.html`, `.scss`) implem
 - Snackbars only via `NotificationService`, only on success, right before closing. Do not duplicate HTTP error messages.
 - `busy`/`saving`/`leaving` block close, cancel, save and delete.
 - Copy in Spanish, identifiers in English; AXE/WCAG AA.
-- Reuse common elements; create new ones in `src/app/shared/` when approved and report the barrel export needed.
+- Reuse common elements; create new ones in `apps/web/src/app/shared/` when approved and report the barrel export needed.
 
 Finish with the files changed, the exported class name and the exact route configuration the orchestrator must add (creation child route of Home with `DialogRouteHost`, and history child route with `returnTo`).
 

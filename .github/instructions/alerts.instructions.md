@@ -1,12 +1,12 @@
 ---
-applyTo: "src/app/pages/home/**,src/app/shared/alerts/**"
+applyTo: "apps/web/src/app/pages/home/**,apps/web/src/app/shared/alerts/**"
 ---
 
 # Home alerts
 
-Dismissible notices shown at the top of Home when something needs the user's attention (e.g. `Han pasado 26 h sin hacer caca.`). Reference: `src/app/pages/home/diaper-poop-alert/`. Every new alert (bottle, sleep, vitamin D, ...) reuses the shared pieces below; never copy the markup, styles or `localStorage` code of an existing alert.
+Dismissible notices shown at the top of Home when something needs the user's attention (e.g. `Han pasado 26 h sin hacer caca.`). Reference: `apps/web/src/app/pages/home/diaper-poop-alert/`. Every new alert (bottle, sleep, vitamin D, ...) reuses the shared pieces below; never copy the markup, styles or `localStorage` code of an existing alert.
 
-## Shared pieces (`@shared`, folder `src/app/shared/alerts/`)
+## Shared pieces (`@shared`, folder `apps/web/src/app/shared/alerts/`)
 
 | Piece | Responsibility |
 |---|---|

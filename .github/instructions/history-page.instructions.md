@@ -1,10 +1,10 @@
 ---
-applyTo: 'src/app/pages/*-history/**,src/app/shared/history/**,src/app/shared/in-view/**,src/app/features/**,src/app/core/mocks/**,src/app/app.routes.ts'
+applyTo: 'apps/web/src/app/pages/*-history/**,apps/web/src/app/shared/history/**,apps/web/src/app/shared/in-view/**,apps/web/src/app/features/**,apps/web/src/app/core/mocks/**,apps/web/src/app/app.routes.ts'
 ---
 
 # History page ("Ver historial")
 
-Every tracking card has a "Ver historial" link that opens a detail page with the whole history of that tracker. The reference implementation is the breastfeeding one: route `/detalle/pecho`, code in `src/app/pages/breastfeeding-history/` (`BreastfeedingHistory`). Other trackers (bottle, diaper, sleep, and any future card) must reproduce the same behavior in their own `detalle/<category>` page (`src/app/pages/<tracker>-history/`), replacing the `PendingHistory` placeholder (`detalle/:category`). Keep the specific `detalle/<category>` route declared **before** the `detalle/:category` fallback in `src/app/app.routes.ts`.
+Every tracking card has a "Ver historial" link that opens a detail page with the whole history of that tracker. The reference implementation is the breastfeeding one: route `/detalle/pecho`, code in `apps/web/src/app/pages/breastfeeding-history/` (`BreastfeedingHistory`). Other trackers (bottle, diaper, sleep, and any future card) must reproduce the same behavior in their own `detalle/<category>` page (`apps/web/src/app/pages/<tracker>-history/`), replacing the `PendingHistory` placeholder (`detalle/:category`). Keep the specific `detalle/<category>` route declared **before** the `detalle/:category` fallback in `apps/web/src/app/app.routes.ts`.
 
 The modal that opens from a row is described in `.github/instructions/dialogs-feedback.instructions.md`.
 
@@ -29,7 +29,7 @@ The sections below describe the behavior these pieces implement.
 4. **Records** section: the list grouped by day with infinite scroll (see "Record list": shared `createPagedList` + `app-history-list`).
 5. `<router-outlet />` for the record modal (child route `:recordId`).
 
-All visible copy is in Spanish. Design tokens come from `src/styles.scss` (`--app-*`); chart colors in `history-charts.ts` mirror them (left `#99620d`, right `#285c8c`, lines `#155f56`). Layout must work from 360 px wide with no horizontal scroll.
+All visible copy is in Spanish. Design tokens come from `apps/web/src/styles.scss` (`--app-*`); chart colors in `history-charts.ts` mirror them (left `#99620d`, right `#285c8c`, lines `#155f56`). Layout must work from 360 px wide with no horizontal scroll.
 
 ## Charts
 
@@ -68,12 +68,12 @@ The charts cannot depend on the paginated list, so the backend aggregates the da
 - Only **finished** feeds count.
 - Response (`BreastfeedingStats`): `days` (one entry per local day of the range, zeros included: `feeds`, `totalSeconds`, `leftSeconds`, `rightSeconds`, `averageDurationSeconds`, `averageIntervalSeconds`), `totals` (same fields for the whole range) and `hourMap` (`number[7][24]`, feeds started per weekday, **Monday = 0**, and hour).
 - Averages are `null` when there is no data. The interval is measured start-to-start against the previous feed, even if it was on the previous day, and is assigned to the day of the later feed.
-- The mock implementation is `src/app/core/mocks/mock-backend.stats.ts` (routing in `mock-backend.handler.ts`, lazy-loaded by `mock-backend.interceptor.ts`; state in `mock-backend.store.ts`). The mock seed generates ~60 days of feeds so the charts have content; keep it deterministic.
+- The mock implementation is `apps/web/src/app/core/mocks/mock-backend.stats.ts` (routing in `mock-backend.handler.ts`, lazy-loaded by `mock-backend.interceptor.ts`; state in `mock-backend.store.ts`). The mock seed generates ~60 days of feeds so the charts have content; keep it deterministic.
 - Reload the stats (and the list) when the record modal closes (see "Refresh").
 
 ## Record list
 
-The list of records (grouped by day, infinite scroll) is the same for **every** tracker, so its layout, styles, states and paging logic live only in shared code (`src/app/shared/history/history-list/`, exported from `@shared`). A tracker's list component (`pages/<tracker>-history/<tracker>-history-list/`) only provides what is specific: how a record becomes a row, the day summary and the content of the row. **Never copy markup, styles or paging code from another tracker's list.**
+The list of records (grouped by day, infinite scroll) is the same for **every** tracker, so its layout, styles, states and paging logic live only in shared code (`apps/web/src/app/shared/history/history-list/`, exported from `@shared`). A tracker's list component (`pages/<tracker>-history/<tracker>-history-list/`) only provides what is specific: how a record becomes a row, the day summary and the content of the row. **Never copy markup, styles or paging code from another tracker's list.**
 
 | Piece                                 | Responsibility                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -132,6 +132,6 @@ Rules:
 ## Adding the history page for another tracker
 
 1. Add the models and service calls for its stats and preferences (same contract, different path segment and charts) and the mock implementation. The service needs `getPage({ limit, offset })` returning `{ items, total }`.
-2. Create `src/app/pages/<tracker>-history/` (English name, e.g. `bottle-history`) reusing the shared pieces: `createHistoryStats` + `app-history-page` (see "Shared page pieces"; `shared/history/`, never through the `@shared` barrel because of Chart.js) and, for the list **`createPagedList` + `app-history-list`/`app-history-day`/`appHistoryRow`/`app-record-flags`** as described in "Record list". Do not write the list paging, states or row layout again.
+2. Create `apps/web/src/app/pages/<tracker>-history/` (English name, e.g. `bottle-history`) reusing the shared pieces: `createHistoryStats` + `app-history-page` (see "Shared page pieces"; `shared/history/`, never through the `@shared` barrel because of Chart.js) and, for the list **`createPagedList` + `app-history-list`/`app-history-day`/`appHistoryRow`/`app-record-flags`** as described in "Record list". Do not write the list paging, states or row layout again.
 3. Declare `detalle/<category>` with its `:recordId` child route (see the modal file) before `detalle/:category`.
 4. Point the card's `link` to that route.

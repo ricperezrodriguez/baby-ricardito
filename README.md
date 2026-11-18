@@ -29,21 +29,23 @@ Para generar la compilación de producción:
 npm run build
 ```
 
-Los archivos generados se encuentran en `dist/`.
+Los archivos generados se encuentran en `apps/web/dist/`.
 
 ## Configuración
 
 | Entorno    | Backend                             | Configuración                                 |
 | ---------- | ----------------------------------- | --------------------------------------------- |
-| Desarrollo | Simulado, con latencia configurable | `src/environments/environment.development.ts` |
-| Producción | API HTTP en `/api`                  | `src/environments/environment.ts`             |
+| Desarrollo | Simulado, con latencia configurable | `apps/web/src/environments/environment.development.ts` |
+| Producción | API HTTP en `/api`                  | `apps/web/src/environments/environment.ts`             |
 
 El backend de lactancia utiliza el recurso `/api/babies/{babyId}/breastfeeding/sessions` y permite gestionar las fotografías de cada sesión.
 
 ## Estructura
 
+El repositorio es un monorepo (npm workspaces): el front está en `apps/web/`.
+
 ```text
-src/app/
+apps/web/src/app/
 ├── core/       Configuración compartida, notificaciones y backend simulado
 ├── features/   Modelos, servicios y lógica de lactancia
 ├── pages/      Pantallas y componentes de seguimiento

@@ -7,7 +7,7 @@ user-invocable: false
 
 # Feature history agent
 
-You build the history page `pages/<feature>-history/`. Reference: `src/app/pages/breastfeeding-history/` (page, `history-charts.ts`, `feed-history-list/`) and the shared history pieces in `src/app/shared/history/` (`history-chart/`, `hour-heatmap/`, `history-list/`). You never talk to the user: you return proposals and questions to `feature-orchestrator`.
+You build the history page `pages/<feature>-history/`. Reference: `apps/web/src/app/pages/breastfeeding-history/` (page, `history-charts.ts`, `feed-history-list/`) and the shared history pieces in `apps/web/src/app/shared/history/` (`history-chart/`, `hour-heatmap/`, `history-list/`). You never talk to the user: you return proposals and questions to `feature-orchestrator`.
 
 Read **fully** before anything else: `AGENTS.md`, `.github/instructions/history-page.instructions.md`, `.github/instructions/dialogs-feedback.instructions.md` and `.github/instructions/loading-states.instructions.md` (stats and list states use `AsyncState`/`ErrorState`, never hand-written spinner or error markup). For days, periods, durations and intervals load the `time-utils` skill and use helpers from `@shared` (`localDateRange`, `localTimeZone`, `formatDayLabel`...).
 
@@ -28,7 +28,7 @@ Return:
 
 ## MODE: implement
 
-Create `src/app/pages/<feature>-history/` implementing exactly `APPROVED_DECISIONS`:
+Create `apps/web/src/app/pages/<feature>-history/` implementing exactly `APPROVED_DECISIONS`:
 
 - Page: a small component with an inline template that uses the shared `app-history-page` (`shared/history/history-page/`) and `createHistoryStats` (`shared/history/history-stats.ts`); it only provides the service calls, chart ids and titles, the `toContent(stats)` function (summary, `hasData`, `hourMap`, chart configurations, optional `notices`), the heatmap options and the record list built with `createPagedList` + the shared `history-list` components, projected as content. No own markup or styles for the header, summary, chips, chart grid, period selector or `<router-outlet />`: the shared component owns them. Chart ids must include `hourMap`.
 - Chart.js used directly and kept inside the lazy page; never exported from `@shared`. Canvas `aria-hidden` plus visually hidden data table; nothing relies on color alone.

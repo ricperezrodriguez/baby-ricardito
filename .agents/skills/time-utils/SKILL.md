@@ -5,13 +5,13 @@ description: Project time-helper rules and catalog. Use whenever writing or modi
 
 # Time Utilities
 
-All time calculations live in `src/app/shared/utils/` and are imported from `@shared`. Do not reimplement them or improvise time logic in components or services.
+All time calculations live in `apps/web/src/app/shared/utils/` and are imported from `@shared`. Do not reimplement them or improvise time logic in components or services.
 
 ## Rules
 
 1. Before writing time logic, check the catalog below. If a helper exists, use it.
 2. Do not use `Date.now()`, `new Date()`, `Date.parse()`, `setInterval`, or `interval()` in components or services. These are allowed only inside `shared/utils/`.
-3. If a calculation does not exist and could be reused by another feature, add it to `time.utils.ts` and export it from `src/app/shared/index.ts`. Do not keep it local to a component.
+3. If a calculation does not exist and could be reused by another feature, add it to `time.utils.ts` and export it from `apps/web/src/app/shared/index.ts`. Do not keep it local to a component.
 4. Always import from `@shared`, never from an internal file path.
 5. Work with epoch milliseconds (`number`) and convert to ISO only at boundaries (API or storage) using `toIsoString` and `parseTimestamp`.
 6. Helpers are pure: pass `now` as an argument. Do not read it inside the function.
@@ -84,5 +84,5 @@ const label = `${m}:${String(s).padStart(2, '0')}`; // use formatDuration
 ## How to Add a New Helper
 
 1. Add the pure function to `time.utils.ts` with a one-line comment explaining its contract (for example, "never negative").
-2. Export it (and its type, if any) from `src/app/shared/index.ts`.
+2. Export it (and its type, if any) from `apps/web/src/app/shared/index.ts`.
 3. Add it to this file's table.

@@ -14,7 +14,7 @@ You coordinate the subagents that build a complete tracking feature. The referen
 
 1. **Never decide on your own.** Any doubt, ambiguity or design choice goes to the user (use the ask-questions tool). Always propose ideas the user could add, but never include them without approval.
 2. **Plan first, implement later.** Write nothing to the repo until the user explicitly approves the consolidated plan.
-3. **Good practices and common elements.** Follow good programming practices (small single-purpose units, no duplication, clear names, strict typing). Whenever something can be shared (component, util, type, SCSS mixin, service helper), reuse the existing common element or create one in `src/app/shared/` (or `src/app/features/shared/` for domain code). Refactoring existing breastfeeding code into a common element requires user approval first.
+3. **Good practices and common elements.** Follow good programming practices (small single-purpose units, no duplication, clear names, strict typing). Whenever something can be shared (component, util, type, SCSS mixin, service helper), reuse the existing common element or create one in `apps/web/src/app/shared/` (or `apps/web/src/app/features/shared/` for domain code). Refactoring existing breastfeeding code into a common element requires user approval first.
 4. Follow `AGENTS.md` and the files in `.github/instructions/`. Do not run or create tests. Verification is `npm run build`.
 5. **One question at a time.** Ask the user a single question per turn (one ask-questions call with one question, with your recommendation as the default option). Wait for the answer and only then ask the next one. Never send batches or long lists of questions. Adapt the next question to the previous answers and skip the ones that become irrelevant.
 
@@ -67,7 +67,7 @@ UPSTREAM_CONTRACT: <summary of feature-data output, when relevant>
 
 1. `feature-data` first.
 2. Then `feature-card`, `feature-dialog`, `feature-history` in parallel.
-3. You alone edit the shared files: `src/app/app.routes.ts` (creation route before `**`; history route **before** `detalle/:category`; history child route `:recordId` with `returnTo`; the Home route of the latest record is `<slug>/:recordId`), `src/app/pages/home/home.ts` / `home.html`, and the `src/app/shared/index.ts` barrel (add exports for any new common element a subagent reports). Never export Chart.js code from the barrel.
+3. You alone edit the shared files: `apps/web/src/app/app.routes.ts` (creation route before `**`; history route **before** `detalle/:category`; history child route `:recordId` with `returnTo`; the Home route of the latest record is `<slug>/:recordId`), `apps/web/src/app/pages/home/home.ts` / `home.html`, and the `apps/web/src/app/shared/index.ts` barrel (add exports for any new common element a subagent reports). Never export Chart.js code from the barrel.
 4. Finally `feature-style-harmonizer` (styles/markup only, no logic). Relay any logic concern it reports to the user.
 5. Run `npm run build` and fix or report failures.
 

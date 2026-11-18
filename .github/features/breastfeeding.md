@@ -28,11 +28,11 @@
 
 ## File Map
 
-- `src/app/core/push-notifications/push-notification.service.ts`: shared push notifications (permission, general and per-type switches, show/close by type, taps via `SwPush`).
-- `src/app/core/push-notifications/push-notification-types.ts`: catalog of notification types shown in the side menu.
-- `src/app/features/breastfeeding/breastfeeding-live-notification.service.ts`: running-feed notification content, buttons and actions.
-- `src/app/features/breastfeeding/breastfeeding.service.ts`: `changes` stream (origin `app` | `notification`).
-- `src/app/shell/notification-settings/notification-settings.ts`: `Notificaciones` block of the side menu (general + per-type switches).
-- `src/app/pages/home/cards/breastfeeding-card/breastfeeding-dialog/breastfeeding-dialog.ts`: timer state, local edits and persistence.
-- `src/app/pages/home/cards/breastfeeding-card/breastfeeding-dialog/breastfeeding-dialog.html`: view/edit controls.
-- `src/app/features/breastfeeding/breastfeeding-timer.ts`: segment transitions and duration calculations.
+- `apps/web/src/app/core/push-notifications/push-notification.service.ts`: shared push notifications (permission, general and per-type switches, show/close by type, taps via `SwPush`).
+- `apps/web/src/app/core/push-notifications/push-notification-types.ts`: catalog of notification types shown in the side menu.
+- `apps/web/src/app/features/breastfeeding/breastfeeding-live-notification.service.ts`: running-feed notification content, buttons and actions.
+- `apps/web/src/app/features/breastfeeding/breastfeeding.service.ts`: `changes` stream (origin `app` | `notification`).
+- `apps/web/src/app/shell/notification-settings/notification-settings.ts`: `Notificaciones` block of the side menu (general + per-type switches).
+- `apps/web/src/app/pages/home/cards/breastfeeding-card/breastfeeding-dialog/breastfeeding-dialog.ts`: timer state, local edits and persistence.
+- `apps/web/src/app/pages/home/cards/breastfeeding-card/breastfeeding-dialog/breastfeeding-dialog.html`: view/edit controls.
+- `apps/web/src/app/features/breastfeeding/breastfeeding-timer.ts`: segment transitions and duration calculations.

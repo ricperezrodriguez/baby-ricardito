@@ -1,12 +1,12 @@
 ---
-applyTo: "src/app/pages/**,src/app/shared/**"
+applyTo: "apps/web/src/app/pages/**,apps/web/src/app/shared/**"
 ---
 
 # Loading, empty and error states
 
 Whatever the screen (Home card, history page or list, modal), data that loads asynchronously always shows the **same** three states with the **same** shared components. Never write a spinner, an error message or a "Reintentar" button by hand in a template.
 
-## Shared components (all in `@shared`, folder `src/app/shared/async-state/`)
+## Shared components (all in `@shared`, folder `apps/web/src/app/shared/async-state/`)
 
 | Piece | Use |
 |---|---|

@@ -7,7 +7,7 @@ user-invocable: false
 
 # Feature card agent
 
-You build the Home card. Reference: `src/app/pages/home/cards/breastfeeding-card/` (`.ts`, `.html`, `.scss`) and the shared `TrackingCard` (`src/app/shared/tracking-card/`). You never talk to the user: you return proposals and questions to `feature-orchestrator`.
+You build the Home card. Reference: `apps/web/src/app/pages/home/cards/breastfeeding-card/` (`.ts`, `.html`, `.scss`) and the shared `TrackingCard` (`apps/web/src/app/shared/tracking-card/`). You never talk to the user: you return proposals and questions to `feature-orchestrator`.
 
 Read `AGENTS.md`, `.github/instructions/record-modals.instructions.md` and `.github/instructions/loading-states.instructions.md` first (the card's loading/empty/error states use `AsyncState`, never hand-written markup). If the card needs a Home alert (e.g. "too long since the last ...") also read `.github/instructions/alerts.instructions.md` and reuse `AlertBanner`/`createAlertDismissal`. For time-related logic (elapsed text, clocks, durations) load the `time-utils` skill and use helpers from `@shared`; no ad-hoc `interval`/`Date.now()`.
 
@@ -28,7 +28,7 @@ Replace the placeholder `cards/<feature>-card.ts` with a folder `cards/<feature>
 - Signals for state; reload through the card `closed` output only (no other refresh).
 - Fix any mojibake in the placeholder texts (e.g. `BiberÃ³n` -> `Biberón`); visible copy and `aria-label`s in Spanish, identifiers in English.
 - Accessibility: AXE/WCAG AA, labels, focus, contrast.
-- Reuse common elements; create new ones in `src/app/shared/` when approved and report the barrel export needed (do not edit `shared/index.ts`).
+- Reuse common elements; create new ones in `apps/web/src/app/shared/` when approved and report the barrel export needed (do not edit `shared/index.ts`).
 - Delete the old placeholder file only after the new component exists, and report that `home.ts` must import the new component (orchestrator edits it).
 
 Finish with the files changed and the selector/class name.

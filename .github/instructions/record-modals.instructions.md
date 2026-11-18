@@ -1,5 +1,5 @@
 ---
-applyTo: 'src/app/**/*dialog*/**,src/app/shared/dialog-route/**,src/app/shared/tracking-dialog/**,src/app/shared/confirmation-dialog/**,src/app/shared/tracking-card/**,src/app/app.routes.ts,src/app/core/notification.service.ts'
+applyTo: 'apps/web/src/app/**/*dialog*/**,apps/web/src/app/shared/dialog-route/**,apps/web/src/app/shared/tracking-dialog/**,apps/web/src/app/shared/confirmation-dialog/**,apps/web/src/app/shared/tracking-card/**,apps/web/src/app/app.routes.ts,apps/web/src/app/core/notification.service.ts'
 ---
 
 # Creation modals, closing rules and snackbars
@@ -10,8 +10,8 @@ General rules for the modals opened from the tracking cards on Home (`+` button 
 
 Record modals open from a child route of Home, so the URL is the source of truth: the modal is open if and only if the URL says so. A direct link such as `/lactancia` opens the app with Home behind and the modal on top.
 
-- **Route:** in `src/app/app.routes.ts`, `''` (`Home`) has one child route per modal with `component: DialogRouteHost` and `data: { dialog: () => import(...).then(m => m.XDialog) } satisfies DialogRouteData`. The dialog is lazy-loaded. Optional `dialogData` provides `title`/`message` to the generic placeholder `TrackingDialog`. Optional `returnTo` is the route to navigate to on close (default `/`).
-- **Host:** `DialogRouteHost` (`src/app/shared/dialog-route/dialog-route.ts`) has no view. When activated it opens the modal with `MatDialog` (`closeOnNavigation: false`, because the route governs closing); when the modal closes it navigates to `returnTo` (or `/`); if the route is left (browser back) it closes the modal. It passes `DialogRouteContext` (`dialogData` fields plus route `params`) as `MAT_DIALOG_DATA`.
+- **Route:** in `apps/web/src/app/app.routes.ts`, `''` (`Home`) has one child route per modal with `component: DialogRouteHost` and `data: { dialog: () => import(...).then(m => m.XDialog) } satisfies DialogRouteData`. The dialog is lazy-loaded. Optional `dialogData` provides `title`/`message` to the generic placeholder `TrackingDialog`. Optional `returnTo` is the route to navigate to on close (default `/`).
+- **Host:** `DialogRouteHost` (`apps/web/src/app/shared/dialog-route/dialog-route.ts`) has no view. When activated it opens the modal with `MatDialog` (`closeOnNavigation: false`, because the route governs closing); when the modal closes it navigates to `returnTo` (or `/`); if the route is left (browser back) it closes the modal. It passes `DialogRouteContext` (`dialogData` fields plus route `params`) as `MAT_DIALOG_DATA`.
 - **Card:** `TrackingCard` takes `dialogRoute="lactancia"`. With it, the `+` button and the actionable content navigate to `/lactancia` instead of opening the dialog directly. Without it, it opens `dialogComponent` (behavior of cards without a route yet).
 - **Card refresh:** `DialogRouteHost` calls `DialogRouteEvents.notifyClosed(path)` and the `TrackingCard` whose `dialogRoute` matches emits `closed`, which reloads it. Do not refresh the card any other way. Only exception: changes made from a system notification outside the modal (e.g. `BreastfeedingService.changes` with origin `notification`) also reload the card.
 - **Home** must contain `<router-outlet />` for the child routes to activate. `Home` is not recreated when a modal opens or closes.
@@ -28,7 +28,7 @@ When a card is not active (no record in progress) and its latest record is loade
 
 ## Closing and cancelling creation modals
 
-Creation modals use `TrackingDialogLayout` (`src/app/shared/tracking-dialog/tracking-dialog-layout.ts`). The layout never closes the modal: it emits events and the modal using it decides what to do and closes it.
+Creation modals use `TrackingDialogLayout` (`apps/web/src/app/shared/tracking-dialog/tracking-dialog-layout.ts`). The layout never closes the modal: it emits events and the modal using it decides what to do and closes it.
 
 - **Close (X, outside click, Escape)** emits `dismiss`. It is non-destructive: it keeps the record (saves what is pending and closes). **No confirmation.**
 - **Cancelar** emits `discard` only after confirming in `ConfirmationDialog` (`¿Cancelar registro?`). It is destructive: it deletes the record.
@@ -40,7 +40,7 @@ Creation modals use `TrackingDialogLayout` (`src/app/shared/tracking-dialog/trac
 
 Any action whose result is not obvious on screen must be reported with a snackbar, so the user never doubts what happened to their data.
 
-- Use `NotificationService` (`src/app/core/notification.service.ts`): `success()` for confirmations and information, `error()` for failures. Never use `MatSnackBar` directly.
+- Use `NotificationService` (`apps/web/src/app/core/notification.service.ts`): `success()` for confirmations and information, `error()` for failures. Never use `MatSnackBar` directly.
 - Examples: `Toma guardada` on save; `Toma en curso. Puedes continuarla desde la tarjeta.` when closing with X a feed that keeps running.
 - Show the snackbar only when the operation succeeded, right before closing the modal. HTTP errors are already reported by `http-error-snackbar.interceptor.ts`; do not duplicate them.
 - Texts are short, in Spanish and in a neutral tone.
