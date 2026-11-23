@@ -31,6 +31,19 @@ npm run build
 
 Los archivos generados se encuentran en `apps/web/dist/`.
 
+### Con el backend real
+
+```bash
+cp .env.example .env                      # define DB_PASSWORD
+cp apps/api/.env.example apps/api/.env   # usa la misma contraseña en DATABASE_URL
+docker compose up -d db                   # PostgreSQL
+npm run db:deploy -w apps/api && npm run db:seed -w apps/api
+npm run api                               # API en http://localhost:3000/api (Swagger en /api/docs)
+npm run start:local-api                   # front contra la API real
+```
+
+Solo el biberón y su alerta de alimentación están implementados en el backend; el resto de secciones muestra su estado de error hasta que se añadan.
+
 ## Configuración
 
 | Entorno    | Backend                             | Configuración                                          |

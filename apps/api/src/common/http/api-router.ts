@@ -38,6 +38,8 @@ export interface RouteDefinition<
   summary: string;
   description?: string;
   request?: { params?: P; query?: Q; body?: B };
+  /** Error `code` per failing field (first path segment) of the query/body; `*` applies to any other field. */
+  errorCodes?: Record<string, string>;
   responses: Record<number, RouteResponse>;
   handler: (input: { params: Output<P>; query: Output<Q>; body: Output<B> }) => Reply | Promise<Reply>;
 }
@@ -48,7 +50,23 @@ function issueCode(issue: z.core.$ZodIssue, fallback: string): string {
   return typeof code === 'string' ? code : fallback;
 }
 
-function parseInput(source: RequestSource, schema: z.ZodType | undefined, value: unknown): unknown {
+/** Code of a failed field: the one set by `coded()`, else the route's `errorCodes` (field, then `*`), else the source default. */
+function resolveCode(
+  issue: z.core.$ZodIssue,
+  source: RequestSource,
+  errorCodes: Record<string, string> | undefined,
+): string {
+  const field = issue.path[0];
+  const byRoute = (typeof field === 'string' ? errorCodes?.[field] : undefined) ?? errorCodes?.['*'];
+  return issueCode(issue, byRoute ?? FALLBACK_ERROR_CODES[source]);
+}
+
+function parseInput(
+  source: RequestSource,
+  schema: z.ZodType | undefined,
+  value: unknown,
+  errorCodes: Record<string, string> | undefined,
+): unknown {
   if (schema === undefined) {
     return undefined;
   }
@@ -58,7 +76,7 @@ function parseInput(source: RequestSource, schema: z.ZodType | undefined, value:
   }
   const issue = result.error.issues[0]!;
   const field = issue.path.length > 0 ? `"${issue.path.map(String).join('.')}": ` : '';
-  throw badRequest(issueCode(issue, FALLBACK_ERROR_CODES[source]), `${field}${issue.message}`);
+  throw badRequest(resolveCode(issue, source, errorCodes), `${field}${issue.message}`);
 }
 
 function toExpressPath(path: string): string {
@@ -79,9 +97,9 @@ export class ApiRouter {
     this.registry.registerPath(this.toOpenApi(definition));
 
     this.router[definition.method](toExpressPath(definition.path), async (req, res) => {
-      const params = parseInput('params', definition.request?.params, req.params);
-      const query = parseInput('query', definition.request?.query, req.query);
-      const body = parseInput('body', definition.request?.body, req.body);
+      const params = parseInput('params', definition.request?.params, req.params, definition.errorCodes);
+      const query = parseInput('query', definition.request?.query, req.query, definition.errorCodes);
+      const body = parseInput('body', definition.request?.body, req.body, definition.errorCodes);
 
       const reply = await definition.handler({ params, query, body } as Parameters<typeof definition.handler>[0]);
       res.status(reply.status);

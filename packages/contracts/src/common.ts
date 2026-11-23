@@ -123,3 +123,39 @@ export type StatsQuery = z.infer<typeof StatsQuerySchema>;
 export const HourMapSchema = z.array(z.array(z.number().int()).length(24)).length(7).meta({ id: 'HourMap' });
 
 export type HourMap = z.infer<typeof HourMapSchema>;
+
+const ISO_DATE_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})$/;
+
+/** ISO 8601 date-time with an offset (or `Z`) and a real calendar day. */
+export function isIsoDateTime(value: string): boolean {
+  const match = ISO_DATE_TIME_PATTERN.exec(value);
+  if (match === null || Number.isNaN(Date.parse(value))) {
+    return false;
+  }
+  const [, year, month, day] = match.map(Number);
+  const date = new Date(Date.UTC(year!, month! - 1, day!));
+  return date.getUTCMonth() === month! - 1 && date.getUTCDate() === day;
+}
+
+/** Instant sent by the client; parsed to a normalized UTC ISO string. */
+export const IsoDateTimeInputSchema = z
+  .string()
+  .refine(isIsoDateTime, 'must be an ISO 8601 date string.')
+  .transform((value) => new Date(value).toISOString())
+  .meta({ type: 'string', format: 'date-time', example: '2026-11-18T08:30:00Z' });
+
+/** Instant returned by the API (UTC). */
+export const IsoDateTimeSchema = z.string().meta({ format: 'date-time', example: '2026-11-18T08:30:00.000Z' });
+
+export function notesSchema(maxLength: number) {
+  return z.string().max(maxLength).meta({ description: `Up to ${maxLength} characters.` });
+}
+
+/** Chart ids a baby can hide on a history page; duplicates are removed. */
+export function historyPreferencesSchema<const T extends readonly [string, ...string[]]>(chartIds: T, id: string) {
+  return z
+    .object({
+      hiddenCharts: z.array(z.enum(chartIds)).transform((ids) => [...new Set(ids)]),
+    })
+    .meta({ id, description: 'History page preferences stored per baby.' });
+}

@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "start": "npm run start -w apps/web",
+    "start:local-api": "npm run start:local-api -w apps/web",
     "build": "npm run build -w apps/web",
     "watch": "npm run watch -w apps/web",
     "test": "npm run test -w apps/web",

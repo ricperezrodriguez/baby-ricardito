@@ -2,7 +2,7 @@
 
 Decision record of the PostgreSQL schema. Read it before touching `apps/api/prisma/` and update it in the same change whenever a decision changes (see `AGENTS.md`).
 
-- Status: schema, initial migration and `baby-1` seed applied and verified against Postgres 17 in Docker. No module uses it yet.
+- Status: schema, initial migration and `baby-1` seed applied and verified against Postgres 17 in Docker. Used so far by the bottle module and the preferences table (see `bottle.md`).
 
 ## Approved decisions
 

@@ -85,6 +85,11 @@
                   "with": "src/environments/environment.development.ts"
                 }
               ]
+            },
+            "local-api": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "production"
@@ -97,6 +102,10 @@
             },
             "development": {
               "buildTarget": "baby-ricardito:build:development"
+            },
+            "local-api": {
+              "buildTarget": "baby-ricardito:build:local-api",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
