@@ -1,0 +1,221 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enum values match the API contract (`packages/contracts`) so no mapping layer is needed.
+enum BreastSide {
+  left
+  right
+}
+
+enum DiaperType {
+  wet
+  dirty
+  both
+}
+
+enum StoolColor {
+  yellow
+  green
+  brown
+  black
+  red
+  white
+}
+
+enum StoolConsistency {
+  liquid
+  soft
+  mucous
+  firm
+}
+
+enum BottleMilkType {
+  breast_milk
+  formula
+  mixed
+}
+
+enum NailArea {
+  hands
+  feet
+}
+
+enum BathReaction {
+  happy
+  neutral
+  sad
+}
+
+model Baby {
+  id        String   @id
+  name      String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  preferences          BabyPreference[]
+  breastfeedingSessions BreastfeedingSession[]
+  diaperChanges        DiaperChange[]
+  sleepSessions        SleepSession[]
+  bottleFeeds          BottleFeed[]
+  vitaminDDoses        VitaminDDose[]
+  nailTrims            NailTrim[]
+  baths                Bath[]
+
+  @@map("babies")
+}
+
+/// History-chart visibility and alert settings of a baby, one row per key (e.g. `bottle-history`).
+/// `value` is validated by the API with the Zod schema of its key; defaults live in the API.
+model BabyPreference {
+  babyId    String
+  key       String
+  value     Json
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade)
+
+  @@id([babyId, key])
+  @@map("baby_preferences")
+}
+
+model BreastfeedingSession {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  babyId    String
+  startTime DateTime  @db.Timestamptz(3)
+  /// null while the session is open (running or paused)
+  endTime   DateTime? @db.Timestamptz(3)
+  notes     String?
+  /// Relative path of the photo inside the photos volume
+  photoPath String?
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+
+  baby     Baby                   @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  segments BreastfeedingSegment[]
+
+  @@index([babyId, startTime(sort: Desc)])
+  @@map("breastfeeding_sessions")
+}
+
+model BreastfeedingSegment {
+  id        String     @id @default(uuid(7)) @db.Uuid
+  sessionId String     @db.Uuid
+  breast    BreastSide
+  startTime DateTime   @db.Timestamptz(3)
+  /// null while the segment is running
+  endTime   DateTime?  @db.Timestamptz(3)
+
+  session BreastfeedingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, startTime])
+  @@map("breastfeeding_segments")
+}
+
+model DiaperChange {
+  id               String            @id @default(uuid(7)) @db.Uuid
+  babyId           String
+  changedAt        DateTime          @db.Timestamptz(3)
+  type             DiaperType
+  /// Only for `dirty` and `both`
+  stoolColor       StoolColor?
+  /// Only for `dirty` and `both`
+  stoolConsistency StoolConsistency?
+  hasRash          Boolean           @default(false)
+  notes            String?           @db.VarChar(500)
+  photoPath        String?
+  createdAt        DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(3)
+
+  baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade)
+
+  @@index([babyId, changedAt(sort: Desc)])
+  @@map("diaper_changes")
+}
+
+model SleepSession {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  babyId    String
+  startTime DateTime  @db.Timestamptz(3)
+  /// null while the baby is still asleep
+  endTime   DateTime? @db.Timestamptz(3)
+  notes     String?   @db.VarChar(500)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+
+  baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade)
+
+  @@index([babyId, startTime(sort: Desc)])
+  @@map("sleep_sessions")
+}
+
+model BottleFeed {
+  id        String         @id @default(uuid(7)) @db.Uuid
+  babyId    String
+  fedAt     DateTime       @db.Timestamptz(3)
+  /// Whole millilitres, 1 to 500
+  amountMl  Int
+  milkType  BottleMilkType
+  notes     String?        @db.VarChar(500)
+  createdAt DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime       @updatedAt @db.Timestamptz(3)
+
+  baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade)
+
+  @@index([babyId, fedAt(sort: Desc)])
+  @@map("bottle_feeds")
+}
+
+model VitaminDDose {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  babyId    String
+  givenAt   DateTime @db.Timestamptz(3)
+  /// Whole drops, 1 to 10; null when not recorded
+  drops     Int?
+  notes     String?  @db.VarChar(500)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade)
+
+  @@index([babyId, givenAt(sort: Desc)])
+  @@map("vitamin_d_doses")
+}
+
+model NailTrim {
+  id        String     @id @default(uuid(7)) @db.Uuid
+  babyId    String
+  trimmedAt DateTime   @db.Timestamptz(3)
+  /// Non-empty, no duplicates
+  areas     NailArea[]
+  notes     String?    @db.VarChar(500)
+  createdAt DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime   @updatedAt @db.Timestamptz(3)
+
+  baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade)
+
+  @@index([babyId, trimmedAt(sort: Desc)])
+  @@map("nail_trims")
+}
+
+model Bath {
+  id         String        @id @default(uuid(7)) @db.Uuid
+  babyId     String
+  bathedAt   DateTime      @db.Timestamptz(3)
+  hairWashed Boolean
+  reaction   BathReaction?
+  notes      String?       @db.VarChar(500)
+  createdAt  DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime      @updatedAt @db.Timestamptz(3)
+
+  baby Baby @relation(fields: [babyId], references: [id], onDelete: Cascade)
+
+  @@index([babyId, bathedAt(sort: Desc)])
+  @@map("baths")
+}

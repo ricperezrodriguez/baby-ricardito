@@ -17,7 +17,7 @@ Node + TypeScript + Express 5, Zod, Prisma + PostgreSQL. No NestJS. The API repl
 
 - `<module>.routes.ts`: declares each endpoint with `ApiRouter.route(...)`: path, input schemas, response schemas and a handler. It is the only place that knows HTTP.
 - `<module>.service.ts`: business rules (e.g. 422 `FED_AT_IN_FUTURE`); throws `ApiError` helpers from `common/errors.ts`.
-- `<module>.repository.ts`: the only file that touches Prisma.
+- `<module>.repository.ts`: the only file that touches Prisma (`Database` from `src/database/prisma.ts`; the generated client lives in `src/generated/prisma/` and is not committed).
 - `<module>.stats.ts`: pure functions over the records of the range (ported from `mock-backend.<tracker>.stats.ts`), no I/O.
 - Register the module in `src/app.ts`.
 
@@ -34,5 +34,9 @@ Node + TypeScript + Express 5, Zod, Prisma + PostgreSQL. No NestJS. The API repl
 
 ## Commands (from the repo root)
 
-- `npm run api`: dev server with reload (`http://localhost:3000/api`, docs at `/api/docs`). Optional `apps/api/.env` (see `.env.example`).
-- `npm run typecheck`: type-checks `apps/api` and `packages/contracts`.
+- `npm run api`: dev server with reload (`http://localhost:3000/api`, docs at `/api/docs`). Needs `apps/api/.env` (copy `.env.example`; `DATABASE_URL` must use the password of the root `.env`).
+- `docker compose up -d db`: PostgreSQL for development (`127.0.0.1:5432`, data in the `db-data` volume). Needs the root `.env` (`DB_PASSWORD`, see `.env.example`).
+- `npm run typecheck`: generates the Prisma client and type-checks `apps/api` and `packages/contracts`.
+- From `apps/api`: `npm run db:migrate` (create/apply a migration in dev), `npm run db:deploy` (apply pending ones), `npm run db:seed` (baby `baby-1`), `npm run db:generate`.
+
+The database design and its decisions are in `.github/backend/database.md`; read it before touching `apps/api/prisma/`.
