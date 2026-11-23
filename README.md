@@ -33,8 +33,8 @@ Los archivos generados se encuentran en `apps/web/dist/`.
 
 ## Configuración
 
-| Entorno    | Backend                             | Configuración                                 |
-| ---------- | ----------------------------------- | --------------------------------------------- |
+| Entorno    | Backend                             | Configuración                                          |
+| ---------- | ----------------------------------- | ------------------------------------------------------ |
 | Desarrollo | Simulado, con latencia configurable | `apps/web/src/environments/environment.development.ts` |
 | Producción | API HTTP en `/api`                  | `apps/web/src/environments/environment.ts`             |
 

@@ -54,6 +54,10 @@ Push notifications (shown by the system at the top of the phone) always go throu
 - Follow good programming practices: small single-purpose units, no duplication, clear names, strict typing.
 - Whenever something can be shared (component, util, type, SCSS mixin, service helper), reuse the existing common element or create one in `apps/web/src/app/shared/` (or shared domain code under `apps/web/src/app/features/`) instead of copying code between features. Refactoring existing features into a common element must be agreed with the user first.
 
+## Backend
+
+The repo is an npm workspaces monorepo: `apps/web` (Angular, everything above), `apps/api` (Node + TypeScript + Express + Prisma/PostgreSQL, no NestJS) and `packages/contracts` (Zod schemas shared by the API and, later, the front). The API reproduces the contract of the front's mock backend and generates its Swagger (`/api/docs`) from the Zod schemas. Rules, layout and module shape live in `.github/instructions/backend.instructions.md` (loads automatically for `apps/api/**` and `packages/contracts/**`; read it before touching them). Decision records of the backend modules go in `.github/backend/<module>.md`, with the same purpose as the feature records.
+
 ## Agents
 
 New tracking features (card, creation/edit modal, history page, services and mocks) are built with the orchestrator in `.github/agents/`:
@@ -67,5 +71,5 @@ Each tracking feature has a decision record in `.github/features/<feature>.md` (
 
 ## Build and Test
 
-From the repo root: `npm run start` (dev server), `npm run build` (production build). There is no lint script.
+From the repo root: `npm run start` (front dev server), `npm run build` (front production build), `npm run api` (API dev server), `npm run typecheck` (API and contracts). There is no lint script.
 Do NOT run tests or create/extend specs (including the scaffolded `apps/web/src/app/app.spec.ts`); this project does not maintain them.
