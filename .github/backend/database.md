@@ -25,9 +25,9 @@ Decision record of the PostgreSQL schema. Read it before touching `apps/api/pris
 - Per-tracker preference columns: rejected in favour of the generic `baby_preferences` table.
 - Users and sharing a baby between users: deferred to a later phase.
 
-## Open points
+## Demo data
 
-- Optional demo data seed (mock-like) is planned but not written yet (`npm run db:seed` only creates `baby-1`).
+- **Demo data:** `npm run db:seed:demo` (in `apps/api`, `prisma/seed-demo.ts`) fills `baby-1` with about 60 days of deterministic records for every tracker (same idea as the front's mock seeds, but written for the API: relative to today, local time of the machine, nothing in the future, no open session; three SVG demo photos saved as `demo-<uuid>.svg` in the photos folder). It refuses to run when the baby already has records; `-- --reset` deletes every record of `baby-1` (and its photo files) first. `db:seed` stays minimal (only the baby).
 
 ## File map
 

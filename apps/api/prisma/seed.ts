@@ -1,7 +1,6 @@
 import { loadEnv } from '../src/config/env';
 import { createDatabase } from '../src/database/prisma';
-
-export const DEFAULT_BABY_ID = 'baby-1';
+import { DEFAULT_BABY_ID } from './baby';
 
 const { DATABASE_URL } = loadEnv();
 const database = createDatabase(DATABASE_URL);

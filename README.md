@@ -38,6 +38,7 @@ cp .env.example .env                      # define DB_PASSWORD
 cp apps/api/.env.example apps/api/.env   # usa la misma contraseña en DATABASE_URL
 docker compose up -d db                   # PostgreSQL
 npm run db:deploy -w apps/api && npm run db:seed -w apps/api
+npm run db:seed:demo -w apps/api         # opcional: ~60 días de datos de ejemplo (-- --reset para reemplazarlos)
 npm run api                               # API en http://localhost:3000/api (Swagger en /api/docs)
 npm run start:local-api                   # front contra la API real
 ```

@@ -42,6 +42,6 @@ Node + TypeScript + Express 5, Zod, Prisma + PostgreSQL. No NestJS. The API repl
 - `npm run start:local-api`: the front against the real API (Angular configuration `local-api`: production environment, `useMock: false`, proxy `/api` -> `localhost:3000` from `apps/web/proxy.conf.json`). Plain `npm run start` keeps using the mock.
 - `docker compose up -d db`: PostgreSQL for development (`127.0.0.1:5432`, data in the `db-data` volume). Needs the root `.env` (`DB_PASSWORD`, see `.env.example`).
 - `npm run typecheck`: generates the Prisma client and type-checks `apps/api` and `packages/contracts`.
-- From `apps/api`: `npm run db:migrate` (create/apply a migration in dev), `npm run db:deploy` (apply pending ones), `npm run db:seed` (baby `baby-1`), `npm run db:generate`.
+- From `apps/api`: `npm run db:migrate` (create/apply a migration in dev), `npm run db:deploy` (apply pending ones), `npm run db:seed` (baby `baby-1`), `npm run db:seed:demo` (about 60 days of sample data; `-- --reset` replaces existing records), `npm run db:generate`.
 
 The database design and its decisions are in `.github/backend/database.md`; read it before touching `apps/api/prisma/`.
