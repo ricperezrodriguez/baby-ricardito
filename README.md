@@ -45,6 +45,15 @@ npm run start:local-api                   # front contra la API real
 
 El backend implementa ya todos los seguimientos: lactancia, biberón, pañal, sueño, vitamina D, uñas y baño, con sus ajustes de historial y alertas. Las fotos (lactancia y pañal) se guardan en `apps/api/storage/photos` (límite de 20 MB; JPEG, PNG, WebP y HEIC).
 
+### Todo en Docker (base de datos, API y front)
+
+```bash
+cp .env.example .env                       # define DB_PASSWORD (solo esta variable hace falta)
+docker compose up -d --build               # db + api + web (nginx)
+```
+
+Abre [http://localhost:8080/](http://localhost:8080/). nginx sirve el front, reenvía `/api` al contenedor `api` y sirve las fotos desde su volumen; el API aplica las migraciones pendientes al arrancar. Datos de ejemplo opcionales: `docker compose exec api npm run db:seed:demo -- --reset`. El puerto solo escucha en `127.0.0.1`: para abrirlo desde el móvil con HTTPS (necesario para la PWA y las notificaciones) usa Tailscale, como se explica en `.github/backend/docker.md`.
+
 ## Configuración
 
 | Entorno    | Backend                             | Configuración                                          |
@@ -56,7 +65,7 @@ El backend de lactancia utiliza el recurso `/api/babies/{babyId}/breastfeeding/s
 
 ## Estructura
 
-El repositorio es un monorepo (npm workspaces): el front está en `apps/web/`.
+El repositorio es un monorepo (npm workspaces): el front está en `apps/web/`, el backend en `apps/api/` (Node, Express, Prisma y PostgreSQL) y los esquemas compartidos en `packages/contracts/`. La documentación de las decisiones del backend está en `.github/backend/`.
 
 ```text
 apps/web/src/app/

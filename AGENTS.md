@@ -71,5 +71,5 @@ Each tracking feature has a decision record in `.github/features/<feature>.md` (
 
 ## Build and Test
 
-From the repo root: `npm run start` (front dev server), `npm run build` (front production build), `npm run api` (API dev server), `npm run typecheck` (API and contracts). There is no lint script.
+From the repo root: `npm run start` (front dev server), `npm run build` (front production build), `npm run api` (API dev server), `npm run typecheck` (API and contracts), `docker compose up -d --build` (whole stack on `http://localhost:8080`). There is no lint script.
 Do NOT run tests or create/extend specs (including the scaffolded `apps/web/src/app/app.spec.ts`); this project does not maintain them.
