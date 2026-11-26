@@ -9,6 +9,7 @@ import { createDocsRouter } from './docs/openapi';
 import { createRequireBaby } from './modules/babies/require-baby';
 import { registerBathRoutes } from './modules/bath/bath.routes';
 import { registerBottleRoutes } from './modules/bottle/bottle.routes';
+import { registerBreastfeedingRoutes } from './modules/breastfeeding/breastfeeding.routes';
 import { registerDiaperRoutes } from './modules/diaper/diaper.routes';
 import { registerFeedingRoutes } from './modules/feeding/feeding.routes';
 import { registerHealthRoutes } from './modules/health/health.routes';
@@ -42,6 +43,7 @@ export function createApp({ database, photosDir }: AppOptions): express.Express 
   registerBathRoutes(api, context);
   registerDiaperRoutes(api, context);
   registerSleepRoutes(api, context);
+  registerBreastfeedingRoutes(api, context);
 
   const app = express();
   app.disable('x-powered-by');

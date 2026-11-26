@@ -75,15 +75,19 @@ function issueCode(issue: z.core.$ZodIssue, fallback: string): string {
   return typeof code === 'string' ? code : fallback;
 }
 
-/** Code of a failed field: the one set by `coded()`, else the route's `errorCodes` (field, then `*`), else the source default. */
+/**
+ * Code of a failed field: the one set by `coded()`, else the route's `errorCodes` (the path without array
+ * indexes, e.g. `segments.breast`, then its first segment, then `*`), else the source default.
+ */
 function resolveCode(
   issue: z.core.$ZodIssue,
   source: RequestSource,
   errorCodes: Record<string, string> | undefined,
 ): string {
-  const field = issue.path[0];
+  const fullPath = issue.path.filter((segment) => typeof segment === 'string').join('.');
+  const first = issue.path[0];
   const byRoute =
-    (typeof field === 'string' ? errorCodes?.[field] : undefined) ?? errorCodes?.['*'];
+    errorCodes?.[fullPath] ?? (typeof first === 'string' ? errorCodes?.[first] : undefined) ?? errorCodes?.['*'];
   return issueCode(issue, byRoute ?? FALLBACK_ERROR_CODES[source]);
 }
 

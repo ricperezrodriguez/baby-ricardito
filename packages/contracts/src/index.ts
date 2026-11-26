@@ -1,5 +1,6 @@
 export * from './bath';
 export * from './bottle';
+export * from './breastfeeding';
 export * from './common';
 export * from './diaper';
 export * from './feeding';

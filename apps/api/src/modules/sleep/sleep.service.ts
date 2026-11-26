@@ -9,8 +9,9 @@ import type {
 } from '@baby-ricardito/contracts';
 import type { RequireBaby } from '../../common/baby-guard';
 import { conflict, unprocessableEntity } from '../../common/errors';
+import { isUniqueViolation } from '../../common/prisma-errors';
 import { requireRecord, toStoredNotes } from '../../common/records';
-import { SleepRepository, isUniqueViolation } from './sleep.repository';
+import { SleepRepository } from './sleep.repository';
 import type { SleepSessionData } from './sleep.repository';
 import { calculateSleepStats } from './sleep.stats';
 import type { SleepSession as SleepSessionRow } from '../../generated/prisma/client';

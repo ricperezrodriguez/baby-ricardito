@@ -71,8 +71,3 @@ export class SleepRepository {
     });
   }
 }
-
-/** The partial unique indexes of the database (one open session per baby) failed under a race. */
-export function isUniqueViolation(error: unknown): boolean {
-  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002';
-}

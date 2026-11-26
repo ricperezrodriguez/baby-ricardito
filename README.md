@@ -42,7 +42,7 @@ npm run api                               # API en http://localhost:3000/api (Sw
 npm run start:local-api                   # front contra la API real
 ```
 
-Por ahora el backend implementa biberón, vitamina D, uñas, baño, pañal (con fotos) y sueño, con sus ajustes de historial y alertas; la lactancia (pecho) muestra su estado de error hasta que se añada. Las fotos se guardan en `apps/api/storage/photos` (límite de 20 MB; JPEG, PNG, WebP y HEIC).
+El backend implementa ya todos los seguimientos: lactancia, biberón, pañal, sueño, vitamina D, uñas y baño, con sus ajustes de historial y alertas. Las fotos (lactancia y pañal) se guardan en `apps/api/storage/photos` (límite de 20 MB; JPEG, PNG, WebP y HEIC).
 
 ## Configuración
 
