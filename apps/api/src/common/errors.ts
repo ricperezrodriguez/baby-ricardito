@@ -14,11 +14,14 @@ export class ApiError extends Error {
   }
 }
 
-export const badRequest = (code: string, message: string): ApiError => new ApiError(400, code, message);
+export const badRequest = (code: string, message: string): ApiError =>
+  new ApiError(400, code, message);
 
-export const notFound = (code: string, message: string): ApiError => new ApiError(404, code, message);
+export const notFound = (code: string, message: string): ApiError =>
+  new ApiError(404, code, message);
 
-export const conflict = (code: string, message: string): ApiError => new ApiError(409, code, message);
+export const conflict = (code: string, message: string): ApiError =>
+  new ApiError(409, code, message);
 
 export const unprocessableEntity = (code: string, message: string): ApiError =>
   new ApiError(422, code, message);

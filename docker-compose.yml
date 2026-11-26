@@ -8,11 +8,11 @@ services:
       POSTGRES_DB: baby_ricardito
     ports:
       # Only reachable from this machine; the api container will use the internal network.
-      - "127.0.0.1:5432:5432"
+      - '127.0.0.1:5432:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U baby -d baby_ricardito"]
+      test: ['CMD-SHELL', 'pg_isready -U baby -d baby_ricardito']
       interval: 5s
       timeout: 3s
       retries: 10

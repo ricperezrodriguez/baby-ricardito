@@ -11,7 +11,9 @@ export interface LocalMoment {
 }
 
 /** Reads the local day (`yyyy-MM-dd`), weekday (Monday = 0) and hour of an instant in `timeZone`. */
-export function createLocalMomentReader(timeZone: string): (epochMilliseconds: number) => LocalMoment {
+export function createLocalMomentReader(
+  timeZone: string,
+): (epochMilliseconds: number) => LocalMoment {
   const format = new Intl.DateTimeFormat('en-US', {
     timeZone,
     year: 'numeric',
@@ -22,7 +24,9 @@ export function createLocalMomentReader(timeZone: string): (epochMilliseconds: n
     hourCycle: 'h23',
   });
   return (epochMilliseconds) => {
-    const parts = Object.fromEntries(format.formatToParts(epochMilliseconds).map((part) => [part.type, part.value]));
+    const parts = Object.fromEntries(
+      format.formatToParts(epochMilliseconds).map((part) => [part.type, part.value]),
+    );
     return {
       date: `${parts['year']}-${parts['month']}-${parts['day']}`,
       weekday: WEEKDAYS.indexOf(parts['weekday']!),
@@ -47,7 +51,9 @@ export function createEmptyHourMap(): HourMap {
 
 /** Rounded average; null without values. */
 export function average(values: number[]): number | null {
-  return values.length === 0 ? null : Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+  return values.length === 0
+    ? null
+    : Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
 
 /** Average with one decimal; null without values. */

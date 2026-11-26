@@ -3,7 +3,7 @@
 Decision record of the backend side of the bottle tracker and of the `feeding-overdue-alert` preference. It mirrors the front's `.github/features/bottle.md`. Read it before touching them and update it in the same change whenever a decision changes (see `AGENTS.md`).
 
 - Status: implemented and verified by calling every endpoint (see "Verified"). Not yet used end to end from the browser by the user (`npm run start:local-api`).
-- It is the **template** for the rest of the trackers: copy its shape (`contracts/src/<tracker>.ts` + `modules/<tracker>/{routes,service,repository,stats}`), do not invent a new one.
+- It is the **template** for the rest of the trackers: copy its shape (`contracts/src/<tracker>.ts` + `modules/<tracker>/{routes,service,repository,stats}`), do not invent a new one. Its routes use the shared `registerCrudRoutes`; the done ones are `bath.md`, `nail-trimming.md` and `vitamin-d.md`.
 
 ## Endpoints (all under `/api/babies/{babyId}`)
 

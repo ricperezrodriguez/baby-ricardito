@@ -1,6 +1,6 @@
 import {
-  DEFAULT_FEEDING_OVERDUE_ALERT_SETTINGS,
-  FeedingOverdueAlertSettingsSchema,
+    DEFAULT_FEEDING_OVERDUE_ALERT_SETTINGS,
+    FeedingOverdueAlertSettingsSchema,
 } from '@baby-ricardito/contracts';
 import type { ApiRouter } from '../../common/http/api-router';
 import type { AppContext } from '../../context';

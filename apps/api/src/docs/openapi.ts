@@ -23,7 +23,11 @@ export function createDocsRouter(registry: OpenAPIRegistry): Router {
   router.get('/openapi.json', (_req, res) => {
     res.json(document);
   });
-  router.use('/docs', swaggerUi.serve, swaggerUi.setup(document, { customSiteTitle: 'Baby Ricardito API' }));
+  router.use(
+    '/docs',
+    swaggerUi.serve,
+    swaggerUi.setup(document, { customSiteTitle: 'Baby Ricardito API' }),
+  );
 
   return router;
 }

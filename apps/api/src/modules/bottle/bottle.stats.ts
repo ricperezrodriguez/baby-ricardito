@@ -1,4 +1,4 @@
-import type { BottleDayStats, BottleStats, BottleStatsTotals, BottleMilkType, StatsQuery } from '@baby-ricardito/contracts';
+import type { BottleDayStats, BottleMilkType, BottleStats, BottleStatsTotals, StatsQuery } from '@baby-ricardito/contracts';
 import { average, createEmptyHourMap, createLocalMomentReader, listDateKeys } from '../../common/time';
 
 const MS_PER_SECOND = 1_000;

@@ -42,7 +42,7 @@ npm run api                               # API en http://localhost:3000/api (Sw
 npm run start:local-api                   # front contra la API real
 ```
 
-Solo el biberón y su alerta de alimentación están implementados en el backend; el resto de secciones muestra su estado de error hasta que se añadan.
+Por ahora el backend implementa biberón, vitamina D, uñas y baño (con sus ajustes de historial y alertas); el resto de secciones muestra su estado de error hasta que se añadan.
 
 ## Configuración
 

@@ -8,22 +8,12 @@ import type {
   UpdateBottleFeed,
 } from '@baby-ricardito/contracts';
 import type { RequireBaby } from '../../common/baby-guard';
-import { notFound, unprocessableEntity } from '../../common/errors';
-import { isUuid } from '../../common/ids';
-import { calculateBottleStats } from './bottle.stats';
+import { assertNotInFuture, requireRecord, toStoredNotes } from '../../common/records';
 import { BottleRepository, toBottleFeed } from './bottle.repository';
 import type { BottleFeedData } from './bottle.repository';
+import { calculateBottleStats } from './bottle.stats';
 
-/** An empty `notes` string clears them. */
-function toStoredNotes(notes: string | undefined): string | null | undefined {
-  return notes === '' ? null : notes;
-}
-
-function assertNotInFuture(fedAt: string, now: number): void {
-  if (Date.parse(fedAt) > now) {
-    throw unprocessableEntity('FED_AT_IN_FUTURE', '"fedAt" must not be in the future.');
-  }
-}
+const FUTURE_CODE = 'FED_AT_IN_FUTURE';
 
 export class BottleService {
   constructor(
@@ -44,7 +34,7 @@ export class BottleService {
 
   async create(babyId: string, input: CreateBottleFeed): Promise<BottleFeed> {
     await this.requireBaby(babyId);
-    assertNotInFuture(input.fedAt, Date.now());
+    assertNotInFuture(input.fedAt, Date.now(), 'fedAt', FUTURE_CODE);
     const data: BottleFeedData = {
       fedAt: new Date(input.fedAt),
       amountMl: input.amountMl,
@@ -58,7 +48,7 @@ export class BottleService {
     await this.requireBaby(babyId);
     await this.requireFeed(babyId, feedId);
     if (patch.fedAt !== undefined) {
-      assertNotInFuture(patch.fedAt, Date.now());
+      assertNotInFuture(patch.fedAt, Date.now(), 'fedAt', FUTURE_CODE);
     }
     const data: Partial<BottleFeedData> = {
       ...(patch.fedAt === undefined ? {} : { fedAt: new Date(patch.fedAt) }),
@@ -80,11 +70,7 @@ export class BottleService {
     return calculateBottleStats(await this.repository.listForStats(babyId), query);
   }
 
-  private async requireFeed(babyId: string, feedId: string) {
-    const feed = isUuid(feedId) ? await this.repository.findById(babyId, feedId) : null;
-    if (feed === null) {
-      throw notFound('FEED_NOT_FOUND', `Bottle feed "${feedId}" does not exist.`);
-    }
-    return feed;
+  private requireFeed(babyId: string, feedId: string) {
+    return requireRecord((id) => this.repository.findById(babyId, id), feedId, 'FEED_NOT_FOUND', 'Bottle feed');
   }
 }

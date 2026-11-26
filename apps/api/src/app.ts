@@ -6,10 +6,13 @@ import type { AppContext } from './context';
 import type { Database } from './database/prisma';
 import { createDocsRouter } from './docs/openapi';
 import { createRequireBaby } from './modules/babies/require-baby';
+import { registerBathRoutes } from './modules/bath/bath.routes';
 import { registerBottleRoutes } from './modules/bottle/bottle.routes';
 import { registerFeedingRoutes } from './modules/feeding/feeding.routes';
 import { registerHealthRoutes } from './modules/health/health.routes';
+import { registerNailTrimmingRoutes } from './modules/nail-trimming/nail-trimming.routes';
 import { PreferenceRepository } from './modules/preferences/preference.repository';
+import { registerVitaminDRoutes } from './modules/vitamin-d/vitamin-d.routes';
 
 export function createApp(database: Database): express.Express {
   const registry = new OpenAPIRegistry();
@@ -23,6 +26,9 @@ export function createApp(database: Database): express.Express {
   registerHealthRoutes(api);
   registerBottleRoutes(api, context);
   registerFeedingRoutes(api, context);
+  registerVitaminDRoutes(api, context);
+  registerNailTrimmingRoutes(api, context);
+  registerBathRoutes(api, context);
 
   const app = express();
   app.disable('x-powered-by');

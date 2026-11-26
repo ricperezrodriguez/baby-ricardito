@@ -16,8 +16,8 @@ Node + TypeScript + Express 5, Zod, Prisma + PostgreSQL. No NestJS. The API repl
 
 ## Module shape (flow `routes -> service -> repository`)
 
-- `<module>.routes.ts`: declares each endpoint with `ApiRouter.route(...)`: path, input schemas, response schemas and a handler. It is the only place that knows HTTP.
-- `<module>.service.ts`: business rules (e.g. 422 `FED_AT_IN_FUTURE`); throws `ApiError` helpers from `common/errors.ts`.
+- `<module>.routes.ts`: declares the endpoints. Trackers whose records are an instant listed newest first call `registerCrudRoutes` (`common/http/crud-routes.ts`: `POST/GET` collection and `GET/PATCH/DELETE` item) with their schemas, `errorCodes` and service, and add only what is specific (stats, preferences) with `ApiRouter.route(...)`: path, input schemas, response schemas and a handler. It is the only place that knows HTTP.
+- `<module>.service.ts`: business rules (e.g. 422 `FED_AT_IN_FUTURE`); throws `ApiError` helpers from `common/errors.ts`. Reuse `common/records.ts` (`toStoredNotes`, `assertNotInFuture`, `requireRecord`) instead of rewriting them.
 - `<module>.repository.ts`: the only file that touches Prisma (`Database` from `src/database/prisma.ts`; the generated client lives in `src/generated/prisma/` and is not committed).
 - `<module>.stats.ts`: pure functions over the records of the range (ported from `mock-backend.<tracker>.stats.ts`), no I/O.
 - Register the module in `src/app.ts`.

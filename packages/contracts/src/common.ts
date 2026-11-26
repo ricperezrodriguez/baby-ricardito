@@ -33,8 +33,12 @@ function integerParam(name: string, minimum: number, fallback: number) {
   return z
     .string()
     .refine(
-      (value) => /^\d+$/.test(value) && Number.isSafeInteger(Number(value)) && Number(value) >= minimum,
-      coded('INVALID_PAGINATION', `"${name}" must be an integer greater than or equal to ${minimum}.`),
+      (value) =>
+        /^\d+$/.test(value) && Number.isSafeInteger(Number(value)) && Number(value) >= minimum,
+      coded(
+        'INVALID_PAGINATION',
+        `"${name}" must be an integer greater than or equal to ${minimum}.`,
+      ),
     )
     .transform(Number)
     .default(fallback)
@@ -92,7 +96,10 @@ export function isTimeZone(value: string): boolean {
 function dateKeyParam(name: string) {
   return z
     .string()
-    .refine(isDateKey, coded('INVALID_DATE_FORMAT', `"${name}" must be a valid date formatted as yyyy-MM-dd.`))
+    .refine(
+      isDateKey,
+      coded('INVALID_DATE_FORMAT', `"${name}" must be a valid date formatted as yyyy-MM-dd.`),
+    )
     .meta({ example: '2026-11-01' });
 }
 
@@ -105,7 +112,10 @@ export const StatsQuerySchema = z
       .string()
       .refine(isTimeZone, coded('INVALID_TIME_ZONE', '"tz" must be a valid IANA time zone.'))
       .default('UTC')
-      .meta({ example: 'Europe/Madrid', description: 'IANA time zone used to split records in days and hours.' }),
+      .meta({
+        example: 'Europe/Madrid',
+        description: 'IANA time zone used to split records in days and hours.',
+      }),
   })
   .refine(
     ({ from, to }) => !isDateKey(from) || !isDateKey(to) || Date.parse(to) >= Date.parse(from),
@@ -113,18 +123,24 @@ export const StatsQuerySchema = z
   )
   .refine(
     ({ from, to }) =>
-      !isDateKey(from) || !isDateKey(to) || (Date.parse(to) - Date.parse(from)) / MS_PER_DAY + 1 <= MAX_STATS_RANGE_DAYS,
+      !isDateKey(from) ||
+      !isDateKey(to) ||
+      (Date.parse(to) - Date.parse(from)) / MS_PER_DAY + 1 <= MAX_STATS_RANGE_DAYS,
     coded('INVALID_RANGE', `The range must not exceed ${MAX_STATS_RANGE_DAYS} days.`),
   );
 
 export type StatsQuery = z.infer<typeof StatsQuerySchema>;
 
 /** Records per weekday (0 = Monday ... 6 = Sunday) and hour of the day (0-23) */
-export const HourMapSchema = z.array(z.array(z.number().int()).length(24)).length(7).meta({ id: 'HourMap' });
+export const HourMapSchema = z
+  .array(z.array(z.number().int()).length(24))
+  .length(7)
+  .meta({ id: 'HourMap' });
 
 export type HourMap = z.infer<typeof HourMapSchema>;
 
-const ISO_DATE_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})$/;
+const ISO_DATE_TIME_PATTERN =
+  /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})$/;
 
 /** ISO 8601 date-time with an offset (or `Z`) and a real calendar day. */
 export function isIsoDateTime(value: string): boolean {
@@ -145,17 +161,38 @@ export const IsoDateTimeInputSchema = z
   .meta({ type: 'string', format: 'date-time', example: '2026-11-18T08:30:00Z' });
 
 /** Instant returned by the API (UTC). */
-export const IsoDateTimeSchema = z.string().meta({ format: 'date-time', example: '2026-11-18T08:30:00.000Z' });
+export const IsoDateTimeSchema = z
+  .string()
+  .meta({ format: 'date-time', example: '2026-11-18T08:30:00.000Z' });
 
 export function notesSchema(maxLength: number) {
-  return z.string().max(maxLength).meta({ description: `Up to ${maxLength} characters.` });
+  return z
+    .string()
+    .max(maxLength)
+    .meta({ description: `Up to ${maxLength} characters.` });
 }
 
 /** Chart ids a baby can hide on a history page; duplicates are removed. */
-export function historyPreferencesSchema<const T extends readonly [string, ...string[]]>(chartIds: T, id: string) {
+export function historyPreferencesSchema<const T extends readonly [string, ...string[]]>(
+  chartIds: T,
+  id: string,
+) {
   return z
     .object({
       hiddenCharts: z.array(z.enum(chartIds)).transform((ids) => [...new Set(ids)]),
     })
     .meta({ id, description: 'History page preferences stored per baby.' });
+}
+
+/** `{ enabled, <field> }` of an alert whose threshold is one of `thresholds` (hours, days or a clock hour). */
+export function alertSettingsSchema<
+  const F extends 'thresholdHours' | 'thresholdDays',
+  const T extends readonly [number, ...number[]],
+>(field: F, thresholds: T, id: string, description: string) {
+  return z
+    .object({
+      enabled: z.boolean(),
+      [field]: z.literal(thresholds).meta({ enum: [...thresholds] }),
+    } as { enabled: z.ZodBoolean } & Record<F, z.ZodLiteral<T[number]>>)
+    .meta({ id, description });
 }

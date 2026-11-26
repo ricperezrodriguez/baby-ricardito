@@ -41,12 +41,19 @@ export interface RouteDefinition<
   /** Error `code` per failing field (first path segment) of the query/body; `*` applies to any other field. */
   errorCodes?: Record<string, string>;
   responses: Record<number, RouteResponse>;
-  handler: (input: { params: Output<P>; query: Output<Q>; body: Output<B> }) => Reply | Promise<Reply>;
+  handler: (input: {
+    params: Output<P>;
+    query: Output<Q>;
+    body: Output<B>;
+  }) => Reply | Promise<Reply>;
 }
 
 function issueCode(issue: z.core.$ZodIssue, fallback: string): string {
   const params: unknown = 'params' in issue ? issue.params : undefined;
-  const code = typeof params === 'object' && params !== null ? (params as Record<string, unknown>)['code'] : undefined;
+  const code =
+    typeof params === 'object' && params !== null
+      ? (params as Record<string, unknown>)['code']
+      : undefined;
   return typeof code === 'string' ? code : fallback;
 }
 
@@ -57,7 +64,8 @@ function resolveCode(
   errorCodes: Record<string, string> | undefined,
 ): string {
   const field = issue.path[0];
-  const byRoute = (typeof field === 'string' ? errorCodes?.[field] : undefined) ?? errorCodes?.['*'];
+  const byRoute =
+    (typeof field === 'string' ? errorCodes?.[field] : undefined) ?? errorCodes?.['*'];
   return issueCode(issue, byRoute ?? FALLBACK_ERROR_CODES[source]);
 }
 
@@ -97,11 +105,23 @@ export class ApiRouter {
     this.registry.registerPath(this.toOpenApi(definition));
 
     this.router[definition.method](toExpressPath(definition.path), async (req, res) => {
-      const params = parseInput('params', definition.request?.params, req.params, definition.errorCodes);
-      const query = parseInput('query', definition.request?.query, req.query, definition.errorCodes);
+      const params = parseInput(
+        'params',
+        definition.request?.params,
+        req.params,
+        definition.errorCodes,
+      );
+      const query = parseInput(
+        'query',
+        definition.request?.query,
+        req.query,
+        definition.errorCodes,
+      );
       const body = parseInput('body', definition.request?.body, req.body, definition.errorCodes);
 
-      const reply = await definition.handler({ params, query, body } as Parameters<typeof definition.handler>[0]);
+      const reply = await definition.handler({ params, query, body } as Parameters<
+        typeof definition.handler
+      >[0]);
       res.status(reply.status);
       if (reply.body === undefined) {
         res.end();
@@ -111,10 +131,17 @@ export class ApiRouter {
     });
   }
 
-  private toOpenApi(definition: RouteDefinition<ObjectSchema | undefined, ObjectSchema | undefined, z.ZodType | undefined>): RouteConfig {
+  private toOpenApi(
+    definition: RouteDefinition<
+      ObjectSchema | undefined,
+      ObjectSchema | undefined,
+      z.ZodType | undefined
+    >,
+  ): RouteConfig {
     const { request, responses } = definition;
     const json = (schema: z.ZodType) => ({ content: { 'application/json': { schema } } });
-    const hasRequest = request?.params !== undefined || request?.query !== undefined || request?.body !== undefined;
+    const hasRequest =
+      request?.params !== undefined || request?.query !== undefined || request?.body !== undefined;
 
     const documented: Record<number, RouteResponse> = { ...responses };
     if (hasRequest && documented[400] === undefined) {
@@ -135,7 +162,10 @@ export class ApiRouter {
       responses: Object.fromEntries(
         Object.entries(documented).map(([status, response]) => [
           status,
-          { description: response.description, ...(response.schema === undefined ? {} : json(response.schema)) },
+          {
+            description: response.description,
+            ...(response.schema === undefined ? {} : json(response.schema)),
+          },
         ]),
       ),
     };

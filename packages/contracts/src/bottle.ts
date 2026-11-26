@@ -44,7 +44,9 @@ export const BottleFeedSchema = z
     fedAt: IsoDateTimeSchema.meta({ description: 'Never in the future.' }),
     amountMl: amountMlSchema,
     milkType: BottleMilkTypeSchema,
-    notes: notesSchema(BOTTLE_NOTES_MAX_LENGTH).optional().meta({ description: 'Absent when there are none.' }),
+    notes: notesSchema(BOTTLE_NOTES_MAX_LENGTH)
+      .optional()
+      .meta({ description: 'Absent when there are none.' }),
     createdAt: IsoDateTimeSchema,
     updatedAt: IsoDateTimeSchema,
   })
@@ -64,7 +66,9 @@ export const CreateBottleFeedSchema = z
 export type CreateBottleFeed = z.infer<typeof CreateBottleFeedSchema>;
 
 /** Omitted fields keep their value; an empty `notes` clears them. */
-export const UpdateBottleFeedSchema = CreateBottleFeedSchema.partial().meta({ id: 'UpdateBottleFeed' });
+export const UpdateBottleFeedSchema = CreateBottleFeedSchema.partial().meta({
+  id: 'UpdateBottleFeed',
+});
 
 export type UpdateBottleFeed = z.infer<typeof UpdateBottleFeedSchema>;
 
@@ -72,7 +76,9 @@ export const BottleFeedsQuerySchema = PageQuerySchema.extend({
   milkType: z
     .union([BottleMilkTypeSchema, z.array(BottleMilkTypeSchema)])
     .optional()
-    .transform((value): BottleMilkType[] => (value === undefined ? [] : [...new Set([value].flat())]))
+    .transform((value): BottleMilkType[] =>
+      value === undefined ? [] : [...new Set([value].flat())],
+    )
     .meta({ description: 'Repeatable. Only feeds of these milk types; every type when omitted.' }),
 });
 
@@ -100,9 +106,14 @@ export const BottleDayStatsSchema = z
     date: z.string().meta({ example: '2026-11-18', description: 'Local day, yyyy-MM-dd.' }),
     feeds: z.number().int(),
     totalMl: z.number().int(),
-    averageAmountMl: z.number().int().nullable().meta({ description: 'Rounded; null without feeds.' }),
+    averageAmountMl: z
+      .number()
+      .int()
+      .nullable()
+      .meta({ description: 'Rounded; null without feeds.' }),
     averageIntervalSeconds: z.number().int().nullable().meta({
-      description: 'Start to start against the previous feed (even from the day before); null without a previous feed.',
+      description:
+        'Start to start against the previous feed (even from the day before); null without a previous feed.',
     }),
   })
   .meta({ id: 'BottleDayStats' });
@@ -116,7 +127,11 @@ export const BottleStatsTotalsSchema = z
     breastMilkMl: z.number().int(),
     formulaMl: z.number().int(),
     mixedMl: z.number().int(),
-    averageDailyMl: z.number().int().nullable().meta({ description: 'Over every day of the range, empty ones included.' }),
+    averageDailyMl: z
+      .number()
+      .int()
+      .nullable()
+      .meta({ description: 'Over every day of the range, empty ones included.' }),
     averageFeedsPerDay: z.number().nullable().meta({ description: 'One decimal.' }),
     averageAmountMl: z.number().int().nullable(),
     averageIntervalSeconds: z.number().int().nullable(),
@@ -130,9 +145,13 @@ export const BottleStatsSchema = z
     from: z.string().meta({ example: '2026-11-01' }),
     to: z.string().meta({ example: '2026-11-07' }),
     timeZone: z.string().meta({ example: 'Europe/Madrid' }),
-    days: z.array(BottleDayStatsSchema).meta({ description: 'One entry per local day of the range, zeros included.' }),
+    days: z
+      .array(BottleDayStatsSchema)
+      .meta({ description: 'One entry per local day of the range, zeros included.' }),
     totals: BottleStatsTotalsSchema,
-    hourMap: HourMapSchema.meta({ description: 'Feeds per weekday (0 = Monday) and hour of the day.' }),
+    hourMap: HourMapSchema.meta({
+      description: 'Feeds per weekday (0 = Monday) and hour of the day.',
+    }),
   })
   .meta({ id: 'BottleStats' });
 
