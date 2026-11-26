@@ -1,8 +1,10 @@
 import type { OpenAPIRegistry, RouteConfig } from '@asteasolutions/zod-to-openapi';
 import { ApiErrorSchema } from '@baby-ricardito/contracts';
+import type { Request, Response } from 'express';
 import { Router } from 'express';
-import type { z } from 'zod';
-import { badRequest } from '../errors';
+import multer from 'multer';
+import { z } from 'zod';
+import { badRequest, unprocessableEntity } from '../errors';
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 type ObjectSchema = z.ZodObject;
@@ -26,6 +28,18 @@ export interface RouteResponse {
   schema?: z.ZodType;
 }
 
+/** A file received in a `multipart/form-data` request, kept in memory. */
+export interface UploadedFile {
+  buffer: Buffer;
+  size: number;
+}
+
+export interface UploadOptions {
+  /** Name of the multipart field that carries the file. */
+  field: string;
+  maxBytes: number;
+}
+
 export interface RouteDefinition<
   P extends ObjectSchema | undefined,
   Q extends ObjectSchema | undefined,
@@ -38,6 +52,8 @@ export interface RouteDefinition<
   summary: string;
   description?: string;
   request?: { params?: P; query?: Q; body?: B };
+  /** Receives one file in a multipart body instead of JSON; the handler gets it as `file`. */
+  upload?: UploadOptions;
   /** Error `code` per failing field (first path segment) of the query/body; `*` applies to any other field. */
   errorCodes?: Record<string, string>;
   responses: Record<number, RouteResponse>;
@@ -45,6 +61,8 @@ export interface RouteDefinition<
     params: Output<P>;
     query: Output<Q>;
     body: Output<B>;
+    /** Only meaningful when the route declares `upload`; always set then. */
+    file: UploadedFile;
   }) => Reply | Promise<Reply>;
 }
 
@@ -91,6 +109,38 @@ function toExpressPath(path: string): string {
   return path.replace(/\{(\w+)\}/g, ':$1');
 }
 
+const BYTES_PER_MB = 1024 * 1024;
+
+/** Reads the multipart file of a request; its errors use the same codes as the mock backend. */
+async function receiveFile(req: Request, res: Response, upload: UploadOptions): Promise<UploadedFile> {
+  const middleware = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: upload.maxBytes, files: 1, fields: 0 },
+  }).single(upload.field);
+
+  await new Promise<void>((resolve, reject) => {
+    middleware(req, res, (error?: unknown) => {
+      if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
+        reject(
+          unprocessableEntity(
+            'PHOTO_TOO_LARGE',
+            `The photo must not be larger than ${Math.round(upload.maxBytes / BYTES_PER_MB)} MB.`,
+          ),
+        );
+      } else if (error !== undefined) {
+        reject(badRequest('INVALID_PHOTO', `The multipart field "${upload.field}" must be a file.`));
+      } else {
+        resolve();
+      }
+    });
+  });
+
+  if (req.file === undefined) {
+    throw badRequest('INVALID_PHOTO', `The multipart field "${upload.field}" must be a file.`);
+  }
+  return { buffer: req.file.buffer, size: req.file.size };
+}
+
 /** Registers each route once: as an Express handler (validating its input) and as an OpenAPI operation. */
 export class ApiRouter {
   readonly router = Router();
@@ -118,8 +168,9 @@ export class ApiRouter {
         definition.errorCodes,
       );
       const body = parseInput('body', definition.request?.body, req.body, definition.errorCodes);
+      const file = definition.upload === undefined ? undefined : await receiveFile(req, res, definition.upload);
 
-      const reply = await definition.handler({ params, query, body } as Parameters<
+      const reply = await definition.handler({ params, query, body, file } as Parameters<
         typeof definition.handler
       >[0]);
       res.status(reply.status);
@@ -129,6 +180,23 @@ export class ApiRouter {
         res.json(reply.body);
       }
     });
+  }
+
+  private toOpenApiBody(
+    definition: RouteDefinition<
+      ObjectSchema | undefined,
+      ObjectSchema | undefined,
+      z.ZodType | undefined
+    >,
+  ): NonNullable<RouteConfig['request']>['body'] {
+    const { upload, request } = definition;
+    if (upload !== undefined) {
+      const schema = z.object({ [upload.field]: z.string().meta({ type: 'string', format: 'binary' }) });
+      return { required: true, content: { 'multipart/form-data': { schema } } };
+    }
+    return request?.body === undefined
+      ? undefined
+      : { required: true, content: { 'application/json': { schema: request.body } } };
   }
 
   private toOpenApi(
@@ -141,7 +209,10 @@ export class ApiRouter {
     const { request, responses } = definition;
     const json = (schema: z.ZodType) => ({ content: { 'application/json': { schema } } });
     const hasRequest =
-      request?.params !== undefined || request?.query !== undefined || request?.body !== undefined;
+      request?.params !== undefined ||
+      request?.query !== undefined ||
+      request?.body !== undefined ||
+      definition.upload !== undefined;
 
     const documented: Record<number, RouteResponse> = { ...responses };
     if (hasRequest && documented[400] === undefined) {
@@ -157,7 +228,7 @@ export class ApiRouter {
       request: {
         params: request?.params,
         query: request?.query,
-        body: request?.body === undefined ? undefined : { required: true, ...json(request.body) },
+        body: this.toOpenApiBody(definition),
       },
       responses: Object.fromEntries(
         Object.entries(documented).map(([status, response]) => [

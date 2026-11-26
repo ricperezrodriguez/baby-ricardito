@@ -9,7 +9,7 @@ Node + TypeScript + Express 5, Zod, Prisma + PostgreSQL. No NestJS. The API repl
 ## Layout
 
 - `apps/api/src/common/`: transversal code (errors, `ApiRouter`, error handler, time helpers). Never tracker-specific.
-- `apps/api/src/modules/<module>/`: one folder per tracker or concern (`bottle`, `feeding`, `diaper`, ...). A module never imports another **tracker** module. Two support modules may be imported by any module: `babies` (`createRequireBaby`) and `preferences` (`PreferenceRepository`, `registerPreferenceRoutes`). Everything else shared goes to `common/`.
+- `apps/api/src/modules/<module>/`: one folder per tracker or concern (`bottle`, `feeding`, `diaper`, ...). A module never imports another **tracker** module. Three support modules may be imported by any module: `babies` (`createRequireBaby`), `preferences` (`PreferenceRepository`, `registerPreferenceRoutes`) and `photos` (`PhotoStorage`, `registerPhotoRoutes`, for trackers with a photo; `ApiRouter.route` takes `upload: { field, maxBytes }` for multipart; see `.github/backend/photos.md`). Everything else shared goes to `common/`.
 - `apps/api/src/context.ts` (`AppContext`: database, `requireBaby`, preferences) is what `app.ts` passes to every `register<Module>Routes(api, context)`.
 - `apps/api/src/docs/`: OpenAPI document and Swagger UI (`/api/docs`, `/api/openapi.json`).
 - `packages/contracts/`: Zod schemas and types of the contract, consumed as TypeScript source (no build). Only depends on `zod`.

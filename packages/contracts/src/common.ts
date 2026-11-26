@@ -8,8 +8,8 @@ export function coded(code: string, message: string): { error: string; params: {
 /** Name of the multipart field that carries the photo file */
 export const PHOTO_UPLOAD_FIELD = 'photo';
 
-/** Photo limits shared by the forms and the API */
-export const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+/** Photo limit shared by the forms and the API (a 50 MP phone photo can weigh about 20 MB). */
+export const PHOTO_MAX_BYTES = 20 * 1024 * 1024;
 
 export const ApiErrorSchema = z
   .object({

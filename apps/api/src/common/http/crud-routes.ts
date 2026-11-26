@@ -28,6 +28,10 @@ export interface CrudRoutesOptions<
   errorCodes: Record<string, string>;
   /** Code of the 422 answered when the instant is in the future, e.g. `FED_AT_IN_FUTURE`. */
   futureCode: string;
+  /** Replaces the default text of the 422 when a tracker has more rules than the future instant. */
+  unprocessableDescription?: string;
+  /** Documents a 409 on create and update (e.g. overlapping sleeps). */
+  conflictDescription?: string;
   updateDescription?: string;
   service: RecordService<z.output<R>, z.output<C>, z.output<U>, z.output<Q>>;
 }
@@ -45,7 +49,12 @@ export function registerCrudRoutes<
   const { tag, noun, schemas, service, errorCodes } = options;
   const collection = `/babies/{babyId}/${options.path}`;
   const item = `${collection}/{recordId}`;
-  const future: RouteResponse = { description: `\`${options.futureCode}\`: the instant is in the future.` };
+  const future: RouteResponse = {
+    description:
+      options.unprocessableDescription ?? `\`${options.futureCode}\`: the instant is in the future.`,
+  };
+  const conflict: Record<number, RouteResponse> =
+    options.conflictDescription === undefined ? {} : { 409: { description: options.conflictDescription } };
   const queryErrorCodes = Object.fromEntries(Object.entries(errorCodes).filter(([field]) => field !== '*'));
 
   api.route({
@@ -55,7 +64,12 @@ export function registerCrudRoutes<
     summary: `Create a ${noun}`,
     request: { params: BabyParamsSchema, body: schemas.create },
     errorCodes,
-    responses: { 201: { description: `The created ${noun}.`, schema: schemas.record }, 404: NO_BABY, 422: future },
+    responses: {
+      201: { description: `The created ${noun}.`, schema: schemas.record },
+      404: NO_BABY,
+      422: future,
+      ...conflict,
+    },
     handler: async ({ params, body }) => ({
       status: 201,
       body: await service.create(params.babyId, body as z.output<C>),
@@ -94,7 +108,12 @@ export function registerCrudRoutes<
     description: options.updateDescription ?? 'Omitted fields keep their value.',
     request: { params: RecordParamsSchema, body: schemas.update },
     errorCodes,
-    responses: { 200: { description: `The updated ${noun}.`, schema: schemas.record }, 404: NO_RECORD, 422: future },
+    responses: {
+      200: { description: `The updated ${noun}.`, schema: schemas.record },
+      404: NO_RECORD,
+      422: future,
+      ...conflict,
+    },
     handler: async ({ params, body }) => ({
       status: 200,
       body: await service.update(params.babyId, params.recordId, body as z.output<U>),

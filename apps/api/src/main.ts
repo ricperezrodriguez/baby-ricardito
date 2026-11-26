@@ -2,10 +2,10 @@ import { createApp } from './app';
 import { loadEnv } from './config/env';
 import { createDatabase } from './database/prisma';
 
-const { PORT, DATABASE_URL } = loadEnv();
+const { PORT, DATABASE_URL, PHOTOS_DIR } = loadEnv();
 const database = createDatabase(DATABASE_URL);
 
-const server = createApp(database).listen(PORT, () => {
+const server = createApp({ database, photosDir: PHOTOS_DIR }).listen(PORT, () => {
   console.log(`API listening on http://localhost:${PORT}/api (docs: /api/docs)`);
 });
 

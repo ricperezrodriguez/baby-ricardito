@@ -49,3 +49,6 @@ Thumbs.db
 
 # Generated Prisma client
 apps/api/src/generated/
+
+# Uploaded photos
+apps/api/storage/

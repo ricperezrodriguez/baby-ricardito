@@ -50,7 +50,7 @@ export class RecordPhoto {
       return;
     }
     if (file.size > PHOTO_MAX_BYTES) {
-      this.notifications.error('La foto no puede superar los 5 MB');
+      this.notifications.error(`La foto no puede superar los ${PHOTO_MAX_BYTES / (1024 * 1024)} MB`);
       return;
     }
 

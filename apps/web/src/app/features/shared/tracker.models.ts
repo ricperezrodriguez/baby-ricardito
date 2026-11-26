@@ -4,7 +4,7 @@
 export const PHOTO_UPLOAD_FIELD = 'photo';
 
 /** Photo limits shared by the forms and the mock backend */
-export const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+export const PHOTO_MAX_BYTES = 20 * 1024 * 1024;
 
 export interface PageRequest {
   limit: number;

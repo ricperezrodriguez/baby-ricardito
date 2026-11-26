@@ -11,7 +11,10 @@ export function parsePhotoFile(body: unknown, field: string): File {
     throw badRequest('INVALID_PHOTO_TYPE', 'The photo must be an image.');
   }
   if (photo.size > PHOTO_MAX_BYTES) {
-    throw unprocessableEntity('PHOTO_TOO_LARGE', 'The photo must not be larger than 5 MB.');
+    throw unprocessableEntity(
+      'PHOTO_TOO_LARGE',
+      `The photo must not be larger than ${PHOTO_MAX_BYTES / (1024 * 1024)} MB.`,
+    );
   }
   return photo;
 }
